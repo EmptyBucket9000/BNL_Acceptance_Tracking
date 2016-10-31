@@ -54,6 +54,43 @@ def getParticleRadialPosition(x):
     
     return r
     
+## Check if pair-production occurs
+    
+def ifPairProduction(E,photon_dt):
+    
+    # Probability of pair production as a function of photon energy
+    P = (0.023248 - 9.56748*10**-9 / E**5 + 5.52086*10**-7 / E**4 - 
+         0.0000122004 / E**3 + 0.000139708 / E**2 - 0.00125509 / E)
+         
+    # Adjust the probability based on actual photon_dt as the above equation
+    # assumes photon_dt = 10**-11
+    P = P * (photon_dt/10**-11)*20
+    
+    rn = np.random.random()
+    
+    if rn < P:
+        return True
+    
+## Create electron and positron and note their existance for future tracking
+
+def doPairProduction(E,particle_count,particle_proc,m,v_norm,x,step_counter):
+    
+    E_part = E/2                    # (eV) Energy of each particle
+    p = np.sqrt(E_part**2 - m**2)   # (eV/c) Momentum of each particle
+    beta = momentumScalar2Beta(p,m) # Relativistic beta
+    gamma = beta2Gamma(beta)      # Relativistic gamma
+    v = (p/(gamma*m))*v_norm*c        # (m/s) Velocity vector of each particle
+    
+    i = 0
+    while i < 2:
+        particle_count = particle_count + 1
+        particle_proc[particle_count] = np.array([x[0],x[1],x[2],
+                                                  v[0],v[1],v[2],(-1)**i,0,
+                                                  step_counter])
+        i = i + 1
+    print(p/(10**9))
+    return particle_proc,particle_count
+
 ## Check if photon is released between energies k_min and k_max while particle
 ## is traveling through material
     
@@ -64,31 +101,41 @@ def isPhotonReleased(k_min,k_max,X0,v,dt,m):
     d = v_mag*dt
     
     # Determine the average number of photons released in distance d
-    N = (d/X0) * ((4/3)*np.log(k_max/k_min) - (4*(k_max-k_min))/(3*E_tot) +
-        (k_max**2-k_min**2)/(2*E_tot**2))
+    N = (d/X0) * ((4/3)*np.log(E_tot/k_min) - (4*(E_tot-k_min))/(3*E_tot) +
+        (E_tot**2-k_min**2)/(2*E_tot**2))
         
-    # Determine the probability that 1 photon is released
+    # Determine the probability that 1,2,3 photon(s) is(are) released
     P1 = poissonProb(N,1)
     P2 = poissonProb(N,2)
     P3 = poissonProb(N,3)
-#    print(N)
-#    print('kmin: %0.3f'%k_min)
-#    print('kmax: %0.3f'%k_max)
-#    print('E: %0.3f'%E_tot)
+    P4 = poissonProb(N,4)
+    P5 = poissonProb(N,5)
+    P6 = poissonProb(N,6)
     rn = np.random.rand()
-    
-    if rn < P1 and rn > P2:
+#    print('P1: %0.5f'%P1)
+#    print('P2: %0.5f'%P2)
+#    print('P3: %0.5f'%P3)
+#    print('P4: %0.5f'%P4)
+#    print('P5: %0.5f'%P5)
+#    print('P6: %0.5f'%P6)
+    if rn < P1:
         return 1
-    elif rn < P2 and rn > P1:
+    elif rn > P1 and rn < P1 + P2:
         return 2
-    elif rn < P3:
+    elif rn > P1 + P2 and rn < P1 + P2 + P3:
         return 3
+    elif rn > P1 + P2 + P3 and rn < P1 + P2 + P3 + P4:
+        return 4
+    elif rn > P1 + P2 + P3 + P4 and rn < P1 + P2 + P3 + P4 + P5:
+        return 5
+    elif rn > P1 + P2 + P3 + P4 + P5 and rn < P1 + P2 + P3 + P4 + P5 + P6:
+        return 6
     else:
         return 0
         
-## Adjust momentum of positron when photon is released
+## Adjust momentum of particle when photon is released
         
-def adjustPositronVelocityFromBremsstrahlung(v,k_min,k_max,m):
+def adjustParticleVelocityFromBremsstrahlung(v,k_min,k_max,m):
     
     # Get the magnitude of the velocity vector
     v_mag = mag(v)
@@ -99,10 +146,7 @@ def adjustPositronVelocityFromBremsstrahlung(v,k_min,k_max,m):
     ''' Randomly get the energy of the released photon between k_min and k_max
     based on the Bremsstrahlung intensity plot '''
     
-    # Get the smallest wavelength available equal to the positron momentum
-    
-#    print(energy2Momentum(velocity2Energy(v,m),m))
-#    lambda_min = energy2Wavelength(energy2Momentum(velocity2Energy(v,m),m))
+    # Get the smallest wavelength available equal to the particle momentum
     lambda_min = energy2Wavelength(mag(velocity2Energy(v,m)))
     
     # Get the largest wavelength to be used
@@ -123,13 +167,13 @@ def adjustPositronVelocityFromBremsstrahlung(v,k_min,k_max,m):
     # Get photon energy from wavelength
     photon_energy = wavelength2Energy(l)
     
-    # Get the energy of the positron before photon release
+    # Get the energy of the particle before photon release
     E_tot = velocity2Energy(v,m)
     
-    # Get the new positron energy
+    # Get the new particle energy
     E_new = E_tot - photon_energy
     
-    # Get the new positron momentum scalar
+    # Get the new particle momentum scalar
     p_mag_new = energy2Momentum(E_new,m)
 
     # Get the new velocity scalar    
@@ -142,42 +186,39 @@ def adjustPositronVelocityFromBremsstrahlung(v,k_min,k_max,m):
     
 ## If bremsstrahlung procs, release a photon and update appropriate variables
     
-def bremsstrahlung(v,m,k_min,k_max,brem_array,i,photons_count,
-                   min_detectable_energy,photons_count_min,
-                   photon_energies):
+def bremsstrahlung(v,m,k_min,k_max,i,photon_count,
+                   min_detectable_energy):
+#                   photon_energies
     
     p = beta2Momentum(v/c,m)
-#    print('Mag before loss: %e'%mag(p))
     Energy = momentum2Energy(p,m)
     
-    # The energy of the photon can't be larger thaphoton_energyn the energy of the positron
+    # The energy of the photon can't be larger thaphoton_energyn the energy of the particle
     if k_max > Energy:
         k_max = Energy
     
-    # Readjust the positron velocity from the photon's release
+    # Readjust the particle velocity from the photon's release
     v,photon_energy = \
-        adjustPositronVelocityFromBremsstrahlung(v,k_min,k_max,m)
+        adjustParticleVelocityFromBremsstrahlung(v,k_min,k_max,m)
     
     # Add the location of the bremsstrahlung event
-    brem_array = np.append(brem_array,i)
-    photon_energies = np.vstack((photon_energies,np.array([photon_energy,i])))
+#    brem_array = np.append(brem_array,i)
+#    photon_energies = np.vstack((photon_energies,np.array([photon_energy,i])))
     
     # Update momentum
     p = beta2Momentum(v/c,m)
     
     # Update gamma
     gamma = beta2Gamma(v/c)
-#    print('Mag after loss: %e'%mag(p))
     
     # Note that a new high energy photon was released
     if photon_energy > min_detectable_energy:
-        photons_count_min = photons_count_min + 1
+        photon_count[1] = photon_count[1] + 1
     
     # Note that a new photon was released
-    photons_count = photons_count + 1
+    photon_count[0] = photon_count[0] + 1
     
-    return p, k_max, v, brem_array, photons_count, gamma, \
-            photons_count_min, photon_energies
+    return p,k_max,v,photon_count,gamma,photon_energy
 
 #==============================================================================
 # Contact Functions
@@ -379,15 +420,15 @@ def getMuonMomentumAtDecay():
     
     return m_p
     
-## Return the positron momentum at decay
+## Return the particle momentum at decay
     
-def getPositronMomentumAtDecay(x,theta,m_x_momentum,m,p_range,p_n):
+def getParticleMomentumAtDecay(x,theta,m_x_momentum,m,p_range,p_n):
 
     # Currently assumes x' = y' = z' = 0
 
 #    p_array = np.linspace([p_range[0],p_range[1],p_n])
 
-    # Magnitude of the positron momentum
+    # Magnitude of the particle momentum
     p_tot = p_range[1] - (p_range[1] - p_range[0])*np.random.rand() # (eV/c)
     
     # Convert to momentum vector based on position

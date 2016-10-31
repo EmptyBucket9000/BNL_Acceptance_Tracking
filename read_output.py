@@ -15,7 +15,7 @@ import glob
 def main():
     
     file_name = "output_particles"
-    files = glob.glob("%s/Output/%s.csv"%(os.getcwd(),file_name))
+    files = glob.glob("../%s/Output/%s.csv"%(os.getcwd(),file_name))
     file = files[0]
     i = 0
 
