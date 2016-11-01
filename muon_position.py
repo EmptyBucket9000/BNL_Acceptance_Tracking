@@ -10,18 +10,23 @@ import numpy as np
 import random
     
 def muon(theta_set,theta_min,theta_max,xbar_amp,xbar_0,xphi,
-             sigmaphi,sigma_amp,sigma_0,xbar_ideal,sigma_ideal,theta):
+             sigmaphi,sigma_amp,sigma_0,xbar_ideal,sigma_ideal,theta,
+             xprimemax,m_xlimit):
 
     '''Unless otherwise stated, 3-element arrays are of the form x,y,z.'''
     
-    # 'fit' is the type of function that will fit the muon distribution
-    # density. Curreantly 'Gaussian' is the only option. ([x,y,z])
-    xfit = np.array(["Gaussian","",""])
+    # 'fit' is the type of function (in local coordinates) that will fit the
+    # muon distribution density. Curreantly 'Gaussian' is the only option.
+    # ([x,y])
+    xfit = np.array(["Gaussian","Gaussian"])
     
     # Number of possible muon positions within range, used for building the
     # muon distribution arrays
     xnum = np.array([1000,1000])
     sigmanum = np.array([1000,1000])
+    
+    # Prime array
+    xprime = np.zeros((2))
 
     ''' Minimum/maximum muon position in beam '''
 
@@ -40,11 +45,8 @@ def muon(theta_set,theta_min,theta_max,xbar_amp,xbar_0,xphi,
         xmin[0] = xbar[0]             # (m)
         xmax[0] = xbar[0]             # (m)
     else:
-        xmin[0] = xbar[0] - 41*10**-3 # (m)
-        xmax[0] = xbar[0] + 41*10**-3 # (m)
-    
-    # Muon x, y, z prime values at decay
-#        xprime = np.array([0,0,0])
+        xmin[0] = xbar[0] - m_xlimit # (m)
+        xmax[0] = xbar[0] + m_xlimit # (m)
     
     if theta_set == 0:
         theta = (theta_max - theta_min)*random.random() + \
@@ -73,4 +75,7 @@ def muon(theta_set,theta_min,theta_max,xbar_amp,xbar_0,xphi,
     # Full position vector
     x_pos = np.array([pos_x,pos_y])
     
-    return np.array([x_pos,sigma,theta,xbar])
+    # Muon x, y, z prime values at decay (dx/ds)
+    xprime[0] = cf.getParticleXPrime(xbar[0],pos_x,m_xlimit,xprimemax[0])
+    
+    return np.array([x_pos,sigma,theta,xbar,xprime])

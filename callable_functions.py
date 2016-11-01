@@ -20,16 +20,28 @@ c = 2.99792458*10**8 # (m/s) Speed of light
 
 def forceDueFields(v,B,E,q):
     
-    F = (q*(E + np.cross(v,B)))
+    F = q*(E + np.cross(v,B))
     
     return F
     
 ## Get the electric field based on position
 
-def getElectricField(x):
+def getElectricField(x,B,R,n,loc):
     
-    E = ([0,0,0])
+    if loc == "In":
+        
+        theta = getParticleTheta(x)
+        r = getParticleRadialPosition(x)
+        
+        E_r = ((n*c*mag(B))/R)*(r - R)
+        E_x = E_r*np.cos(theta)
+        E_y = E_r*np.sin(theta)
+        E_z = -((n*c*mag(B))/R)*x[2]
+        E = np.array([E_x,E_y,E_z])/0.41 # /41 added as 'n' is average over all
     
+    else:
+        E = ([0,0,0])
+        
     return E
     
 ## Get the angle of the particle position
@@ -56,11 +68,19 @@ def getParticleRadialPosition(x):
     
 ## Check if pair-production occurs
     
-def ifPairProduction(E,photon_dt):
+def ifPairProduction(E,photon_dt,mat):
     
-    # Probability of pair production as a function of photon energy
-    P = (0.023248 - 9.56748*10**-9 / E**5 + 5.52086*10**-7 / E**4 - 
-         0.0000122004 / E**3 + 0.000139708 / E**2 - 0.00125509 / E)
+    if mat == "Al":
+    
+        # Probability of pair production as a function of photon energy
+        P = (0.023248 - 9.56748*10**-9 / E**5 + 5.52086*10**-7 / E**4 - 
+             0.0000122004 / E**3 + 0.000139708 / E**2 - 0.00125509 / E)
+             
+    elif mat == "Ma":
+    
+        # Probability of pair production as a function of photon energy
+        P = (0.023248 - 9.56748*10**-9 / E**5 + 5.52086*10**-7 / E**4 - 
+             0.0000122004 / E**3 + 0.000139708 / E**2 - 0.00125509 / E)
          
     # Adjust the probability based on actual photon_dt as the above equation
     # assumes photon_dt = 10**-11
@@ -78,8 +98,9 @@ def doPairProduction(E,particle_count,particle_proc,m,v_norm,x,step_counter):
     E_part = E/2                    # (eV) Energy of each particle
     p = np.sqrt(E_part**2 - m**2)   # (eV/c) Momentum of each particle
     beta = momentumScalar2Beta(p,m) # Relativistic beta
-    gamma = beta2Gamma(beta)      # Relativistic gamma
-    v = (p/(gamma*m))*v_norm*c        # (m/s) Velocity vector of each particle
+    gamma = beta2Gamma(beta)        # Relativistic gamma
+    v = ((p*c)/(gamma*m))*v_norm    # (m/s) Velocity vector of each particle
+    print('E: %0.3f'%(velocity2Energy(v,0.510999*10**6)/10**9))
     
     i = 0
     while i < 2:
@@ -88,7 +109,6 @@ def doPairProduction(E,particle_count,particle_proc,m,v_norm,x,step_counter):
                                                   v[0],v[1],v[2],(-1)**i,0,
                                                   step_counter])
         i = i + 1
-    print(p/(10**9))
     return particle_proc,particle_count
 
 ## Check if photon is released between energies k_min and k_max while particle
@@ -147,7 +167,8 @@ def adjustParticleVelocityFromBremsstrahlung(v,k_min,k_max,m):
     based on the Bremsstrahlung intensity plot '''
     
     # Get the smallest wavelength available equal to the particle momentum
-    lambda_min = energy2Wavelength(mag(velocity2Energy(v,m)))
+#    lambda_min = energy2Wavelength(mag(velocity2Energy(v,m)))
+    lambda_min = energy2Wavelength(k_max)
     
     # Get the largest wavelength to be used
     lambda_max = energy2Wavelength(k_min)
@@ -167,11 +188,17 @@ def adjustParticleVelocityFromBremsstrahlung(v,k_min,k_max,m):
     # Get photon energy from wavelength
     photon_energy = wavelength2Energy(l)
     
+#    if photon_energy/10**9 > 3:
+#        print('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+#        print('k_max: %0.3f'%(k_max/10**9))
+#    
     # Get the energy of the particle before photon release
-    E_tot = velocity2Energy(v,m)
+    E_old = velocity2Energy(v,m)
     
     # Get the new particle energy
-    E_new = E_tot - photon_energy
+    E_new = E_old - photon_energy
+    
+#    print('Delta E: %0.5f'%((E_old - E_new)/10**9))
     
     # Get the new particle momentum scalar
     p_mag_new = energy2Momentum(E_new,m)
@@ -188,14 +215,14 @@ def adjustParticleVelocityFromBremsstrahlung(v,k_min,k_max,m):
     
 def bremsstrahlung(v,m,k_min,k_max,i,photon_count,
                    min_detectable_energy):
-#                   photon_energies
+#                   photon_energies    
     
     p = beta2Momentum(v/c,m)
     Energy = momentum2Energy(p,m)
     
     # The energy of the photon can't be larger thaphoton_energyn the energy of the particle
     if k_max > Energy:
-        k_max = Energy
+        k_max = np.copy(Energy)
     
     # Readjust the particle velocity from the photon's release
     v,photon_energy = \
@@ -224,9 +251,47 @@ def bremsstrahlung(v,m,k_min,k_max,i,photon_count,
 # Contact Functions
 #==============================================================================
 
+## Checks if is inside quad for E-field generation
+
+def isInSQuad(x,el_theta,R):
+
+    # Get particle's r and theta positions
+    
+    theta = getParticleTheta(x)
+    r = getParticleRadialPosition(x)
+
+    # Check if particle is inside an electrode
+
+    for row in el_theta:
+        if row[0] > theta and \
+            row[1] < theta and \
+            r < R + 0.05 and \
+            r > R - 0.05:
+                
+            return True
+
+## Checks if is inside quad for E-field generation
+
+def isInDQuad(x,el_theta,R):
+
+    # Get particle's r and theta positions
+    
+    theta = getParticleTheta(x)
+    r = getParticleRadialPosition(x)
+
+    # Check if particle is inside an electrode
+
+    for row in el_theta:
+        if row[0] > theta and \
+            row[1] < theta and \
+            r < R + 0.05 and \
+            r > R - 0.05:
+                
+            return True
+
 ## Checks if inside an element it can pass through
     
-def passthroughElementContact(x,el_rad,el_theta):    
+def passthroughElementContact(x,el_rad,el_theta):
 
     # Get particle's r and theta positions
     
@@ -404,7 +469,18 @@ def momentum2Beta(p,m):
 def mag(v):
     
     return np.sqrt(np.dot(v,v))
-
+    
+## Adding velocities
+    
+def addVelocities(v1,v2):
+    
+    v1mag = mag(v1)
+    v2mag = mag(v2)    
+    
+    new_v = ((v1mag + v2mag) / (1 + (v1mag*v2mag)/(c**2))) * \
+            (v1 + v2) / mag(v1 + v2)
+    
+    return new_v
 #==============================================================================
 # Setting initial conditions
 #==============================================================================
@@ -541,6 +617,32 @@ def getXParticlePositions(xbar,sigma,xmin_init,xmax_init,num,fit):
         particle_position = xbar
     
     return particle_position
+    
+## Return the local muon x' based on distribution function
+    
+def getParticleXPrime(xbar,x,x_max,xprime_max):
+    
+    sigma = (1/3)*x_max
+    
+    xprime_lim = np.sqrt(xprime_max**2*(1-((x - xbar)**2 / x_max**2)))
+    
+    init_dist_range = np.linspace(-xprime_lim,xprime_lim,1000) # mrad
+    dist_range = xbar + init_dist_range
+    
+    dist_weights = (np.sqrt(2*np.pi*sigma**2)**(-1)) * \
+        np.exp(-((init_dist_range-xbar)**2)/(2*sigma**2))
+    
+    # Normalize the weights to give a total probability of 1
+    dist_weights = dist_weights/sum(dist_weights)
+    
+    # Randomly choose a position within allowed range
+    xprime = np.random.choice(dist_range, 1, p=dist_weights)
+    
+    # Convert from single-element array to float and choose randomly whether
+    # xprime is positive or negative
+    xprime = xprime[0] * (-1)**(round(np.random.random()))
+    
+    return xprime
     
 ## Return the local muon y-position based on distribution function
     

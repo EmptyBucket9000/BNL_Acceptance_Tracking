@@ -16,27 +16,7 @@ import plot_geometries as pg
 import csv
 
 """
-See readme.md for information.
-Two coordinate systems are used, global and local:
- 
-    Global is the entire ring in 3-dimensions cartesian coordinates where the
-    origin is the center of the ring and the z-direction indicates 'up' and
-    'down', from the perspective of a person standing in the ring, and is
-    parallel to the y-direction in the local coordinate system.
-     
-    Local is a 2-dimensional x,y cartesian coordinate where the origin is the
-    beam centroid, the negative x-direction points towards the center of the
-    ring and the y-direction is parallel to the z-direction in the global
-    system. Local is primarily used in determining particle initial conditions,
-    i.e. the conditions describing the muon at decay
- 
-Variable names formatted 'm_*' are for muons, all others are for particles
- 
-The muon density function is Gaussian, following:
-    (np.sqrt(2*np.pi*sigma**2)**(-1))*np.exp(-((x-xbar)**2)/(2*sigma**2))
- 
-Magic momentum is set to 3.09435 GeV/c giving a magnetic field of 1.4513 T
-for a radius of 7.112 m.
+See README.md for information.
 
 """
 
@@ -52,7 +32,7 @@ def main():
 
     # Output
     
-    print_text = 1              # Set to 1 to print output text, 0 for none
+#    print_text = 1              # Set to 1 to print output text, 0 for none
     make_plots = 1              # Set to 1 to display plots
     save_plots = 0              # Set to 1 to save plots as images
     save_output = 1             # Set to 1 to save data output to csv
@@ -62,21 +42,21 @@ def main():
     # ideal x, set the second element to 1 for ideal y. Ideal gives no
     # oscillations for that variable.
 
-    m_xbar_ideal = np.array([1,1])      # Ideal mean position
+    m_xbar_ideal = np.array([0,1])      # Ideal mean position
     m_sigma_ideal = np.array([1,1])     # Ideal beam width
         
     m_theta_set = 1                     # 1, use m_theta below, 0 random
     
     N = 1                              # Number of muons in beam
-    steps = 2*10**4                       # Nnumber of steps for integration
+    steps = 2*10**5                       # Nnumber of steps for integration
     dt = 10**-12                        # Timestep for integration
     
     p_range = np.array([.2,3.09435])*10**9 # (eV/c) Possible particle momentums
-#    p_range = np.array([0.6,0.6])*10**9
+#    p_range = np.array([3.09435,3.09435])*10**9
     p_n = 1000                  # Number of possilbe values in range
     
     if m_theta_set == 1:
-        m_theta = 2.5*np.pi/8   # (rad) Muon azimuth. position in global coords
+        m_theta = 2.3*np.pi/8   # (rad) Muon azimuth. position in global coords
     else:
         m_theta = -99
         
@@ -103,6 +83,12 @@ def main():
     # Value around which x_sigma oscillates
     m_sigma_0 = np.array([15,0])*10**-3
     
+    # Maximum prime values
+    xprimemax = np.array([4.5,2.5])
+    
+    # How far from 0 does the beam reach (m)
+    m_xlimit = 41*10**-3
+    
     ''' Permanent constants '''
     
     q = 1                                   # (e) Particle charge
@@ -125,8 +111,14 @@ def main():
                               "Starting Momentum (GeV/c)",
                               "Ending Momentum (GeV/c)",
                               "Delta Momentum (GeV/c)",
-                              "Steps Inside Matter",
-                              "Distance Inside matter (cm)",
+                              "Steps Inside Short Quad",
+                              "Distance Inside Short Quad (cm)",
+                              "Steps Inside Long Quad",
+                              "Distance Inside Long Quad (cm)",
+                              "Steps Inside Standoff Plate",
+                              "Distance Inside Standoff Plate (cm)",
+                              "Steps Inside HV Standoff",
+                              "Distance Inside HV Standoff (cm)",
                               "Total # of Photons Released",
                               "# of Detectable Photons Released",
                               "Kill Timestamp"]])
@@ -150,16 +142,16 @@ def main():
     
         part_type = 1
     
-        m_x,m_sigma,m_theta,m_xbar = \
+        m_x,m_sigma,m_theta,m_xbar,m_xprime = \
             mp.muon(m_theta_set,m_theta_min,m_theta_max,m_xbar_amp,m_xbar_0,
                     m_xphi,m_sigmaphi,m_sigma_amp,m_sigma_0,m_xbar_ideal,
-                    m_sigma_ideal,m_theta)
+                    m_sigma_ideal,m_theta,xprimemax,m_xlimit)
         
     
         # Run the code where everything happens
         particle_matrix = \
-            run(geo_pack,m_x,m_sigma,m_theta,m_xbar,m,c,photon_matrix,
-                particle_matrix,print_text,make_plots,save_plots,save_output,
+            run(geo_pack,m_x,m_sigma,m_theta,m_xbar,m_xprime,m,c,photon_matrix,
+                particle_matrix,make_plots,save_plots,save_output,
                 N,steps,dt,p_range,p_n,q,B,part_type)
                 
         print("Percent complete: %0.1f%%"%(muon_number*(100/N)),
@@ -173,8 +165,8 @@ def main():
 #==============================================================================
 #==============================================================================
 
-def run(geo_pack,m_x,m_sigma,m_theta,m_xbar,m,c,photon_matrix,
-        particle_matrix,print_text,make_plots,save_plots,save_output,N,steps,dt,
+def run(geo_pack,m_x,m_sigma,m_theta,m_xbar,m_xprime,m,c,photon_matrix,
+        particle_matrix,make_plots,save_plots,save_output,N,steps,dt,
         p_range,p_n,q,B,part_type):
     
 #==============================================================================
@@ -209,7 +201,7 @@ def run(geo_pack,m_x,m_sigma,m_theta,m_xbar,m,c,photon_matrix,
         x[0,1] = r*np.sin(m_theta)            # (m) y-position
         x[0,2] = m_x[1]                       # (m) z-position
         
-        # Particle momentum at decay
+        # Particle velocity at decay
         v = np.zeros((steps,3))                 # (m/s) Initialize velocity
         
         # (eV/c) Momentum
@@ -218,15 +210,24 @@ def run(geo_pack,m_x,m_sigma,m_theta,m_xbar,m,c,photon_matrix,
         
         beta = cf.momentum2Beta(p,m)            # () Relativistic beta
         v[0] = beta*c                           # (m/s) Initial velocity
+    
+        # Convert dx/ds to dx/dt
+        m_xprime[0] = m_xprime[0] * cf.mag(v[0])/1000
         
-        particle_pos = np.zeros((50,steps,3))
+        xprime = np.zeros((3))
+        xprime[0] = m_xprime[0]*np.cos(m_theta)
+        xprime[1] = m_xprime[0]*np.sin(m_theta)
+        
+        v[0] = cf.addVelocities(v[0],xprime)
+        
+        particle_pos = np.zeros((500,steps,3))
         photon_pos = np.zeros((photon_steps,3))
-        particle_proc = np.zeros((50,9))
-        particle_proc_old = np.zeros((50,9))
+        particle_proc = np.zeros((500,9))
+        particle_proc_old = np.zeros((500,9))
         particle_proc[0] = np.array([x[0,0],x[0,1],x[0,2],
                                     v[0,0],v[0,1],v[0,2],1,0,0])
-        photon_proc = np.zeros((5000,11))
-        photon_proc_old = np.zeros((5000,11))
+        photon_proc = np.zeros((500,11))
+        photon_proc_old = np.zeros((500,11))
     
 #==============================================================================
 #   Initialize misc. variables
@@ -244,20 +245,20 @@ def run(geo_pack,m_x,m_sigma,m_theta,m_xbar,m,c,photon_matrix,
     
     particle_row_index = 0
     photon_row_index = 0
-    proc_change = 1
     kk = 0
 #    while particle_proc_change == 1 or photon_proc_change == 1:
-    while proc_change == 1:
+    while 1 < 2:
         
         particle_proc_old = np.copy(particle_proc)
             
         for row in particle_proc:
         
             if (np.any(row != 0)) and row[7] == 0:
+                print('particle #: %d'%particle_row_index)
                 particle_pos,particle_matrix,particle_proc,photon_count,\
                     photon_proc = \
                     pt.track(particle_pos,particle_matrix,particle_proc,
-                             photon_pos,photon_proc,dt,steps,m,B,q,k_min,
+                             photon_pos,photon_proc,dt,steps,m,B,k_min,
                              k_max,geo_pack,particle_count,photon_count,
                              particle_row_index)
                              
@@ -271,17 +272,21 @@ def run(geo_pack,m_x,m_sigma,m_theta,m_xbar,m,c,photon_matrix,
         for row in photon_proc:
             
             if (np.any(row != 0)) and row[9] == 0:
+                print('photon #: %d'%photon_row_index)
                 particle_pos,particle_matrix,particle_proc,photon_proc, \
                     particle_count,photon_matrix = \
                     pht.track(particle_pos,particle_matrix,particle_proc,
                               photon_pos,photon_proc,photon_matrix,dt,steps,
-                              m,B,q,k_min,k_max,geo_pack,particle_count,
+                              m,B,k_min,k_max,geo_pack,particle_count,
                               photon_steps,photon_dt,photon_row_index)
                              
             photon_row_index = photon_row_index + 1
+            
         if np.array_equal(photon_proc,photon_proc_old) and \
             np.array_equal(particle_proc,particle_proc_old):
-            proc_change = 0
+            break
+        
+        
         kk = kk + 1
         particle_row_index = 0
         photon_row_index = 0
@@ -323,21 +328,21 @@ def run(geo_pack,m_x,m_sigma,m_theta,m_xbar,m,c,photon_matrix,
             
             x = particle[0:final_index:1]
             
-            if print_text == 1:
-                
-                # Print what happened to the particle
-                print('Particle')
-#                np.set_printoptions(formatter={'float': lambda x: format(x, '6.3E')})
-                print('Starting Momentum: %0.6f GeV/c'%float(particle_matrix[part_index,7]))
-                print('Kill Event: %s'%particle_matrix[part_index,2])
-                print('Final Momentum: %0.6f GeV/c'%float(particle_matrix[part_index,8]))
-                print('Photons Released: %d'%int(particle_matrix[part_index,12]))
-    #            print('Photon Energies:')
-    #            print(photon_energies[:,0])
+#            if print_text == 1:
+#                
+#                # Print what happened to the particle
+#                print('Particle')
+##                np.set_printoptions(formatter={'float': lambda x: format(x, '6.3E')})
+#                print('Starting Momentum: %0.6f GeV/c'%float(particle_matrix[part_index,7]))
+#                print('Kill Event: %s'%particle_matrix[part_index,2])
+#                print('Final Momentum: %0.6f GeV/c'%float(particle_matrix[part_index,8]))
+#                print('Photons Released: %d'%int(particle_matrix[part_index,12]))
+#    #            print('Photon Energies:')
+#    #            print(photon_energies[:,0])
                 
             part_index = part_index + 1
                 
-            ax.plot(x[:,0],x[:,1], label='Particle Track',lw = 1)
+            ax.plot(x[:,0],x[:,1], label='Particle Track',lw = 0.5)
             
         # Add Bremsstrahlung photons if they were created
             
@@ -383,8 +388,8 @@ def run(geo_pack,m_x,m_sigma,m_theta,m_xbar,m,c,photon_matrix,
         plt.axis('equal') # Prevents a skewed look
         plt.xlim(min(x[:,0]-0.1),max(x[:,0]+0.2))
         plt.ylim(min(x[:,1]-1),max(x[:,1]+1))
-#        plt.xlim(4.5,5)
-#        plt.ylim(4.5,5)
+#        plt.xlim(5,5.1)
+#        plt.ylim(5,5.12)
         plt.grid()
     
         # Show plot
