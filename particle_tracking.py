@@ -10,7 +10,7 @@ import callable_functions as cf
 
 def track(particle_pos,particle_matrix,particle_proc,photon_pos,
                  photon_proc,dt,steps,m,B,k_min,k_max,geo_pack,
-                 particle_count,photon_count,particle_row_index):
+                 particle_count,photon_count,particle_row_index,muon_number):
 
     c = 2.99792458*10**8                    # (m/s) Speed of light
     
@@ -126,12 +126,6 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
         dv = (dv1 + 2*dv2 + 2*dv3 + dv4) / 6
         
         v[i+1] = v[i] + dv
-#        gamma_x = 1 / np.sqrt(1 - v[i,0]**2/c**2)
-#        v[i+1,0] = (v[i,0] + dv[0]) / (1 + (v[i,0]*dv[0])/c**2)
-#        v[i+1,1] = (v[i,1]) / ((1 + (v[i,0]*dv[0])/c**2)*gamma_x)
-        
-#        if cf.mag(v[i+1]) > c:
-#            print('fdsfasfdsafds')
         
         # New position vector
         x[i+1] = x[i] + dt * v[i+1]
@@ -325,28 +319,28 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
             kill_event_text = "Into the Iron"
             break
         
+    print(kill_event_text)
+        
     p_init_mag = cf.mag(p_init)
     p_end_mag = cf.mag(cf.beta2Momentum(v[i]/c,m))
     particle_pos[particle_row_index] = np.copy(x)
     charge = particle_proc[particle_row_index,6]
         
-    particle_matrix = np.append(particle_matrix,
-                         [[particle_row_index,i,
-                           '%s'%kill_event_text,charge,
-                           '%0.3f'%(x[0,0]*10**3),
-                           '%0.3f'%(x[0,1]*10**3),
-                           '%0.3f'%(x[0,2]*10**3),
-                            '%0.7f'%(p_init_mag/10**9),
-                            '%0.7f'%(p_end_mag/10**9),
-                            '%0.7f'%((p_end_mag - p_init_mag)/10**9),
-                            steps_inside[0],d_matter[0]*100,
-                            steps_inside[1],d_matter[1]*100,
-                            steps_inside[2],d_matter[2]*100,
-                            steps_inside[3],d_matter[3]*100,
-                            photon_count[0],
-                            photon_count[1],'%5e'%(step_counter*dt)]],
-                            axis=0
-                            )
+    particle_matrix[particle_row_index + 1] = np.array(
+                         [particle_row_index,i,
+                          '%s'%kill_event_text,charge,
+                          '%0.3f'%(x[0,0]*10**3),
+                          '%0.3f'%(x[0,1]*10**3),
+                          '%0.3f'%(x[0,2]*10**3),
+                          '%0.7f'%(p_init_mag/10**9),
+                          '%0.7f'%(p_end_mag/10**9),
+                          '%0.7f'%((p_end_mag - p_init_mag)/10**9),
+                          steps_inside[0],d_matter[0]*100,
+                          steps_inside[1],d_matter[1]*100,
+                          steps_inside[2],d_matter[2]*100,
+                          steps_inside[3],d_matter[3]*100,
+                          photon_count[0],
+                          photon_count[1],'%5e'%(step_counter*dt)])
     particle_count = particle_count + 1
     particle_proc[particle_row_index,7] = 1
                             

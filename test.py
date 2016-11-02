@@ -7,49 +7,75 @@ Created on Tue Oct 18 08:00:03 2016
 
 import numpy as np
 import matplotlib.pyplot as plt
-
-#N = 100000
-#i = 0
-#val = np.zeros((N))
-#x = np.linspace(0,1,100000)
-#
-#while i < N:
-#    
-#    val[i] = np.random.random()
-#    i = i + 1
-#    
-#plt.plot(x,val,'.',markersize=0.1)
+import csv
 
 def main():
 
-    lambda_min = energy2Wavelength(3*10**9)
+    file_name = "EndOfTracking_phase_space.csv"
+    i = 0
+
+    with open(file_name, "rt") as inf:
+        reader = csv.reader(inf, delimiter=' ')
+        next(reader, None)  # skip the headers
     
-    # Get the largest wavelength to be used
-    lambda_max = energy2Wavelength(0.0005*10**9)
+        stuff = list(reader)
+        N = len(stuff)
+        print(N)
+        m_x = np.zeros((N,2))
+        m_xprime = np.zeros((N,2))
         
-    # Range of possible energies
-    dist_range = np.linspace(lambda_min,lambda_max,10000) # (m)
+        xprime_min = 0.0025989
+        yprime_min = 0.0014243
+        
+        xprime_max = 0.0025989
+        yprime_max = 0.0014243
+        
+        for row in stuff:
+            m_x[i,0] = row[0]                
+            m_xprime[i,0] = row[1]
+            
+            if np.abs(m_xprime[i,0]) < xprime_min:
+                xprime_min = np.copy(np.abs(m_xprime[i,0]))
+            
+            if np.abs(m_xprime[i,0]) > xprime_max:
+                xprime_max = np.copy(np.abs(m_xprime[i,0]))
+                
+            m_x[i,1] = row[2]                
+            m_xprime[i,1] = row[3]
+            
+            if np.abs(m_xprime[i,1]) < yprime_min:
+                yprime_min = np.copy(np.abs(m_xprime[i,1]))
+            
+            if np.abs(m_xprime[i,1]) > yprime_max:
+                yprime_max = np.copy(np.abs(m_xprime[i,1]))
+                
+            i = i + 1
+            
+    print('xprime min: %0.8f'%xprime_min)
+    print('xprime max: %0.8f'%xprime_max)
     
-    # Weights for the random mean position based on the distribution    
-    dist_weights1 = (dist_range/lambda_min - 1)*(1/dist_range**2)
+    print('yprime min: %0.8f'%yprime_min)
+    print('yprime max: %0.8f'%yprime_max)
     
-    # Normalize the weights to give a total probability of 1
-    dist_weights = dist_weights1/sum(dist_weights1)
+    plt.figure(1)
+    ax = plt.subplot(1,1,1)
     
-    # Randomly choose a mean within allowed range
-    l = np.random.choice(dist_range, 1, p=dist_weights)[0]
-
-    print('Wavelength: %e'%l)
-    print('Energy: %0.3f'%(1240/(l*10**9)))
+    ax.plot(m_x[:,0],m_xprime[:,0],'.')
+    ax.plot(m_x[:,1],m_xprime[:,1],'.')
     
-    plt.plot(dist_range,dist_weights1)
-
-
-def energy2Wavelength(E):
+    plt.figure(2)
+    ax = plt.subplot(1,1,1)
     
-    l = 1240/E
+    ax.hist(m_xprime[:,0],30)
+    ax.hist(m_xprime[:,1],30)
     
-    return l
+    plt.figure(3)
+    ax = plt.subplot(1,1,1)
+    
+    ax.hist(m_x[:,0],30)
+    ax.hist(m_x[:,1],30)
     
     
-main()
+if __name__ == '__main__':
+    
+    main()

@@ -498,7 +498,7 @@ def getMuonMomentumAtDecay():
     
 ## Return the particle momentum at decay
     
-def getParticleMomentumAtDecay(x,theta,m_x_momentum,m,p_range,p_n):
+def getParticleMomentumAtDecay(theta,p_range):
 
     # Currently assumes x' = y' = z' = 0
 

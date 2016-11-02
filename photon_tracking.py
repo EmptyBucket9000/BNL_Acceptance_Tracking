@@ -66,19 +66,19 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
         # Calorimeter front contact
         
         if cf.noPassthroughElementContact(x[i],cal_rad,cal_theta):
-            photon_kill_event_text = "Photon Calorimeter Contact"
+            photon_kill_event_text = "Calorimeter Contact"
             break
 
         # Calorimeter top
         
         if cf.noPassthroughElementContact(x[i],cal_rad,cal_box_theta):
-            photon_kill_event_text = "Photon Calorimeter Top Contact"
+            photon_kill_event_text = "Calorimeter Top Contact"
             break
         
         # Outer radius limit
         
         if cf.outerLimit(x[i],R + 0.2):
-            photon_kill_event_text = "Photon Heading Out"
+            photon_kill_event_text = "Heading Out"
             break
 
         if x[i,2] < so_z_max:
@@ -129,12 +129,10 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
     photon_proc[photon_row_index,8] = i
     photon_proc[photon_row_index,9] = 1
     
-    photon_matrix = np.append(photon_matrix,
-                         [[photon_row_index,i,photon_kill_event_text,
-                           x[0,0],x[0,1],x[0,2],photon_energy/10**9,steps_inside,
-                           steps_inside*c,step_counter*photon_dt]],
-                            axis=0
-                            )
+    photon_matrix[photon_row_index + 1] = np.array(
+                         [photon_row_index,i,photon_kill_event_text,
+                          x[0,0],x[0,1],x[0,2],photon_energy/10**9,
+                          steps_inside,steps_inside*c,step_counter*photon_dt])
     
     return particle_pos,particle_matrix,particle_proc,photon_proc, \
            particle_count,photon_matrix
