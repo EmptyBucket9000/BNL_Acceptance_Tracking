@@ -60,43 +60,43 @@ def geo():
     cal_rad = np.array([R_i,R_i+cal_len]) # (m)
     
     ''' HV Standoff '''
-    
+    rot = 9.23+0.48
     so_z_max = 3.8*10**-3       # (m) Top of standoff
     so_length = 7.62*10**-3     # (m) Width of standoff
     so_depth = 27.5*10**-3      # (m) Standoff depth
     so_rad_start = 50.5*10**-3  # (m) Starting distance in from R
     so_rad = np.array([R - (so_rad_start + so_depth), R - so_rad_start])
-    so_theta_start_base = np.array([2.48,8.48,13.48,15.48,21.48,27.23])
-    so_theta_start = np.array([2.48,8.48,13.48,15.48,21.48,27.23])
+    so_theta_start_base = np.array([2,8,13,15,21,26.75,32,38,43])+rot
+    so_theta_start = np.array([2,8,13,15,21,26.75,32,38,43])+rot
         
     i = 1
-    while i < 12:
+    while i < 5:
         so_theta_start = np.concatenate((
-            so_theta_start, so_theta_start_base + i*30
+            so_theta_start, so_theta_start_base + i*90
         ))
         i = i + 1
-    so_theta_start = so_theta_start*np.pi/180
+    so_theta_start = so_theta_start*np.pi/180 + so_length/(2*(R-so_rad_start))
     so_theta_end = so_theta_start - so_length/(R-so_rad_start)
     
     # Theta position [theta_min, theta_max]
-    so_theta = np.column_stack((so_theta_start,so_theta_end))
+    so_theta = np.column_stack((so_theta_start,so_theta_end))    
     
     ''' Support plates '''
-    
+    rot = 9.23
     sp_length = 33*10**-3        # (m) Support plate width
     sp_depth = 1.7*10**-3        # (m) Support plate thickness
     sp_rad_start = 78*10**-3     # (m) Distance in from R
     sp_rad = np.array([R - (sp_rad_start + sp_depth), R - sp_rad_start]) # (m)
-    sp_theta_start_base = np.array([2.48,8.48,13.48,15.48,21.48,27.23])+0.1
-    sp_theta_start = np.array([2.48,8.48,13.48,15.48,21.48,27.23])+0.1
-        
+    sp_theta_start_base = np.array([2.48,8.48,13.48,15.48,21.48,27.23])+rot
+    sp_theta_start = np.array([2.48,8.48,13.48,15.48,21.48,27.23])+rot
+    
     i = 1
     while i < 12:
         sp_theta_start = np.concatenate((
             sp_theta_start, sp_theta_start_base + i*30
         ))
         i = i + 1
-    sp_theta_start = sp_theta_start*np.pi/180
+    sp_theta_start = sp_theta_start*np.pi/180 + sp_length/(2*(R-sp_rad_start))
     sp_theta_end = sp_theta_start - sp_length/(R-sp_rad_start)
     
     # Theta position [theta_min, theta_max]
@@ -109,10 +109,10 @@ def geo():
     qel_rad_start = 50*10**-3   # (m) Starting distance in from R
     
     ''' Single-quad electrodes (without edge curls) '''
-    
+    rot = 3
     sqel_rad = np.array([R - (qel_rad_start + qel_depth),R - qel_rad_start])
-    sqel_theta_base = 90 - np.array([31.89,44.89])-4
-    sqel_theta = 90 - np.array([31.89,44.89])-4
+    sqel_theta_base = 90 - np.array([33.39,46.39])-rot
+    sqel_theta = 90 - np.array([33.39,46.39])-rot
     
     i = 1
     while i < 4:

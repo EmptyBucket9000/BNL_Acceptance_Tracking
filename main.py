@@ -33,17 +33,17 @@ def main():
     # Output
     
 #    print_text = 1              # Set to 1 to print output text, 0 for none
-    make_plots = 1              # Set to 1 to display plots
+    make_plots = 0              # Set to 1 to display plots
     save_plots = 0              # Set to 1 to save plots as images
     save_output = 1             # Set to 1 to save data output to csv
 
     # Name of csv containing muon data    
     file_name = "EndOfTracking_phase_space.csv"
         
-    m_theta_set = 1                     # 1, use m_theta below, 0 random
+    m_theta_set = 0                     # 1, use m_theta below, 0 random
     
-    N = 1                              # Number of muons in beam
-    steps = 2*10**5                       # Nnumber of steps for integration
+    N = 5171                              # Number of muons in beam
+    steps = 2*10**5                     # Nnumber of steps for integration
     dt = 10**-12                        # Timestep for integration
     
     p_magic = 3.09435*10**9
@@ -52,6 +52,8 @@ def main():
         m_theta = 2.3*np.pi/8   # (rad) Muon azimuth. position in global coords
     else:
         m_theta = -99
+        
+    m_theta_array = np.array([0,2*np.pi])
     
     ''' Permanent constants '''
     
@@ -67,10 +69,13 @@ def main():
     
     muon_number = 0         # Used as a counter for multiple particles
     
-    particle_matrix_full = np.zeros((N,500,21),dtype=object)
-    photon_matrix_full = np.zeros((N,500,10),dtype=object)
-        
-    m_x_list,m_p_list = md.muon(N,file_name,p_magic)
+    # Estimated maximum # of particles and photons that coule be created from
+    # each muon decay
+    N_particles = 50
+    N_photons = 50
+    
+#    particle_matrix_full = np.zeros((N,N_particles,21),dtype=object)
+#    photon_matrix_full = np.zeros((N,N_photons,10),dtype=object)
     
 #==============================================================================
 #   Run the code!!
@@ -78,11 +83,14 @@ def main():
                              
     while muon_number < N:
         
+        m_x_list,m_p_list,m_theta = \
+            md.muon(N,file_name,p_magic,m_theta_array,m_theta_set)
+        
         m_x = m_x_list[muon_number]
         m_p = m_p_list[muon_number]
         
-        particle_matrix = np.zeros((500,21),dtype=object)
-        photon_matrix = np.zeros((500,10),dtype=object)
+        particle_matrix = np.zeros((N_particles,29),dtype=object)
+        photon_matrix = np.zeros((N_photons,11),dtype=object)
                          
         # Output for each particle
         particle_matrix[0] = np.array(["Particle #","Steps","Kill Event",
@@ -95,14 +103,21 @@ def main():
                                      "Delta Momentum (GeV/c)",
                                      "Steps Inside Short Quad",
                                      "Distance Inside Short Quad (cm)",
+                                     "Total # of Photons Released",
+                                     "# of Detectable Photons Released",
                                      "Steps Inside Long Quad",
                                      "Distance Inside Long Quad (cm)",
+                                     "Total # of Photons Released",
+                                     "# of Detectable Photons Released",
                                      "Steps Inside Standoff Plate",
                                      "Distance Inside Standoff Plate (cm)",
+                                     "Total # of Photons Released",
+                                     "# of Detectable Photons Released",
                                      "Steps Inside HV Standoff",
                                      "Distance Inside HV Standoff (cm)",
                                      "Total # of Photons Released",
                                      "# of Detectable Photons Released",
+                                     "dt","Pair Produced",
                                      "Kill Timestamp"])
               
         # Output for each photon
@@ -112,6 +127,7 @@ def main():
                                    "Starting Global z-Position",
                                    "Energy (GeV)","Steps Inside Matter",
                                    "Distance Inside Matter (cm)",
+                                   "dt",
                                    "Kill Timestamp"])
     
         # Set all initial local muon variables
@@ -121,14 +137,14 @@ def main():
         particle_matrix,photon_matrix = \
             run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
                 particle_matrix,make_plots,save_plots,save_output,
-                N,steps,dt,q,B,part_type,muon_number)
+                N,steps,dt,q,B,part_type,muon_number,N_particles,N_photons)
               
-        particle_matrix_full[muon_number] = particle_matrix
-        photon_matrix_full[muon_number] = photon_matrix
+#        particle_matrix_full[muon_number] = particle_matrix
+#        photon_matrix_full[muon_number] = photon_matrix
                 
         muon_number = muon_number + 1
                 
-        print("Percent complete: %0.1f%%"%(muon_number*(100/N)),
+        print("Percent complete: %0.3f%%"%(muon_number*(100/N)),
               end="\r")
 
 #==============================================================================
@@ -139,7 +155,7 @@ def main():
 
 def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
         particle_matrix,make_plots,save_plots,save_output,
-        N,steps,dt,q,B,part_type,muon_number):
+        N,steps,dt,q,B,part_type,muon_number,N_particles,N_photons):
     
 #==============================================================================
 #   Initialization and setting variables
@@ -172,8 +188,8 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
         x[0,0] = r*np.cos(m_theta)            # (m) x-position
         x[0,1] = r*np.sin(m_theta)            # (m) y-position
         x[0,2] = m_x[1]                       # (m) z-position
-        
-        p_range = np.array([0.2,m_p[2]])
+        p_range = np.array([0.2*10**9,m_p[2]])
+#        p_range = np.array([1.2,1.2])*10**9
         
         p_s = cf.getParticleMomentumAtDecay(m_theta,p_range)
         
@@ -188,14 +204,14 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
         beta = cf.momentum2Beta(p,m)            # () Relativistic beta
         v[0] = beta*c                           # (m/s) Initial velocity
         
-        particle_pos = np.zeros((500,steps,3))
+        particle_pos = np.zeros((N_particles,steps,3))
         photon_pos = np.zeros((photon_steps,3))
-        particle_proc = np.zeros((500,9))
-        particle_proc_old = np.zeros((500,9))
+        particle_proc = np.zeros((N_particles,10))
+        particle_proc_old = np.zeros((N_particles,10))
         particle_proc[0] = np.array([x[0,0],x[0,1],x[0,2],
-                                    v[0,0],v[0,1],v[0,2],1,0,0])
-        photon_proc = np.zeros((500,11))
-        photon_proc_old = np.zeros((500,11))
+                                    v[0,0],v[0,1],v[0,2],1,0,0,0])
+        photon_proc = np.zeros((N_photons,11))
+        photon_proc_old = np.zeros((N_photons,11))
         
         part_type = 0
     
@@ -223,7 +239,7 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
         for row in particle_proc:
         
             if (np.any(row != 0)) and row[7] == 0:
-                print('particle #: %d'%particle_row_index)
+#                print('particle #: %d'%particle_row_index)
                 particle_pos,particle_matrix,particle_proc,photon_count,\
                     photon_proc = \
                     pt.track(particle_pos,particle_matrix,particle_proc,
@@ -238,7 +254,7 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
         for row in photon_proc:
             
             if (np.any(row != 0)) and row[9] == 0:
-                print('photon #: %d'%photon_row_index)
+#                print('photon #: %d'%photon_row_index)
                 particle_pos,particle_matrix,particle_proc,photon_proc, \
                     particle_count,photon_matrix = \
                     pht.track(particle_pos,particle_matrix,particle_proc,
@@ -290,12 +306,9 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
     
         for particle in particle_pos:
             
-            final_index = int(particle_matrix[part_index,1])
-            
-            x = particle[0:final_index:1]
-                
-            part_index = part_index + 1
-                
+            final_index = int(particle_matrix[part_index,1])            
+            x = particle[0:final_index:1]                
+            part_index = part_index + 1                
             ax.plot(x[:,0],x[:,1], label='Particle Track',lw = 0.5)
             
         # Add Bremsstrahlung photons if they were created
@@ -304,18 +317,6 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
             x_end = photon[0]+photon[3]*c*photon[8]*photon_dt
             y_end = photon[1]+photon[4]*c*photon[8]*photon_dt
             ax.plot([photon[0],x_end],[photon[1],y_end],'r-')
-            
-#        if photon_count_min > 0:
-#            
-#            k = 0
-#            
-#            while k < photon_count_min:
-#                
-#                temp_x = photon_x[k]
-#                temp_x = temp_x[~np.all(temp_x == 0, axis=1)]
-#                ax.plot(temp_x[:,0],temp_x[:,1],'r')
-#                
-#                k = k + 1
         
         # Used in adding a text box to the plots
         props = dict(boxstyle='square', facecolor='wheat', alpha=0.8)
@@ -331,44 +332,44 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
 
         # Save the plot(s) if save_plots == 1
 
-        if save_plots == 1:
-            plt.savefig('Output/Images/plot.png', bbox_inches='tight', dpi=300)
-
         # Add legend
 #        ax.legend()
 
         # Set axes limits based on min/max particle positions
 
         plt.axis('equal') # Prevents a skewed look
-        plt.xlim(min(x[:,0]-0.1),max(x[:,0]+0.2))
-        plt.ylim(min(x[:,1]-1),max(x[:,1]+1))
-#        plt.xlim(5,5.1)
-#        plt.ylim(5,5.12)
+#        plt.xlim(min(x[:,0]-0.1),max(x[:,0]+0.2))
+#        plt.ylim(min(x[:,1]-1),max(x[:,1]+1))
+#        plt.xlim(4.8,5.2)
+#        plt.ylim(4.7,5.1)
         plt.grid()
+
+        if save_plots == 1:
+            plt.savefig('../Output/Images/plot.png', bbox_inches='tight', dpi=500)
     
         # Show plot
         plt.show()
         
-        if save_output == 1:
-            
-            particle_matrix_print = \
-                particle_matrix[np.any(particle_matrix != 0,axis=1)]
-            photon_matrix_print = \
-                particle_matrix[np.any(photon_matrix != 0,axis=1)]
-    
-            output_dir = "../Output/"
-            path = output_dir + "particle_matrix_%d.csv"%muon_number
-            with open(path, "w", newline='') as csv_file:
-                writer = csv.writer(csv_file, delimiter=',')
-                for row in particle_matrix_print:
-                    writer.writerow(row)
-    
-            output_dir = "../Output/"
-            path = output_dir + "photon_matrix_%d.csv"%muon_number
-            with open(path, "w", newline='') as csv_file:
-                writer = csv.writer(csv_file, delimiter=',')
-                for row in photon_matrix_print:
-                    writer.writerow(row)
+    if save_output == 1:
+        
+        particle_matrix_print = \
+            particle_matrix[np.any(particle_matrix != 0,axis=1)]
+        photon_matrix_print = \
+            photon_matrix[np.any(photon_matrix != 0,axis=1)]
+
+        output_dir = "../Output/Single_Files/"
+        path = output_dir + "particle_matrix_%d.csv"%muon_number
+        with open(path, "w", newline='') as csv_file:
+            writer = csv.writer(csv_file, delimiter=',')
+            for row in particle_matrix_print:
+                writer.writerow(row)
+
+        output_dir = "../Output/Single_Files/"
+        path = output_dir + "photon_matrix_%d.csv"%muon_number
+        with open(path, "w", newline='') as csv_file:
+            writer = csv.writer(csv_file, delimiter=',')
+            for row in photon_matrix_print:
+                writer.writerow(row)
     
     return particle_matrix,photon_matrix
         

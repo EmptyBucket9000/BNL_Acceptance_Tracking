@@ -70,21 +70,49 @@ def getParticleRadialPosition(x):
     
 def ifPairProduction(E,photon_dt,mat):
     
+    # Divide energy by 10**9 as probability is a function of GeV
+    E = E/10**9
+    
     if mat == "Al":
+        # Probability of nucleus pair production as a function of photon energy
+        P_n = (0.023248 - 9.56748*10**-9 / E**5 + 5.52086*10**-7 / E**4 - 
+             0.0000122004 / E**3 + 0.000139708 / E**2 - 0.00125509 / E)
+             
+        # Probability of electron pair production
+        P_e = (0.00211641 - 1.89942*10**-9 / E**5 + 1.12441*10**-7 / E**4 -
+            2.55265*10**-6 / E**3 + 0.0000290766 / E**2 - 0.000213793 / E)
+            
+        P = P_n + P_e
+             
+    elif mat == "Br":
     
         # Probability of pair production as a function of photon energy
-        P = (0.023248 - 9.56748*10**-9 / E**5 + 5.52086*10**-7 / E**4 - 
+        P_n = (0.023248 - 9.56748*10**-9 / E**5 + 5.52086*10**-7 / E**4 - 
              0.0000122004 / E**3 + 0.000139708 / E**2 - 0.00125509 / E)
+             
+        # Probability of electron pair production
+        P_e = (0.00211641 - 1.89942*10**-9 / E**5 + 1.12441*10**-7 / E**4 -
+            2.55265*10**-6 / E**3 + 0.0000290766 / E**2 - 0.000213793 / E)
+            
+        P = P_n + P_e
+         
              
     elif mat == "Ma":
     
         # Probability of pair production as a function of photon energy
-        P = (0.023248 - 9.56748*10**-9 / E**5 + 5.52086*10**-7 / E**4 - 
-             0.0000122004 / E**3 + 0.000139708 / E**2 - 0.00125509 / E)
+        P_n = (0.00211593 - 6.73464*10**-10 / E**5 + 4.04079*10**-8 / E**4 - 
+            9.45324*10**-7 / E**3 + 0.0000117739 / E**2 - 0.000114957 / E)
+             
+        # Probability of electron pair production
+            
+        P_e = (0.00219828 - 1.92149*10**-9 / E**5 + 1.13176*10**-7 / E**4 - 
+            2.56364*10**-6 / E**3 + 0.0000293949 / E**2 - 0.000220787 / E)
+            
+        P = P_n + P_e
          
-    # Adjust the probability based on actual photon_dt as the above equation
-    # assumes photon_dt = 10**-11
-    P = P * (photon_dt/10**-11)*20
+    # Adjust the probability based on actual photon_dt as the above equations
+    # assume photon_dt = 10**-11
+    P = P * (photon_dt/10**-11)
     
     rn = np.random.random()
     
@@ -100,14 +128,13 @@ def doPairProduction(E,particle_count,particle_proc,m,v_norm,x,step_counter):
     beta = momentumScalar2Beta(p,m) # Relativistic beta
     gamma = beta2Gamma(beta)        # Relativistic gamma
     v = ((p*c)/(gamma*m))*v_norm    # (m/s) Velocity vector of each particle
-    print('E: %0.3f'%(velocity2Energy(v,0.510999*10**6)/10**9))
     
     i = 0
     while i < 2:
         particle_count = particle_count + 1
         particle_proc[particle_count] = np.array([x[0],x[1],x[2],
                                                   v[0],v[1],v[2],(-1)**i,0,
-                                                  step_counter])
+                                                  step_counter,1])
         i = i + 1
     return particle_proc,particle_count
 
@@ -307,6 +334,30 @@ def passthroughElementContact(x,el_rad,el_theta):
             el_rad[1] > r:
                 
             return True
+            
+## Checks if inside HV standoff
+            
+def passthroughHVStandoff(x,so_rad,so_theta):
+
+    so_inner_diameter = 0.138/39.3701 # (m)
+    so_outer_diameter = 0.3/39.3701 # (m)
+
+    # Get particle's r and theta positions
+    
+    theta = getParticleTheta(x)
+    r = getParticleRadialPosition(x)
+    
+    for row in so_theta:
+    
+        slocal_x = r*np.abs(row[0] - theta)
+        slocal_y = x[2]    
+        slocal_r = np.sqrt(slocal_x**2 + slocal_y**2)
+        
+        if slocal_r > so_inner_diameter/2 and \
+            slocal_r < so_outer_diameter/2 and \
+            so_rad[0] < r and so_rad[1] > r:
+                
+            return True    
 
 ## Checks if contacts the front panel of the calorimeter
 

@@ -15,7 +15,7 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
     c = 2.99792458*10**8                    # (m/s) Speed of light
     photon_kill_event_text = "Unknown Failure"
     photon_energy = photon_proc[photon_row_index,6]
-    print('photon energy: %0.3f'%(photon_energy/10**9))
+#    print('photon energy: %0.3f'%(photon_energy/10**9))
     
     # Counter for number of steps a particle is inside matter
     steps_inside = 0
@@ -82,8 +82,8 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
             break
 
         if x[i,2] < so_z_max:
-        
-            if cf.passthroughElementContact(x[i],so_rad,so_theta):
+                    
+            if cf.passthroughHVStandoff(x[i],so_rad,so_theta):
                 steps_inside = steps_inside + 1
                 if cf.ifPairProduction(photon_energy,photon_dt,"Ma"):
                     particle_proc,particle_count = \
@@ -132,7 +132,8 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
     photon_matrix[photon_row_index + 1] = np.array(
                          [photon_row_index,i,photon_kill_event_text,
                           x[0,0],x[0,1],x[0,2],photon_energy/10**9,
-                          steps_inside,steps_inside*c,step_counter*photon_dt])
+                          steps_inside,steps_inside*c,photon_dt,
+                          step_counter*photon_dt])
     
     return particle_pos,particle_matrix,particle_proc,photon_proc, \
            particle_count,photon_matrix

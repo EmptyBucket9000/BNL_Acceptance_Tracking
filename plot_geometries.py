@@ -8,6 +8,8 @@ Created on Fri Sep 30 08:29:51 2016
 import numpy as np
 
 def plot(geo_pack,steps,ax):
+    
+    lw = 0.2
 
     # Unpack 'geo_pack'    
     
@@ -29,8 +31,8 @@ def plot(geo_pack,steps,ax):
     # Add inner radius
                 
     xt = np.linspace(-R_i,R_i,steps)    # (m)
-    ax.plot(xt,np.sqrt((R_i)**2 - xt**2),'-.r')
-    ax.plot(xt,-np.sqrt(R_i**2 - xt**2),'-.r')
+    ax.plot(xt,np.sqrt((R_i)**2 - xt**2),'-.r',lw=lw)
+    ax.plot(xt,-np.sqrt(R_i**2 - xt**2),'-.r',lw=lw)
     
     # Add support plates
     
@@ -43,14 +45,14 @@ def plot(geo_pack,steps,ax):
              sp_rad[0]*np.cos(sp_theta_end[k])],
             [sp_rad[0]*np.sin(sp_theta_start[k]),
              sp_rad[0]*np.sin(sp_theta_end[k])],
-            'k'
+            'k',lw=lw
         )
         ax.plot(
             [sp_rad[1]*np.cos(sp_theta_start[k]),
              sp_rad[1]*np.cos(sp_theta_end[k])],
             [sp_rad[1]*np.sin(sp_theta_start[k]),
              sp_rad[1]*np.sin(sp_theta_end[k])],
-            'k'
+            'k',lw=lw
         )
         
         k = k + 1
@@ -66,14 +68,14 @@ def plot(geo_pack,steps,ax):
              so_rad[1]*np.cos(so_theta_start[k])],
             [so_rad[0]*np.sin(so_theta_start[k]),
              so_rad[1]*np.sin(so_theta_start[k])],
-            'k'
+            'k',lw=lw
         )
         ax.plot(
             [so_rad[0]*np.cos(so_theta_end[k]),
              so_rad[1]*np.cos(so_theta_end[k])],
             [so_rad[0]*np.sin(so_theta_end[k]),
              so_rad[1]*np.sin(so_theta_end[k])],
-            'k'
+            'k',lw=lw
         )
         
         k = k + 1
@@ -94,14 +96,14 @@ def plot(geo_pack,steps,ax):
             M
         )
         
-        ax.plot(xt,np.sqrt(sqel_rad[0]**2 - xt**2),'k')
+        ax.plot(xt,np.sqrt(sqel_rad[0]**2 - xt**2),'k',lw=lw)
         
         xt = np.linspace(
             sqel_rad[1]*np.cos(sqel_theta[k,0]),
             sqel_rad[1]*np.cos(sqel_theta[k,1]),
             M
         )
-        ax.plot(xt,np.sqrt(sqel_rad[1]**2 - xt**2),'k')
+        ax.plot(xt,np.sqrt(sqel_rad[1]**2 - xt**2),'k',lw=lw)
         
         k = k + 1
         
@@ -115,14 +117,14 @@ def plot(geo_pack,steps,ax):
             M
         )
         
-        ax.plot(xt,-np.sqrt(sqel_rad[0]**2 - xt**2),'k')
+        ax.plot(xt,-np.sqrt(sqel_rad[0]**2 - xt**2),'k',lw=lw)
         
         xt = np.linspace(
             sqel_rad[1]*np.cos(sqel_theta[k,0]),
             sqel_rad[1]*np.cos(sqel_theta[k,1]),
             M
         )
-        ax.plot(xt,-np.sqrt(sqel_rad[1]**2 - xt**2),'k')
+        ax.plot(xt,-np.sqrt(sqel_rad[1]**2 - xt**2),'k',lw=lw)
         
         k = k + 1
     
@@ -141,14 +143,14 @@ def plot(geo_pack,steps,ax):
             dqel_rad[0]*np.cos(dqel_theta[k,1]),
             M
         )            
-        ax.plot(xt,np.sqrt(float(dqel_rad[0])**2 - xt**2),'k')
+        ax.plot(xt,np.sqrt(float(dqel_rad[0])**2 - xt**2),'k',lw=lw)
         
         xt = np.linspace(
             dqel_rad[1]*np.cos(dqel_theta[k,0]),
             dqel_rad[1]*np.cos(dqel_theta[k,1]),
             M
         )
-        ax.plot(xt,np.sqrt(dqel_rad[1]**2 - xt**2),'k')
+        ax.plot(xt,np.sqrt(dqel_rad[1]**2 - xt**2),'k',lw=lw)
         
         k = k + 1
         
@@ -161,14 +163,14 @@ def plot(geo_pack,steps,ax):
             dqel_rad[0]*np.cos(dqel_theta[k,1]),
             M
         )            
-        ax.plot(xt,-np.sqrt(dqel_rad[0]**2 - xt**2),'k')
+        ax.plot(xt,-np.sqrt(dqel_rad[0]**2 - xt**2),'k',lw=lw)
         
         xt = np.linspace(
             dqel_rad[1]*np.cos(dqel_theta[k,0]),
             dqel_rad[1]*np.cos(dqel_theta[k,1]),
             M
         )
-        ax.plot(xt,-np.sqrt(dqel_rad[1]**2 - xt**2),'k')
+        ax.plot(xt,-np.sqrt(dqel_rad[1]**2 - xt**2),'k',lw=lw)
         
         k = k + 1
     
@@ -183,7 +185,7 @@ def plot(geo_pack,steps,ax):
             cal_rad[1]*np.cos(cal_theta_start[k])],
             [cal_rad[0]*np.sin(cal_theta_start[k]),
             cal_rad[1]*np.sin(cal_theta_start[k])],
-            'k-'
+            'k-',lw=lw
         )
             
         ax.plot(
@@ -191,7 +193,7 @@ def plot(geo_pack,steps,ax):
             cal_rad[1]*np.cos(cal_box_theta_end[k])],
             [cal_rad[0]*np.sin(cal_box_theta_end[k]),
             cal_rad[1]*np.sin(cal_box_theta_end[k])],
-            'k-'
+            'k-',lw=lw
         )
          
         k = k + 1
