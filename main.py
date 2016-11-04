@@ -14,6 +14,7 @@ import photon_tracking as pht
 import muon_data as md
 import plot_geometries as pg
 import csv
+from process_single_files import process
 
 """
 See README.md for information.
@@ -33,18 +34,19 @@ def main():
     # Output
     
 #    print_text = 1              # Set to 1 to print output text, 0 for none
-    make_plots = 0              # Set to 1 to display plots
+    make_plots = 1              # Set to 1 to display plots
     save_plots = 0              # Set to 1 to save plots as images
-    save_output = 1             # Set to 1 to save data output to csv
+    save_output = 0             # Set to 1 to save data output to csv
 
     # Name of csv containing muon data    
     file_name = "EndOfTracking_phase_space.csv"
         
-    m_theta_set = 0                     # 1, use m_theta below, 0 random
+    m_theta_set = 1                     # 1, use m_theta below, 0 random
     
-    N = 5171                              # Number of muons in beam
+#    N = 5171                              # Number of muons in beam
+    N = 1
     steps = 2*10**5                     # Nnumber of steps for integration
-    dt = 10**-12                        # Timestep for integration
+    dt = 10**-13                        # Timestep for integration
     
     p_magic = 3.09435*10**9
     
@@ -66,16 +68,56 @@ def main():
     geo_pack = geometry.geo()               # All the permanent geometries
     
     ''' Other variables '''
+                         
+    # Output for each particle
+    particle_matrix_header = np.array(["Particle #","Steps","Kill Event",
+                                 "Charge",
+                                 "Starting Global x-Position (mm)",
+                                 "Starting Global y-Position (mm)",
+                                 "Starting Global z-Position (mm)",
+                                 "Starting Momentum (GeV/c)",
+                                 "Ending Momentum (GeV/c)",
+                                 "Delta Momentum (GeV/c)",
+                                 "Steps Inside Short Quad",
+                                 "Distance Inside Short Quad (cm)",
+                                 "Total # of Photons Released",
+                                 "# of Detectable Photons Released",
+                                 "Steps Inside Long Quad",
+                                 "Distance Inside Long Quad (cm)",
+                                 "Total # of Photons Released",
+                                 "# of Detectable Photons Released",
+                                 "Steps Inside Standoff Plate",
+                                 "Distance Inside Standoff Plate (cm)",
+                                 "Total # of Photons Released",
+                                 "# of Detectable Photons Released",
+                                 "Steps Inside HV Standoff",
+                                 "Distance Inside HV Standoff (cm)",
+                                 "Total # of Photons Released",
+                                 "# of Detectable Photons Released",
+                                 "Steps Inside HV Standoff Screws",
+                                 "Distance Inside HV Standoff Screws (cm)",
+                                 "Total # of Photons Released",
+                                 "# of Detectable Photons Released",
+                                 "dt","Pair Produced",
+                                 "Kill Timestamp"])
+          
+    # Output for each photon
+    photon_matrix_header = np.array(["Photon #","Steps","Kill Event",
+                               "Starting Global x-Position",
+                               "Starting Global y-Position",
+                               "Starting Global z-Position",
+                               "Energy (GeV)","Steps Inside Matter",
+                               "Distance Inside Matter (cm)",
+                               "dt",
+                               "Kill Timestamp"])
     
     muon_number = 0         # Used as a counter for multiple particles
     
-    # Estimated maximum # of particles and photons that coule be created from
-    # each muon decay
+    # Estimated maximum # of particles and photons that could be created from
+    # each muon decay (smaller -> less memory usage but too small and an
+    # error could be thrown)
     N_particles = 50
     N_photons = 50
-    
-#    particle_matrix_full = np.zeros((N,N_particles,21),dtype=object)
-#    photon_matrix_full = np.zeros((N,N_photons,10),dtype=object)
     
 #==============================================================================
 #   Run the code!!
@@ -89,63 +131,29 @@ def main():
         m_x = m_x_list[muon_number]
         m_p = m_p_list[muon_number]
         
-        particle_matrix = np.zeros((N_particles,29),dtype=object)
+        particle_matrix = np.zeros((N_particles,33),dtype=object)
         photon_matrix = np.zeros((N_photons,11),dtype=object)
-                         
-        # Output for each particle
-        particle_matrix[0] = np.array(["Particle #","Steps","Kill Event",
-                                     "Charge",
-                                     "Starting Global x-Position (mm)",
-                                     "Starting Global y-Position (mm)",
-                                     "Starting Global z-Position (mm)",
-                                     "Starting Momentum (GeV/c)",
-                                     "Ending Momentum (GeV/c)",
-                                     "Delta Momentum (GeV/c)",
-                                     "Steps Inside Short Quad",
-                                     "Distance Inside Short Quad (cm)",
-                                     "Total # of Photons Released",
-                                     "# of Detectable Photons Released",
-                                     "Steps Inside Long Quad",
-                                     "Distance Inside Long Quad (cm)",
-                                     "Total # of Photons Released",
-                                     "# of Detectable Photons Released",
-                                     "Steps Inside Standoff Plate",
-                                     "Distance Inside Standoff Plate (cm)",
-                                     "Total # of Photons Released",
-                                     "# of Detectable Photons Released",
-                                     "Steps Inside HV Standoff",
-                                     "Distance Inside HV Standoff (cm)",
-                                     "Total # of Photons Released",
-                                     "# of Detectable Photons Released",
-                                     "dt","Pair Produced",
-                                     "Kill Timestamp"])
-              
-        # Output for each photon
-        photon_matrix[0] = np.array(["Photon #","Steps","Kill Event",
-                                   "Starting Global x-Position",
-                                   "Starting Global y-Position",
-                                   "Starting Global z-Position",
-                                   "Energy (GeV)","Steps Inside Matter",
-                                   "Distance Inside Matter (cm)",
-                                   "dt",
-                                   "Kill Timestamp"])
     
+        particle_matrix[0] = particle_matrix_header
+        photon_matrix[0] = photon_matrix_header
+        
         # Set all initial local muon variables
-    
-        part_type = 1
                 
         particle_matrix,photon_matrix = \
             run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
                 particle_matrix,make_plots,save_plots,save_output,
-                N,steps,dt,q,B,part_type,muon_number,N_particles,N_photons)
-              
-#        particle_matrix_full[muon_number] = particle_matrix
-#        photon_matrix_full[muon_number] = photon_matrix
+                N,steps,dt,q,B,muon_number,N_particles,N_photons)
                 
         muon_number = muon_number + 1
                 
         print("Percent complete: %0.3f%%"%(muon_number*(100/N)),
               end="\r")
+              
+    # Finally, convert all the single particle_matrix and photon_matrix files
+    # into single files.
+              
+    if save_output == 1:
+        process(particle_matrix_header,photon_matrix_header)
 
 #==============================================================================
 #==============================================================================
@@ -155,69 +163,57 @@ def main():
 
 def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
         particle_matrix,make_plots,save_plots,save_output,
-        N,steps,dt,q,B,part_type,muon_number,N_particles,N_photons):
-    
+        N,steps,dt,q,B,muon_number,N_particles,N_photons):
+
 #==============================================================================
 #   Initialization and setting variables
 #==============================================================================
 
     R = geo_pack[19]
-    
-#==============================================================================
-#   If particle is directly from decay; skip if created by pair production
-#==============================================================================
-    
-    if part_type == 1:
-            
-        photon_steps = 3*10**4
-        photon_dt = 10**-11
         
-        particle_count = 0
+    photon_steps = 3*10**4
+    photon_dt = 10**-11
     
-        # Momentum array for a single muon away from the magic momentum
+    particle_count = 0
+
+    # Momentum array for a single muon away from the magic momentum
 #        m_p = cf.getMuonMomentumAtDecay()       # (eV/c)
-        
-        '''Use local muon variables to get inital global particle variables'''
-        
-        # Radial distance from center of ring
-        r = R + m_x[0]                          # (m)
-        
-        # Set x,y,z positions
-        
-        x = np.zeros((1,3))                   # Initialize position array
-        x[0,0] = r*np.cos(m_theta)            # (m) x-position
-        x[0,1] = r*np.sin(m_theta)            # (m) y-position
-        x[0,2] = m_x[1]                       # (m) z-position
-        p_range = np.array([0.2*10**9,m_p[2]])
-#        p_range = np.array([1.2,1.2])*10**9
-        
-        p_s = cf.getParticleMomentumAtDecay(m_theta,p_range)
-        
-        p = np.zeros((3))
-        p[0] = p_s[0] + m_p[0]*np.cos(m_theta)
-        p[1] = p_s[1] + m_p[0]*np.sin(m_theta)
-        p[2] = m_p[1]
-        
-        # Particle velocity at decay
-        v = np.zeros((steps,3))                 # (m/s) Initialize velocity
-        
-        beta = cf.momentum2Beta(p,m)            # () Relativistic beta
-        v[0] = beta*c                           # (m/s) Initial velocity
-        
-        particle_pos = np.zeros((N_particles,steps,3))
-        photon_pos = np.zeros((photon_steps,3))
-        particle_proc = np.zeros((N_particles,10))
-        particle_proc_old = np.zeros((N_particles,10))
-        particle_proc[0] = np.array([x[0,0],x[0,1],x[0,2],
-                                    v[0,0],v[0,1],v[0,2],1,0,0,0])
-        photon_proc = np.zeros((N_photons,11))
-        photon_proc_old = np.zeros((N_photons,11))
-        
-        part_type = 0
     
-#==============================================================================
-#   Initialize misc. variables
-#==============================================================================
+    '''Use local muon variables to get inital global particle variables'''
+    
+    # Radial distance from center of ring
+    r = R + m_x[0]                          # (m)
+    
+    # Set x,y,z positions
+    
+    x = np.zeros((1,3))                   # Initialize position array
+    x[0,0] = r*np.cos(m_theta)            # (m) x-position
+    x[0,1] = r*np.sin(m_theta)            # (m) y-position
+    x[0,2] = m_x[1]                       # (m) z-position
+    p_range = np.array([0.2*10**9,m_p[2]])
+#        p_range = np.array([1.2,1.2])*10**9
+    
+    p_s = cf.getParticleMomentumAtDecay(m_theta,p_range)
+    
+    p = np.zeros((3))
+    p[0] = p_s[0] + m_p[0]*np.cos(m_theta)
+    p[1] = p_s[1] + m_p[0]*np.sin(m_theta)
+    p[2] = m_p[1]
+    
+    # Particle velocity at decay
+    v = np.zeros((steps,3))                 # (m/s) Initialize velocity
+    
+    beta = cf.momentum2Beta(p,m)            # () Relativistic beta
+    v[0] = beta*c                           # (m/s) Initial velocity
+    
+    particle_pos = np.zeros((N_particles,steps,3))
+    photon_pos = np.zeros((photon_steps,3))
+    particle_proc = np.zeros((N_particles,10))
+    particle_proc_old = np.zeros((N_particles,10))
+    particle_proc[0] = np.array([x[0,0],x[0,1],x[0,2],
+                                v[0,0],v[0,1],v[0,2],1,0,0,0])
+    photon_proc = np.zeros((N_photons,11))
+    photon_proc_old = np.zeros((N_photons,11))
     
     # [0] Counter for photons released by Bremsstrahlung
     # [1] Counter for detectable photons released by Bremsstrahlung 
@@ -231,7 +227,7 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
     
     particle_row_index = 0
     photon_row_index = 0
-    kk = 0
+    
     while 1 < 2:
         
         particle_proc_old = np.copy(particle_proc)
@@ -239,7 +235,7 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
         for row in particle_proc:
         
             if (np.any(row != 0)) and row[7] == 0:
-#                print('particle #: %d'%particle_row_index)
+                
                 particle_pos,particle_matrix,particle_proc,photon_count,\
                     photon_proc = \
                     pt.track(particle_pos,particle_matrix,particle_proc,
@@ -254,7 +250,7 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
         for row in photon_proc:
             
             if (np.any(row != 0)) and row[9] == 0:
-#                print('photon #: %d'%photon_row_index)
+                
                 particle_pos,particle_matrix,particle_proc,photon_proc, \
                     particle_count,photon_matrix = \
                     pht.track(particle_pos,particle_matrix,particle_proc,
@@ -268,11 +264,8 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
             np.array_equal(particle_proc,particle_proc_old):
             break
         
-        
-        kk = kk + 1
         particle_row_index = 0
-        photon_row_index = 0
-                
+        photon_row_index = 0                
         
 #==============================================================================
 #   Cleanup and some useful variable creation
@@ -289,8 +282,6 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
 #==============================================================================
     
     if make_plots == 1:
-        
-        print('Plotting...')
             
         # Counter used for setting multiple figures
         n = 0
@@ -338,8 +329,8 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
         # Set axes limits based on min/max particle positions
 
         plt.axis('equal') # Prevents a skewed look
-#        plt.xlim(min(x[:,0]-0.1),max(x[:,0]+0.2))
-#        plt.ylim(min(x[:,1]-1),max(x[:,1]+1))
+        plt.xlim(min(x[:,0]-0.1),max(x[:,0]+0.2))
+        plt.ylim(min(x[:,1]-1),max(x[:,1]+1))
 #        plt.xlim(4.8,5.2)
 #        plt.ylim(4.7,5.1)
         plt.grid()

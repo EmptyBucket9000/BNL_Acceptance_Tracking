@@ -35,20 +35,19 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
     
     # Counter for number of steps a particle is inside matter
     # [sqel,dqel,sp,so]
-    steps_inside = np.zeros((4))
+    steps_inside = np.zeros((5))
     
     # How far the particle has traveled in matter
     # [sqel,dqel,sp,so]
-    d_matter = np.zeros((4))                             # (m)
+    d_matter = np.zeros((5))                             # (m)
     
     # Radiation lengths
-    X0_al = 0.08897                         # (m) Radiation length of aluminum
-    X0_ma = 0.131                           # (m) Radiation length of macor
-#    X0_al = 0.008
-#    X0_ma = 0.008
-#    X0_br = 0.008
-#    X0_al = 10
-#    X0_ma = 10
+    X0_al = 0.08897                  # (m) Radiation length of aluminum
+    X0_ma = 0.05198                  # (m) Radiation length of macor
+    X0_sibr = 1.468                  # (m) Radiation length of silicon bronze
+    X0_al = 500
+    X0_ma = 500
+    X0_sibr = 500  
 
     # Unpack 'geo_pack'
     
@@ -98,11 +97,13 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
     # Event text
     kill_event_text = "Unknown failure" # In case nothing happens
     
-    # of photons released [sqel t, sqel HE, dqel, sp, so]
-    sqel_photon_count = np.zeros([2], dtype='int')
-    dqel_photon_count = np.zeros([2], dtype='int')
-    sp_photon_count = np.zeros([2], dtype='int')
-    so_photon_count = np.zeros([2], dtype='int')
+    # of photons released
+    sqel_photon_count = np.zeros([2], dtype=int)
+    dqel_photon_count = np.zeros([2], dtype=int)
+    sp_photon_count = np.zeros([2], dtype=int)
+    so_photon_count = np.zeros([2], dtype=int)
+    sos_photon_count = np.zeros([2], dtype=int)     # HV standoff screws
+    total_photon_count = 0
     
 #==============================================================================
 #   Tracking by Runga-Kutta 4th
@@ -116,7 +117,7 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
     while i < steps - 1:
         
         # Relativistic mass to find the acceleration from the force
-        rmass = m*gamma/c**2
+        rmass = m*gamma*c
         
         a = F/(rmass)
         dv1 = dt * a
@@ -160,20 +161,19 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
                     
                 if photons_released > 0:
                     
-#                    particle_passthrough_text = "Single-Quad Electrode"
                     k = 0
-#                    print('particle %d energy SQ: %0.3f'%(particle_row_index,k_max/10**9))
                     
                     while k < photons_released:
             
                         if k_max > k_min: # Nonsense if k_min > k_max
                             v_norm = v[i]/cf.mag(v[i])
                             p, k_max, v[i], sqel_photon_count, \
-                            gamma, photon_energy = \
+                            gamma, photon_energy,total_photon_count = \
                                 cf.bremsstrahlung(v[i],m,k_min,k_max,
                                                   i,sqel_photon_count,
-                                                  min_detectable_energy)
-                            photon_proc[sqel_photon_count[0]-1] = \
+                                                  min_detectable_energy,
+                                                  total_photon_count)
+                            photon_proc[total_photon_count-1] = \
                                 np.array([x[i,0],x[i,1],x[i,2],
                                           v_norm[0],v_norm[1],v_norm[2],
                                           photon_energy,particle_row_index,
@@ -192,20 +192,19 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
                     
                 if photons_released > 0:
                     
-#                    particle_passthrough_text = "Double-Quad Electrode"
                     k = 0
-#                    print('particle %d energy DQ: %0.3f'%(particle_row_index,k_max/10**9))
                     
                     while k < photons_released:
             
                         if k_max > k_min: # Nonsense if k_min > k_max
                             v_norm = v[i]/cf.mag(v[i])
                             p, k_max, v[i], dqel_photon_count, \
-                            gamma, photon_energy = \
+                            gamma, photon_energy,total_photon_count = \
                                 cf.bremsstrahlung(v[i],m,k_min,k_max,
                                                   i,dqel_photon_count,
-                                                  min_detectable_energy)
-                            photon_proc[dqel_photon_count[0]-1] = \
+                                                  min_detectable_energy,
+                                                  total_photon_count)
+                            photon_proc[total_photon_count-1] = \
                                 np.array([x[i,0],x[i,1],x[i,2],
                                           v_norm[0],v_norm[1],v_norm[2],
                                           photon_energy,particle_row_index,
@@ -224,20 +223,19 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
                     
                 if photons_released > 0:
                     
-#                    particle_passthrough_text = "Standoff Plate"
                     k = 0
-#                    print('particle %d energy SP: %0.3f'%(particle_row_index,k_max/10**9))
                     
                     while k < photons_released:
             
                         if k_max > k_min: # Nonsense if k_min > k_max
                             v_norm = v[i]/cf.mag(v[i])
                             p, k_max, v[i], sp_photon_count, \
-                            gamma, photon_energy = \
+                            gamma, photon_energy,total_photon_count = \
                                 cf.bremsstrahlung(v[i],m,k_min,k_max,
                                                   i,sp_photon_count,
-                                                  min_detectable_energy)
-                            photon_proc[sp_photon_count[0]-1] = \
+                                                  min_detectable_energy,
+                                                  total_photon_count)
+                            photon_proc[total_photon_count-1] = \
                                 np.array([x[i,0],x[i,1],x[i,2],
                                           v_norm[0],v_norm[1],v_norm[2],
                                           photon_energy,particle_row_index,
@@ -248,7 +246,6 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
         
         if x[i,2] < so_z_max:
             if cf.passthroughHVStandoff(x[i],so_rad,so_theta):
-        
                 
                 steps_inside[3],d_matter[3] = \
                     cf.updateInsideMatter(v[i],dt,steps_inside[3],d_matter[3])
@@ -258,20 +255,50 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
                     
                 if photons_released > 0:
                     
-#                    particle_passthrough_text = "HV Standoff"
                     k = 0
-#                    print('particle %d energy HVS: %0.3f'%(particle_row_index,k_max/10**9))
                     
                     while k < photons_released:
             
                         if k_max > k_min: # Nonsense if k_min > k_max
                             v_norm = v[i]/cf.mag(v[i])
                             p, k_max, v[i], so_photon_count, \
-                            gamma, photon_energy = \
+                            gamma, photon_energy,total_photon_count = \
                                 cf.bremsstrahlung(v[i],m,k_min,k_max,
                                                   i,so_photon_count,
-                                                  min_detectable_energy)
-                            photon_proc[so_photon_count[0]-1] = \
+                                                  min_detectable_energy,
+                                                  total_photon_count)
+                            photon_proc[total_photon_count-1] = \
+                                np.array([x[i,0],x[i,1],x[i,2],
+                                          v_norm[0],v_norm[1],v_norm[2],
+                                          photon_energy,particle_row_index,
+                                          0,0,step_counter])
+                            k = k + 1
+        
+            # High-voltage standoff screws
+        
+            if cf.passthroughHVStandoffScrews(x[i],so_rad,so_theta):
+                
+                steps_inside[4],d_matter[4] = \
+                    cf.updateInsideMatter(v[i],dt,steps_inside[4],d_matter[4])
+                
+                photons_released = \
+                    cf.isPhotonReleased(k_min,k_max,X0_sibr,v[i],dt,m)
+                    
+                if photons_released > 0:
+                    
+                    k = 0
+                    
+                    while k < photons_released:
+            
+                        if k_max > k_min: # Nonsense if k_min > k_max
+                            v_norm = v[i]/cf.mag(v[i])
+                            p, k_max, v[i], sos_photon_count, \
+                            gamma, photon_energy,total_photon_count = \
+                                cf.bremsstrahlung(v[i],m,k_min,k_max,
+                                                  i,sos_photon_count,
+                                                  min_detectable_energy,
+                                                  total_photon_count)
+                            photon_proc[total_photon_count-1] = \
                                 np.array([x[i,0],x[i,1],x[i,2],
                                           v_norm[0],v_norm[1],v_norm[2],
                                           photon_energy,particle_row_index,
@@ -355,10 +382,15 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
                           steps_inside[3],d_matter[3]*100,
                           so_photon_count[0],
                           so_photon_count[1],
+                          steps_inside[4],d_matter[4]*100,
+                          sos_photon_count[0],
+                          sos_photon_count[1],
                           '%2e'%dt,pp,
                           '%5e'%(step_counter*dt)])
     particle_count = particle_count + 1
     particle_proc[particle_row_index,7] = 1
+    
+    print('Delta Momentum: %0.7f'%((p_end_mag - p_init_mag)/10**9))
                             
     return particle_pos,particle_matrix,particle_proc,photon_count, \
             photon_proc

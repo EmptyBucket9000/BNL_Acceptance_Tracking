@@ -51,14 +51,20 @@ def main():
         Total # of Photons Released         24
         # of Detectable Photons Released	 25
         dt                                  26
-        Kill Timestamp                      27
+        Pair Produced (0 or 1)              27
+        Kill Timestamp                      28
         '''
         N_particles = len(stuff)
         i = 0
                 
-        particle = np.zeros((N_particles,3),dtype=object) # () [Kill event,dt,charge]
-        x = np.zeros((N_particles,3))         # (mm) [x,y,z] Global muon position at decay
-        p = np.zeros((N_particles,3))         # (GeV/c) [Starting, Ending, Difference]
+        # [Kill event,dt,charge]
+        particle = np.zeros((N_particles,3),dtype=object)
+        
+        # [x,y,z] Global muon position at decay
+        x = np.zeros((N_particles,3))       # (mm) 
+        
+        # [Starting, Ending, Difference]
+        p = np.zeros((N_particles,3))       # (GeV/c)
         
         # Inside matter [steps, distance (cm),total photons, HE photons]
         
@@ -69,14 +75,12 @@ def main():
                 
         # Counters
         
-        cal_con_particle = 0
-        cal_con_photon = 0
-        so_contact = 0
-        sqel_contact = 0
-        dqel_contact = 0
-        so_contact = 0
-        sp_contact = 0
-        cal_con_particle_so = 0     # Cal con and touch standoff
+        cal_con_particle = 0        # Calorimeter contact
+        so_contact = 0              # HV standoff contact
+        sqel_contact = 0            # Single quad contact
+        dqel_contact = 0            # Double quad contact
+        sp_contact = 0              # Standoff plate contact
+        cal_con_particle_so = 0     # Calorimeter and HV standoff contact
         for row in stuff:
             
             particle[i,0] = row[2]
@@ -158,17 +162,7 @@ def main():
     print('Total standoff plate contacts: %d'%sp_contact)
     print('Total HV standoff contacts: %d'%so_contact)
     print('Total particle calorimeter contacts: %d'%cal_con_particle)
-    print('Total HV standoff contacts that hit the calorimeter: %d'%cal_con_particle_so)
-        
-#==============================================================================
-# Photons
-#==============================================================================
-            
-#==============================================================================
-# Data Processing
-#==============================================================================
-        
-    ## Remove 'zero' rows
+    print('Total SO contacts that hit the calorimeter: %d'%cal_con_particle_so)
             
 #==============================================================================
 #     Plotting
@@ -179,7 +173,7 @@ def main():
 #    plt.figure(n)
 #    n = n + 1
 #    
-#    ax = plt.subplot(111)
+#    ax = plt.subplot(1,1,1)
 #    ax.scatter(x[:,0]/1000, x[:,1]/1000, color='g')
 #    ax.grid(True)
 ##    lgd = ax.legend(bbox_to_anchor=(1.33,1.11))

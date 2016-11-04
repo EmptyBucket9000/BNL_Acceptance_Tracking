@@ -60,6 +60,7 @@ def geo():
     cal_rad = np.array([R_i,R_i+cal_len]) # (m)
     
     ''' HV Standoff '''
+    
     rot = 9.23+0.48
     so_z_max = 3.8*10**-3       # (m) Top of standoff
     so_length = 7.62*10**-3     # (m) Width of standoff
@@ -79,9 +80,10 @@ def geo():
     so_theta_end = so_theta_start - so_length/(R-so_rad_start)
     
     # Theta position [theta_min, theta_max]
-    so_theta = np.column_stack((so_theta_start,so_theta_end))    
+    so_theta = np.column_stack((so_theta_start,so_theta_end))
     
     ''' Support plates '''
+    
     rot = 9.23
     sp_length = 33*10**-3        # (m) Support plate width
     sp_depth = 1.7*10**-3        # (m) Support plate thickness

@@ -27,6 +27,9 @@ def muon(N,file_name,p_magic,m_theta_array,m_theta_set):
     if m_theta_set == 0:
         m_theta = (m_theta_array[1] - m_theta_array[0])*random.random() + \
                 m_theta_array[0]
+                
+    else: 
+        m_theta = 2.3*np.pi/8
         
     return m_x,m_p,m_theta
 

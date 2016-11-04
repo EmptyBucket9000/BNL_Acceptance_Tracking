@@ -31,9 +31,11 @@ def getElectricField(x,B,R,n,loc):
     if loc == "In":
         
         theta = getParticleTheta(x)
+#        print(theta)
         r = getParticleRadialPosition(x)
         
         E_r = ((n*c*mag(B))/R)*(r - R)
+#        print(E_r)
         E_x = E_r*np.cos(theta)
         E_y = E_r*np.sin(theta)
         E_z = -((n*c*mag(B))/R)*x[2]
@@ -70,7 +72,7 @@ def getParticleRadialPosition(x):
     
 def ifPairProduction(E,photon_dt,mat):
     
-    # Divide energy by 10**9 as probability is a function of GeV
+    # Divide energy by 10**9 as probability was calculated as a function of GeV
     E = E/10**9
     
     if mat == "Al":
@@ -84,15 +86,15 @@ def ifPairProduction(E,photon_dt,mat):
             
         P = P_n + P_e
              
-    elif mat == "Br":
+    elif mat == "SiBr":
     
         # Probability of pair production as a function of photon energy
-        P_n = (0.023248 - 9.56748*10**-9 / E**5 + 5.52086*10**-7 / E**4 - 
-             0.0000122004 / E**3 + 0.000139708 / E**2 - 0.00125509 / E)
+        P_n = (0.00458041 - 1.18887*10**-9 / E**5 + 7.07671*10**-8 / E**4 - 
+            1.64353*10**-6 / E**3 + 0.0000205231 / E**2 - 0.000214327 / E)
              
         # Probability of electron pair production
-        P_e = (0.00211641 - 1.89942*10**-9 / E**5 + 1.12441*10**-7 / E**4 -
-            2.55265*10**-6 / E**3 + 0.0000290766 / E**2 - 0.000213793 / E)
+        P_e = (0.0018329 - 1.21326*10**-9 / E**5 + 7.13317*10**-8 / E**4 - 
+            1.61749*10**-6 / E**3 + 0.0000188146 / E**2 - 0.000152661 / E)
             
         P = P_n + P_e
          
@@ -241,7 +243,7 @@ def adjustParticleVelocityFromBremsstrahlung(v,k_min,k_max,m):
 ## If bremsstrahlung procs, release a photon and update appropriate variables
     
 def bremsstrahlung(v,m,k_min,k_max,i,photon_count,
-                   min_detectable_energy):
+                   min_detectable_energy,total_photon_count):
 #                   photon_energies    
     
     p = beta2Momentum(v/c,m)
@@ -272,7 +274,9 @@ def bremsstrahlung(v,m,k_min,k_max,i,photon_count,
     # Note that a new photon was released
     photon_count[0] = photon_count[0] + 1
     
-    return p,k_max,v,photon_count,gamma,photon_energy
+    total_photon_count = total_photon_count + 1
+    
+    return p,k_max,v,photon_count,gamma,photon_energy,total_photon_count
 
 #==============================================================================
 # Contact Functions
@@ -357,7 +361,30 @@ def passthroughHVStandoff(x,so_rad,so_theta):
             slocal_r < so_outer_diameter/2 and \
             so_rad[0] < r and so_rad[1] > r:
                 
-            return True    
+            return True
+            
+## Checks if inside HV standoff screws
+            
+def passthroughHVStandoffScrews(x,so_rad,so_theta):
+
+    sos_diameter = 0.138/39.3701 # (m)
+
+    # Get particle's r and theta positions
+    
+    theta = getParticleTheta(x)
+    r = getParticleRadialPosition(x)
+    
+    for row in so_theta:
+    
+        slocal_x = r*np.abs(row[0] - theta)
+        slocal_y = x[2]    
+        slocal_r = np.sqrt(slocal_x**2 + slocal_y**2)
+        
+        if slocal_r < sos_diameter/2 and \
+            (so_rad[0] < r and (so_rad[0] + 0.00635) > r) or \
+            ((so_rad[1] - 0.00635) < r and so_rad[1] > r):
+                
+            return True
 
 ## Checks if contacts the front panel of the calorimeter
 
@@ -563,144 +590,144 @@ def getParticleMomentumAtDecay(theta,p_range):
     
     return p
     
-## Return the muon beam distribution width
-    
-def getParticleSigma(m_sigma_amp,m_sigma_ideal,m_sigma_0,num):
-    
-    sigma = np.zeros(len(m_sigma_amp))    
-    
-    i = 0
-    while i < 2:
-    
-        if m_sigma_ideal[i] == 1:
-            
-            sigma[i] = 0
-            
-        elif m_sigma_ideal[i] == 0:
-        
-            # Range of possible particle positions. The subraction is due to the fact
-            # that the probability function of a cosine goes to infinity at the
-            # cosine amplitudes.
-            dist_range = np.linspace(-(m_sigma_amp[i] - m_sigma_amp[i]/30),
-                                     m_sigma_amp[i] - m_sigma_amp[i]/30,
-                                     num[i]) # (m)
-            
-            # Weights for the random mean position based on the distribution
-            
-            dist_weights = (np.pi*np.sqrt(1-(dist_range/m_sigma_amp[i])**2))**(-1)
-            
-            # Normalize the weights to give a total probability of 1
-            dist_weights = dist_weights/sum(dist_weights)
-            
-            # Randomly choose a mean within allowed range
-            sigma_temp = np.random.choice(dist_range, 1, p=dist_weights)
-            
-            # Add xbar to the value around which it oscillates
-            sigma[i] = sigma_temp[0] + m_sigma_0[i]
-    
-        i = i + 1
-        
-    return sigma
-    
-## Return the mean particle position related to current particle being tracked
-    
-def getParticleXBar(m_xbar_amp,m_xbar_ideal,num,m_xbar_0,ax):
-    
-    if m_xbar_ideal == 1:
-        
-        xbar = 0
-        
-    elif m_xbar_ideal == 0:
-    
-        # Range of possible particle positions. The subraction is due to the fact
-        # that the probability function of a cosine goes to infinity at the
-        # cosine amplitudes.
-        dist_range = np.linspace(-(m_xbar_amp - m_xbar_amp/30),
-                                 m_xbar_amp - m_xbar_amp/30,
-                                 num) # (m)
-        
-        # Weights for the random mean position based on the distribution
-        
-        if ax == 'x':
-            dist_weights = (np.pi*np.sqrt(1-(dist_range/m_xbar_amp)**2))**(-1)
-            
-        if ax == 'y':
-            dist_weights = (np.pi*np.sqrt(1-(dist_range/m_xbar_amp)**2))**(-1)
-        
-        # Normalize the weights to give a total probability of 1
-        dist_weights = dist_weights/sum(dist_weights)
-        
-        # Randomly choose a mean within allowed range
-        xbar = np.random.choice(dist_range, 1, p=dist_weights)
-        
-        # Add xbar to the value around which it oscillates
-        xbar = xbar[0] + m_xbar_0
-    
-    return xbar
-    
-## Return the local muon x-position based on distribution function
-
-def getXParticlePositions(xbar,sigma,xmin_init,xmax_init,num,fit):
-    
-    # Range of possible particle positions
-    init_dist_range = np.linspace(xmin_init, xmax_init, num) # (m)
-    dist_range = xbar + init_dist_range # (m)
-    
-    # Weights for the random position based on the distribution 
-    
-    if sigma != 0:
-    
-        if fit == "Gaussian":
-            dist_weights = (np.sqrt(2*np.pi*sigma**2)**(-1)) * \
-                np.exp(-((init_dist_range-xbar)**2)/(2*sigma**2))
-    
-        # Normalize the weights to give a total probability of 1
-        dist_weights = dist_weights/sum(dist_weights)
-        
-        # Randomly choose a position within allowed range
-        particle_position = np.random.choice(dist_range, 1, p=dist_weights)
-        
-        # Convert from single-element array to float
-        particle_position = particle_position[0]
-        
-    elif sigma == 0:
-        
-        particle_position = xbar
-    
-    return particle_position
-    
-## Return the local muon x' based on distribution function
-    
-def getParticleXPrime(xbar,x,x_max,xprime_max):
-    
-    sigma = (1/3)*x_max
-    
-    xprime_lim = np.sqrt(xprime_max**2*(1-((x - xbar)**2 / x_max**2)))
-    
-    init_dist_range = np.linspace(-xprime_lim,xprime_lim,1000) # mrad
-    dist_range = xbar + init_dist_range
-    
-    dist_weights = (np.sqrt(2*np.pi*sigma**2)**(-1)) * \
-        np.exp(-((init_dist_range-xbar)**2)/(2*sigma**2))
-    
-    # Normalize the weights to give a total probability of 1
-    dist_weights = dist_weights/sum(dist_weights)
-    
-    # Randomly choose a position within allowed range
-    xprime = np.random.choice(dist_range, 1, p=dist_weights)
-    
-    # Convert from single-element array to float and choose randomly whether
-    # xprime is positive or negative
-    xprime = xprime[0] * (-1)**(round(np.random.random()))
-    
-    return xprime
-    
-## Return the local muon y-position based on distribution function
-    
-def getYParticlePositions(ybar,sigma,ymin_init,ymax_init,num,fit):
-    
-    # See 'getXParticlePositions' for comments
-    
+### Return the muon beam distribution width
+#    
+#def getParticleSigma(m_sigma_amp,m_sigma_ideal,m_sigma_0,num):
+#    
+#    sigma = np.zeros(len(m_sigma_amp))    
+#    
+#    i = 0
+#    while i < 2:
+#    
+#        if m_sigma_ideal[i] == 1:
+#            
+#            sigma[i] = 0
+#            
+#        elif m_sigma_ideal[i] == 0:
+#        
+#            # Range of possible particle positions. The subraction is due to the fact
+#            # that the probability function of a cosine goes to infinity at the
+#            # cosine amplitudes.
+#            dist_range = np.linspace(-(m_sigma_amp[i] - m_sigma_amp[i]/30),
+#                                     m_sigma_amp[i] - m_sigma_amp[i]/30,
+#                                     num[i]) # (m)
+#            
+#            # Weights for the random mean position based on the distribution
+#            
+#            dist_weights = (np.pi*np.sqrt(1-(dist_range/m_sigma_amp[i])**2))**(-1)
+#            
+#            # Normalize the weights to give a total probability of 1
+#            dist_weights = dist_weights/sum(dist_weights)
+#            
+#            # Randomly choose a mean within allowed range
+#            sigma_temp = np.random.choice(dist_range, 1, p=dist_weights)
+#            
+#            # Add xbar to the value around which it oscillates
+#            sigma[i] = sigma_temp[0] + m_sigma_0[i]
+#    
+#        i = i + 1
+#        
+#    return sigma
+#    
+### Return the mean particle position related to current particle being tracked
+#    
+#def getParticleXBar(m_xbar_amp,m_xbar_ideal,num,m_xbar_0,ax):
+#    
+#    if m_xbar_ideal == 1:
+#        
+#        xbar = 0
+#        
+#    elif m_xbar_ideal == 0:
+#    
+#        # Range of possible particle positions. The subraction is due to the fact
+#        # that the probability function of a cosine goes to infinity at the
+#        # cosine amplitudes.
+#        dist_range = np.linspace(-(m_xbar_amp - m_xbar_amp/30),
+#                                 m_xbar_amp - m_xbar_amp/30,
+#                                 num) # (m)
+#        
+#        # Weights for the random mean position based on the distribution
+#        
+#        if ax == 'x':
+#            dist_weights = (np.pi*np.sqrt(1-(dist_range/m_xbar_amp)**2))**(-1)
+#            
+#        if ax == 'y':
+#            dist_weights = (np.pi*np.sqrt(1-(dist_range/m_xbar_amp)**2))**(-1)
+#        
+#        # Normalize the weights to give a total probability of 1
+#        dist_weights = dist_weights/sum(dist_weights)
+#        
+#        # Randomly choose a mean within allowed range
+#        xbar = np.random.choice(dist_range, 1, p=dist_weights)
+#        
+#        # Add xbar to the value around which it oscillates
+#        xbar = xbar[0] + m_xbar_0
+#    
+#    return xbar
+#    
+### Return the local muon x-position based on distribution function
+#
+#def getXParticlePositions(xbar,sigma,xmin_init,xmax_init,num,fit):
+#    
+#    # Range of possible particle positions
+#    init_dist_range = np.linspace(xmin_init, xmax_init, num) # (m)
+#    dist_range = xbar + init_dist_range # (m)
+#    
+#    # Weights for the random position based on the distribution 
+#    
+#    if sigma != 0:
+#    
+#        if fit == "Gaussian":
+#            dist_weights = (np.sqrt(2*np.pi*sigma**2)**(-1)) * \
+#                np.exp(-((init_dist_range-xbar)**2)/(2*sigma**2))
+#    
+#        # Normalize the weights to give a total probability of 1
+#        dist_weights = dist_weights/sum(dist_weights)
+#        
+#        # Randomly choose a position within allowed range
+#        particle_position = np.random.choice(dist_range, 1, p=dist_weights)
+#        
+#        # Convert from single-element array to float
+#        particle_position = particle_position[0]
+#        
+#    elif sigma == 0:
+#        
+#        particle_position = xbar
+#    
+#    return particle_position
+#    
+### Return the local muon x' based on distribution function
+#    
+#def getParticleXPrime(xbar,x,x_max,xprime_max):
+#    
+#    sigma = (1/3)*x_max
+#    
+#    xprime_lim = np.sqrt(xprime_max**2*(1-((x - xbar)**2 / x_max**2)))
+#    
+#    init_dist_range = np.linspace(-xprime_lim,xprime_lim,1000) # mrad
+#    dist_range = xbar + init_dist_range
+#    
+#    dist_weights = (np.sqrt(2*np.pi*sigma**2)**(-1)) * \
+#        np.exp(-((init_dist_range-xbar)**2)/(2*sigma**2))
+#    
+#    # Normalize the weights to give a total probability of 1
+#    dist_weights = dist_weights/sum(dist_weights)
+#    
+#    # Randomly choose a position within allowed range
+#    xprime = np.random.choice(dist_range, 1, p=dist_weights)
+#    
+#    # Convert from single-element array to float and choose randomly whether
+#    # xprime is positive or negative
+#    xprime = xprime[0] * (-1)**(round(np.random.random()))
+#    
+#    return xprime
+#    
+### Return the local muon y-position based on distribution function
+#    
+#def getYParticlePositions(ybar,sigma,ymin_init,ymax_init,num,fit):
+#    
+#    # See 'getXParticlePositions' for comments
+#    
 #    init_dist_range = np.linspace(ymin_init, ymax_init, num)
 #    dist_range = ybar + init_dist_range
 #    
@@ -709,7 +736,7 @@ def getYParticlePositions(ybar,sigma,ymin_init,ymax_init,num,fit):
 #    particle_position = np.random.choice(dist_range, 1, p=dist_weights)
 #    
 #    particle_position = particle_position[0]
-    
-    particle_position = 0
-    
-    return particle_position
+#    
+#    particle_position = 0
+#    
+#    return particle_position

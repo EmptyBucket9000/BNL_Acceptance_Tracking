@@ -92,6 +92,16 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
                                             step_counter)
                     photon_kill_event_text = "Pair-Production in HV Standoff"
                     break
+                    
+            if cf.passthroughHVStandoffScrews(x[i],so_rad,so_theta):
+                steps_inside = steps_inside + 1
+                if cf.ifPairProduction(photon_energy,photon_dt,"SiBr"):
+                    particle_proc,particle_count = \
+                        cf.doPairProduction(photon_energy,particle_count,
+                                            particle_proc,m,v_norm,x[i],
+                                            step_counter)
+                    photon_kill_event_text = "Pair-Production in HV Standoff Screw"
+                    break
 
         if x[i,2] < qel_z_max:
 
