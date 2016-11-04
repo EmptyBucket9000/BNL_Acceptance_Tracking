@@ -34,21 +34,22 @@ def main():
     # Output
     
 #    print_text = 1              # Set to 1 to print output text, 0 for none
-    make_plots = 1              # Set to 1 to display plots
+    make_plots = 0              # Set to 1 to display plots
     save_plots = 0              # Set to 1 to save plots as images
-    save_output = 0             # Set to 1 to save data output to csv
+    save_output = 1             # Set to 1 to save data output to csv
 
     # Name of csv containing muon data    
     file_name = "EndOfTracking_phase_space.csv"
         
     m_theta_set = 1                     # 1, use m_theta below, 0 random
     
-#    N = 5171                              # Number of muons in beam
-    N = 1
-    steps = 2*10**5                     # Nnumber of steps for integration
-    dt = 10**-13                        # Timestep for integration
+    N = 5171                              # Number of muons in beam
+#    N = 5
+    steps = 8*10**5                     # Nnumber of steps for integration
+#    steps = 3
+    dt = 10**-12                        # Timestep for integration
     
-    p_magic = 3.09435*10**9
+    p_magic = 3.09435*10**9             # (eV/c) Muon magic momentum
     
     if m_theta_set == 1:
         m_theta = 2.3*np.pi/8   # (rad) Muon azimuth. position in global coords
@@ -200,18 +201,12 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
     p[1] = p_s[1] + m_p[0]*np.sin(m_theta)
     p[2] = m_p[1]
     
-    # Particle velocity at decay
-    v = np.zeros((steps,3))                 # (m/s) Initialize velocity
-    
-    beta = cf.momentum2Beta(p,m)            # () Relativistic beta
-    v[0] = beta*c                           # (m/s) Initial velocity
-    
     particle_pos = np.zeros((N_particles,steps,3))
     photon_pos = np.zeros((photon_steps,3))
     particle_proc = np.zeros((N_particles,10))
     particle_proc_old = np.zeros((N_particles,10))
     particle_proc[0] = np.array([x[0,0],x[0,1],x[0,2],
-                                v[0,0],v[0,1],v[0,2],1,0,0,0])
+                                p[0],p[1],p[2],1,0,0,0])
     photon_proc = np.zeros((N_photons,11))
     photon_proc_old = np.zeros((N_photons,11))
     

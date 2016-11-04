@@ -18,11 +18,11 @@ c = 2.99792458*10**8 # (m/s) Speed of light
 
 ## Calculate the Lorentz force on the particle
 
-def forceDueFields(v,B,E,q):
-    
-    F = q*(E + np.cross(v,B))
-    
-    return F
+#def forceDueFields(v,B,E,q):
+#    
+#    F = q*(E + np.cross(v,B))
+#    
+#    return F
     
 ## Get the electric field based on position
 
@@ -31,14 +31,12 @@ def getElectricField(x,B,R,n,loc):
     if loc == "In":
         
         theta = getParticleTheta(x)
-#        print(theta)
         r = getParticleRadialPosition(x)
         
-        E_r = ((n*c*mag(B))/R)*(r - R)
-#        print(E_r)
+        E_r = ((n*mag(B))/R)*(r - R)
         E_x = E_r*np.cos(theta)
         E_y = E_r*np.sin(theta)
-        E_z = -((n*c*mag(B))/R)*x[2]
+        E_z = -((n*mag(B))/R)*x[2]
         E = np.array([E_x,E_y,E_z])/0.41 # /41 added as 'n' is average over all
     
     else:
@@ -123,35 +121,30 @@ def ifPairProduction(E,photon_dt,mat):
     
 ## Create electron and positron and note their existance for future tracking
 
-def doPairProduction(E,particle_count,particle_proc,m,v_norm,x,step_counter):
+def doPairProduction(E,particle_count,particle_proc,m,p_norm,x,step_counter):
     
-    E_part = E/2                    # (eV) Energy of each particle
-    p = np.sqrt(E_part**2 - m**2)   # (eV/c) Momentum of each particle
-    beta = momentumScalar2Beta(p,m) # Relativistic beta
-    gamma = beta2Gamma(beta)        # Relativistic gamma
-    v = ((p*c)/(gamma*m))*v_norm    # (m/s) Velocity vector of each particle
+    E_part = E/2                           # (eV) Energy of each particle
+    p = np.sqrt(E_part**2 - m**2)*p_norm   # (eV/c) Momentum of each particle
     
     i = 0
     while i < 2:
         particle_count = particle_count + 1
         particle_proc[particle_count] = np.array([x[0],x[1],x[2],
-                                                  v[0],v[1],v[2],(-1)**i,0,
+                                                  p[0],p[1],p[2],(-1)**i,0,
                                                   step_counter,1])
         i = i + 1
     return particle_proc,particle_count
 
 ## Check if photon is released between energies k_min and k_max while particle
 ## is traveling through material
+
+def isPhotonReleased(k_min,energy,X0,p,dt,m):
     
-def isPhotonReleased(k_min,k_max,X0,v,dt,m):
-    
-    E_tot = velocity2Energy(v,m)
-    v_mag = mag(v)
-    d = v_mag*dt
+    d = mag(p)/(energy)*c*dt
     
     # Determine the average number of photons released in distance d
-    N = (d/X0) * ((4/3)*np.log(E_tot/k_min) - (4*(E_tot-k_min))/(3*E_tot) +
-        (E_tot**2-k_min**2)/(2*E_tot**2))
+    N = (d/X0) * ((4/3)*np.log(energy/k_min) - (4*(energy-k_min))/(3*energy) +
+        (energy**2-k_min**2)/(2*energy**2))
         
     # Determine the probability that 1,2,3 photon(s) is(are) released
     P1 = poissonProb(N,1)
@@ -184,24 +177,23 @@ def isPhotonReleased(k_min,k_max,X0,v,dt,m):
         
 ## Adjust momentum of particle when photon is released
         
-def adjustParticleVelocityFromBremsstrahlung(v,k_min,k_max,m):
+def adjustParticleMomentumFromBremsstrahlung(p,k_min,energy,m):
     
     # Get the magnitude of the velocity vector
-    v_mag = mag(v)
+    p_mag = mag(p)
     
     # Normalize the velocity vector
-    v_vec_norm = v/v_mag
+    p_vec_norm = p/p_mag
     
     ''' Randomly get the energy of the released photon between k_min and k_max
     based on the Bremsstrahlung intensity plot '''
     
     # Get the smallest wavelength available equal to the particle momentum
-#    lambda_min = energy2Wavelength(mag(velocity2Energy(v,m)))
-    lambda_min = energy2Wavelength(k_max)
+    lambda_min = energy2Wavelength(energy)
     
     # Get the largest wavelength to be used
     lambda_max = energy2Wavelength(k_min)
-        
+    
     # Range of possible energies
     dist_range = np.linspace(lambda_min,lambda_max,10000) # (m)
     
@@ -217,57 +209,31 @@ def adjustParticleVelocityFromBremsstrahlung(v,k_min,k_max,m):
     # Get photon energy from wavelength
     photon_energy = wavelength2Energy(l)
     
-#    if photon_energy/10**9 > 3:
-#        print('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-#        print('k_max: %0.3f'%(k_max/10**9))
-#    
     # Get the energy of the particle before photon release
-    E_old = velocity2Energy(v,m)
+    E_old = np.copy(energy)
     
     # Get the new particle energy
     E_new = E_old - photon_energy
     
-#    print('Delta E: %0.5f'%((E_old - E_new)/10**9))
-    
     # Get the new particle momentum scalar
     p_mag_new = energy2Momentum(E_new,m)
-
-    # Get the new velocity scalar    
-    v_mag_new = momentumScalar2Beta(p_mag_new,m)*c
     
-    # Get the new velocity vector
-    v_new = v_mag_new*v_vec_norm
+    # Get the new momentum vector
+    p_new = p_mag_new*p_vec_norm
     
-    return v_new,photon_energy
+    return p_new,photon_energy
     
 ## If bremsstrahlung procs, release a photon and update appropriate variables
     
-def bremsstrahlung(v,m,k_min,k_max,i,photon_count,
+def bremsstrahlung(p,m,k_min,energy,i,photon_count,
                    min_detectable_energy,total_photon_count):
-#                   photon_energies    
+
     
-    p = beta2Momentum(v/c,m)
-    Energy = momentum2Energy(p,m)
+    # Readjust the particle momentum from the photon's release
+    p,photon_energy = \
+        adjustParticleMomentumFromBremsstrahlung(p,k_min,energy,m)
     
-    # The energy of the photon can't be larger thaphoton_energyn the energy of the particle
-    if k_max > Energy:
-        k_max = np.copy(Energy)
-    
-    # Readjust the particle velocity from the photon's release
-    v,photon_energy = \
-        adjustParticleVelocityFromBremsstrahlung(v,k_min,k_max,m)
-    
-    # Add the location of the bremsstrahlung event
-#    brem_array = np.append(brem_array,i)
-#    photon_energies = np.vstack((photon_energies,np.array([photon_energy,i])))
-    
-    # Update momentum
-    p = beta2Momentum(v/c,m)
-    
-    # Update gamma
-    gamma = beta2Gamma(v/c)
-    
-    # Note that a new high energy photon was released
+    # Note if a new high energy photon was released
     if photon_energy > min_detectable_energy:
         photon_count[1] = photon_count[1] + 1
     
@@ -276,7 +242,7 @@ def bremsstrahlung(v,m,k_min,k_max,i,photon_count,
     
     total_photon_count = total_photon_count + 1
     
-    return p,k_max,v,photon_count,gamma,photon_energy,total_photon_count
+    return p,photon_count,photon_energy,total_photon_count
 
 #==============================================================================
 # Contact Functions
@@ -423,10 +389,10 @@ def outerLimit(x,R):
 
 # Updates some tracked variables when particle is inside matter
 
-def updateInsideMatter(v,dt,steps_inside,d_matter):
-                
+def updateInsideMatter(p,energy,dt,steps_inside,d_matter):
+    
     steps_inside = steps_inside + 1
-    d_matter = d_matter + mag(v)*dt
+    d_matter = d_matter + mag(p)/energy * dt
     
     return steps_inside,d_matter
 
@@ -467,36 +433,35 @@ def energy2Momentum(E,m):
 
 ## Get total energy from velocity and mass
 
-def velocity2Energy(v,m):
-    
-    v_mag = mag(v)
-    beta = v_mag/c
-    p = beta2Momentum(beta,m)
-    E_tot = momentum2Energy(p,m)
-    
-    return E_tot
+#def velocity2Energy(v,m):
+#    
+#    v_mag = mag(v)
+#    beta = v_mag/c
+#    p = beta2Momentum(beta,m)
+#    E_tot = momentum2Energy(p,m)
+#    
+#    return E_tot
 
 ## Get total energy from momentum and mass
 
 def momentum2Energy(p,m):
 
-    p_mag = mag(p)
-    E_tot = np.sqrt(p_mag**2 + m**2)
+    energy = np.sqrt(np.dot(p,p) + m**2)
  
-    return E_tot
+    return energy
 
 ## Convert beta to momentum
 
-def beta2Momentum(beta,m):
-
-    v = beta*c    
-    v_mag = mag(v)
-    beta_mag = v_mag/c
-#    beta_mag = mag(beta)
-    gamma = beta2Gamma(beta_mag)
-    p = gamma*m*beta
-    
-    return p
+#def beta2Momentum(beta,m):
+#
+#    v = beta*c    
+#    v_mag = mag(v)
+#    beta_mag = v_mag/c
+##    beta_mag = mag(beta)
+#    gamma = beta2Gamma(beta_mag)
+#    p = gamma*m*beta
+#    
+#    return p
 
 ## Convert total energy to relativistic gamma
 
@@ -508,39 +473,39 @@ def energy2Gamma(E,m):
     
 ## Convert relativistic beta to relativistic gamma
     
-def beta2Gamma(beta):
-
-    gamma = 1/np.sqrt(1-mag(beta)**2)
-    
-    return gamma
+#def beta2Gamma(beta):
+#
+#    gamma = 1/np.sqrt(1-mag(beta)**2)
+#    
+#    return gamma
     
 ## Convert relativistic gamma to relativistic beta
 
-def gamma2Beta(g):
-
-    beta = np.sqrt((g**2-1)/g**2)
-    
-    return beta
+#def gamma2Beta(g):
+#
+#    beta = np.sqrt((g**2-1)/g**2)
+#    
+#    return beta
     
 ## Convert particle momentum to relativistic beta vector
     
-def momentumScalar2Beta(p,m):
-
-    beta = np.sqrt(p**2/(m**2 + p**2))
+#def momentumScalar2Beta(p,m):
+#
+#    beta = np.sqrt(p**2/(m**2 + p**2))
+#    
+#    return beta
     
-    return beta
-    
-def momentum2Beta(p,m):
-    
-    p = np.array([p[0],p[1],p[2]])
-    p_norm = mag(p)
-    
-    beta = 1/np.sqrt((m/p_norm)**2 + 1)
-    v = beta*c
-    v = v*(p/p_norm)
-    beta = v/c
-
-    return beta
+#def momentum2Beta(p,m):
+#    
+#    p = np.array([p[0],p[1],p[2]])
+#    p_norm = mag(p)
+#    
+#    beta = 1/np.sqrt((m/p_norm)**2 + 1)
+#    v = beta*c
+#    v = v*(p/p_norm)
+#    beta = v/c
+#
+#    return beta
     
 # Get the magnitude of some vector
     
@@ -550,15 +515,15 @@ def mag(v):
     
 ## Adding velocities
     
-def addVelocities(v1,v2):
-    
-    v1mag = mag(v1)
-    v2mag = mag(v2)    
-    
-    new_v = ((v1mag + v2mag) / (1 + (v1mag*v2mag)/(c**2))) * \
-            (v1 + v2) / mag(v1 + v2)
-    
-    return new_v
+#def addVelocities(v1,v2):
+#    
+#    v1mag = mag(v1)
+#    v2mag = mag(v2)    
+#    
+#    new_v = ((v1mag + v2mag) / (1 + (v1mag*v2mag)/(c**2))) * \
+#            (v1 + v2) / mag(v1 + v2)
+#    
+#    return new_v
 #==============================================================================
 # Setting initial conditions
 #==============================================================================

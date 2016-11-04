@@ -22,16 +22,16 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
     
     step_counter = photon_proc[photon_row_index,10]
     
-    x = np.zeros((photon_steps,3))                 # Initialize position array
-    v = np.zeros((photon_steps,3))                 # Initialize velocity array
+    x = np.zeros((photon_steps,3))         # Initialize photon position array
+    p = np.zeros((3))                      # Initialize particle momentum array
     
     x[0,0] = photon_proc[photon_row_index,0]
     x[0,1] = photon_proc[photon_row_index,1]
     x[0,2] = photon_proc[photon_row_index,2]
     
-    v[0,0] = photon_proc[photon_row_index,3]
-    v[0,1] = photon_proc[photon_row_index,4]
-    v[0,2] = photon_proc[photon_row_index,5]
+    p[0] = photon_proc[photon_row_index,3]
+    p[1] = photon_proc[photon_row_index,4]
+    p[2] = photon_proc[photon_row_index,5]
 
     # Unpack 'geo_pack'    
     
@@ -51,8 +51,8 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
     R = geo_pack[19]
     
     # Get the normalized velocity vector           
-    v_norm = v[0] / cf.mag(v[0])
-    v_photon = v_norm*c
+    p_norm = p / cf.mag(p)
+    v_photon = p_norm*c
 
     i = 0
     
@@ -88,7 +88,7 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
                 if cf.ifPairProduction(photon_energy,photon_dt,"Ma"):
                     particle_proc,particle_count = \
                         cf.doPairProduction(photon_energy,particle_count,
-                                            particle_proc,m,v_norm,x[i],
+                                            particle_proc,m,p_norm,x[i],
                                             step_counter)
                     photon_kill_event_text = "Pair-Production in HV Standoff"
                     break
@@ -98,7 +98,7 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
                 if cf.ifPairProduction(photon_energy,photon_dt,"SiBr"):
                     particle_proc,particle_count = \
                         cf.doPairProduction(photon_energy,particle_count,
-                                            particle_proc,m,v_norm,x[i],
+                                            particle_proc,m,p_norm,x[i],
                                             step_counter)
                     photon_kill_event_text = "Pair-Production in HV Standoff Screw"
                     break
@@ -110,7 +110,7 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
                 if cf.ifPairProduction(photon_energy,photon_dt,"Al"):
                     particle_proc,particle_count = \
                         cf.doPairProduction(photon_energy,particle_count,
-                                            particle_proc,m,v_norm,x[i],
+                                            particle_proc,m,p_norm,x[i],
                                             step_counter)
                     photon_kill_event_text = "Pair-Production in Long Quad"
                     break
@@ -120,7 +120,7 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
                 if cf.ifPairProduction(photon_energy,photon_dt,"Al"):
                     particle_proc,particle_count = \
                         cf.doPairProduction(photon_energy,particle_count,
-                                            particle_proc,m,v_norm,x[i],
+                                            particle_proc,m,p_norm,x[i],
                                             step_counter)
                     photon_kill_event_text = "Pair-Production Short Quad"
                     break
@@ -130,7 +130,7 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
             if cf.ifPairProduction(photon_energy,photon_dt,"Al"):
                 particle_proc,particle_count = \
                     cf.doPairProduction(photon_energy,particle_count,
-                                        particle_proc,m,v_norm,x[i],
+                                        particle_proc,m,p_norm,x[i],
                                         step_counter)
                 photon_kill_event_text = "Pair-Production in Standoff Plate"
                 break
