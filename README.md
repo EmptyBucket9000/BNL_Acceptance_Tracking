@@ -29,12 +29,12 @@ The variables that need editing are at the top of the 'main.py' file and are com
 
 'extra' - String to add uniqueness to the names of a certain set of output files if two different runs are being made at the same time. A folder must be created with this text inside the 'Single_Files' folder and the folder of the 'ts' value must exist within it. For example, if you set extra = "example/" (note the forward slash) and ts = 13, you must have the folder "../Output/Single_Files/example/13" where the origin of this path is the location of the code. The output files will also have 'example' such as 'particle_matrix_example_13.csv' will be created. 'extra' will generally be left as extra = "".
 
-## IMPORTANT: if you have 'extra' set to non-empty or you change 'ts', the following files must be edited:
+# IMPORTANT: if you have 'extra' set to non-empty or you change 'ts', the following files must be edited:
 
-	process_single_files.py
-	just_process.py
-	read_particle_output.py
-	read_photon_output.py
+process_single_files.py
+just_process.py
+read_particle_output.py
+read_photon_output.py
 
 The edits are very obvious at the top of the files. This will hopefully get updated at some later time to be more automated.
 
@@ -119,7 +119,7 @@ The output variable that is saved to a file contains:
 ## For particles
 (the text is the column header and the number is the index in the array used to generate the output .csv):
 
-Particle #                          0
+Particle #                          0 \n
 Steps                               1
 Kill Event                          2
 Charge                              3
