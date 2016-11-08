@@ -119,8 +119,8 @@ The output variable that is saved to a file contains:
 ## For particles
 (the text is the column header and the number is the index in the array used to generate the output .csv):
 
-Particle #                          0 \n
-Steps                               1
+Particle #                          0  
+Steps                               1  
 Kill Event                          2
 Charge                              3
 Starting Global x-Position (mm)	 	4
