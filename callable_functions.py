@@ -15,14 +15,6 @@ c = 2.99792458*10**8 # (m/s) Speed of light
 #==============================================================================
 # Particle movement and position
 #==============================================================================
-
-## Calculate the Lorentz force on the particle
-
-#def forceDueFields(v,B,E,q):
-#    
-#    F = q*(E + np.cross(v,B))
-#    
-#    return F
     
 ## Get the electric field based on position
 
@@ -154,12 +146,6 @@ def isPhotonReleased(k_min,energy,X0,p,dt,m):
     P5 = poissonProb(N,5)
     P6 = poissonProb(N,6)
     rn = np.random.rand()
-#    print('P1: %0.5f'%P1)
-#    print('P2: %0.5f'%P2)
-#    print('P3: %0.5f'%P3)
-#    print('P4: %0.5f'%P4)
-#    print('P5: %0.5f'%P5)
-#    print('P6: %0.5f'%P6)
     if rn < P1:
         return 1
     elif rn > P1 and rn < P1 + P2:
@@ -309,8 +295,8 @@ def passthroughElementContact(x,el_rad,el_theta):
             
 def passthroughHVStandoff(x,so_rad,so_theta):
 
-    so_inner_diameter = 0.138/39.3701 # (m)
-    so_outer_diameter = 0.3/39.3701 # (m)
+    so_inner_diameter = 0.138/39.3701   # (m)
+    so_outer_diameter = 0.3/39.3701     # (m)
 
     # Get particle's r and theta positions
     
@@ -319,8 +305,8 @@ def passthroughHVStandoff(x,so_rad,so_theta):
     
     for row in so_theta:
     
-        slocal_x = r*np.abs(row[0] - theta)
-        slocal_y = x[2]    
+        slocal_x = r*np.abs(row[0] - np.abs(row[0] - row[1])/2 - theta)
+        slocal_y = x[2]
         slocal_r = np.sqrt(slocal_x**2 + slocal_y**2)
         
         if slocal_r > so_inner_diameter/2 and \
@@ -342,13 +328,13 @@ def passthroughHVStandoffScrews(x,so_rad,so_theta):
     
     for row in so_theta:
     
-        slocal_x = r*np.abs(row[0] - theta)
-        slocal_y = x[2]    
+        slocal_x = r*np.abs(row[0] - np.abs(row[0] - row[1])/2 - theta)
+        slocal_y = x[2]
         slocal_r = np.sqrt(slocal_x**2 + slocal_y**2)
         
         if slocal_r < sos_diameter/2 and \
-            (so_rad[0] < r and (so_rad[0] + 0.00635) > r) or \
-            ((so_rad[1] - 0.00635) < r and so_rad[1] > r):
+            ((so_rad[0] < r and (so_rad[0] + 0.00635) > r) or \
+            ((so_rad[1] - 0.00635) < r and so_rad[1] > r)):
                 
             return True
 
@@ -370,7 +356,7 @@ def noPassthroughElementContact(x,cal_rad,cal_theta):
             cal_rad[1] > r:
     
             return True
-    
+
 ## Checks if reaches inner radial limit
 
 def innerLimit(x,R_i):
@@ -392,7 +378,7 @@ def outerLimit(x,R):
 def updateInsideMatter(p,energy,dt,steps_inside,d_matter):
     
     steps_inside = steps_inside + 1
-    d_matter = d_matter + mag(p)/energy * dt
+    d_matter = d_matter + mag(p)/energy * c * dt
     
     return steps_inside,d_matter
 
@@ -541,17 +527,35 @@ def getMuonMomentumAtDecay():
     
 ## Return the particle momentum at decay
     
-def getParticleMomentumAtDecay(theta,p_range):
-
-    # Currently assumes x' = y' = z' = 0
-
-#    p_array = np.linspace([p_range[0],p_range[1],p_n])
-
+def getParticleMomentumAtDecay(p_range,m_p,theta,m_m):
+    
     # Magnitude of the particle momentum
-    p_tot = p_range[1] - (p_range[1] - p_range[0])*np.random.rand() # (eV/c)
+    rn = np.random.random()
+    p_tot = (1.79453 + 5.92129*10**-7*np.exp(12.8423*rn**3) + 0.756197*rn - 
+    0.276462*rn**2 + 0.580407*rn**3) * 10**9
+#    p_tot = 2.3*10**9
     
     # Convert to momentum vector based on position
     p = np.array([p_tot*np.sin(theta),-p_tot*np.cos(theta),0])
+    
+    p_s_mag = mag(p)
+    gamma = mag(m_p) / m_m
+    
+    while True:
+    
+        ths = np.pi * np.random.random()
+#        cosths = 2 * np.random.random() - 1
+        p_ss = p_s_mag / (gamma * (np.cos(ths) + 1))
+        
+        if p_ss < 52.8*10**6:
+            break
+    
+    phs = 2*np.pi * np.random.random()
+    p_x = p_ss * np.sin(ths) * np.cos(phs)
+    p_y = p_ss * np.sin(ths) * np.sin(phs)
+    
+    p[0] = p[0] + p_x
+    p[1] = p[1] + p_y
     
     return p
     

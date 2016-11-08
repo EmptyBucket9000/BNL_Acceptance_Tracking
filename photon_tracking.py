@@ -49,6 +49,9 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
     dqel_rad = geo_pack[17]
     dqel_theta = geo_pack[18]
     R = geo_pack[19]
+    R_i = geo_pack[20]
+    cal_width = geo_pack[21]
+    cal_height = geo_pack[22]
     
     # Get the normalized velocity vector           
     p_norm = p / cf.mag(p)
@@ -57,6 +60,8 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
     i = 0
     
     while i < photon_steps - 1:
+            
+        cal_con_x = np.zeros((2))
         
         x[i+1] = x[i] + v_photon*photon_dt
         
@@ -64,10 +69,14 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
         step_counter = step_counter + 1
 
         # Calorimeter front contact
+
+        if np.abs(x[i,2]) < cal_height:
         
-        if cf.noPassthroughElementContact(x[i],cal_rad,cal_theta):
-            photon_kill_event_text = "Calorimeter Contact"
-            break
+            if cf.noPassthroughElementContact(x[i],cal_rad,cal_theta):
+                photon_kill_event_text = "Calorimeter Contact"
+                r = cf.getParticleRadialPosition(x[i])
+                cal_con_x = np.array([R_i + cal_width/2 - r,x[i,2]])
+                break
 
         # Calorimeter top
         
@@ -141,7 +150,12 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
     
     photon_matrix[photon_row_index + 1] = np.array(
                          [photon_row_index,i,photon_kill_event_text,
-                          x[0,0],x[0,1],x[0,2],photon_energy/10**9,
+                          x[0,0],
+                          x[0,1],
+                          x[0,2],
+                          cal_con_x[0],
+                          cal_con_x[1],
+                          photon_energy/10**9,
                           steps_inside,steps_inside*c,photon_dt,
                           step_counter*photon_dt])
     

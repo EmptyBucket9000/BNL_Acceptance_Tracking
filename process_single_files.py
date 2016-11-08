@@ -11,19 +11,25 @@ import os
 import glob
 
 
-def process(particle_matrix_header,photon_matrix_header):
+def process(particle_matrix_header,photon_matrix_header,N_part_mat,N_phot_mat,
+            ts,extra):
+                
+    if extra == "angle/":
+        extra_out = "_angle"
+    else:
+        extra_out = ""
     
 #==============================================================================
 # Particle Files
 #==============================================================================
     
     particle_files = \
-        glob.glob("%s/../Output/Single_Files/particle_*.csv"%(os.getcwd()))
+        glob.glob("%s/../Output/Single_Files/%s%d/particle_*.csv"%(os.getcwd(),extra,ts))
     total_muons = len(particle_files)
     N_particles = total_muons*5
     i = 1
         
-    particle_matrix_full = np.zeros((N_particles,33),dtype=object)
+    particle_matrix_full = np.zeros((N_particles,N_part_mat),dtype=object)
                          
     # Output for each particle
     particle_matrix_full[0] = particle_matrix_header
@@ -41,7 +47,7 @@ def process(particle_matrix_header,photon_matrix_header):
     particle_matrix_full = particle_matrix_full[0:i:1]
 
     output_dir = "../Output/"
-    path = output_dir + "particle_matrix.csv"
+    path = output_dir + "particle_matrix%s_%d.csv"%(extra_out,ts)
     with open(path, "w", newline='') as csv_file:
         writer = csv.writer(csv_file, delimiter=',')
         for row in particle_matrix_full:
@@ -52,12 +58,12 @@ def process(particle_matrix_header,photon_matrix_header):
 #==============================================================================
     
     photon_files = \
-        glob.glob("%s/../Output/Single_Files/photon_*.csv"%(os.getcwd()))
+        glob.glob("%s/../Output/Single_Files/%s%d/photon_*.csv"%(os.getcwd(),extra,ts))
     total_files = len(photon_files)
-    N_photons = total_files*5
+    N_photons = total_files*10
     i = 1
         
-    photon_matrix_full = np.zeros((N_photons,11),dtype=object)
+    photon_matrix_full = np.zeros((N_photons,N_phot_mat),dtype=object)
               
     # Output for each photon
     photon_matrix_full[0] = photon_matrix_header
@@ -75,7 +81,7 @@ def process(particle_matrix_header,photon_matrix_header):
     photon_matrix_full = photon_matrix_full[0:i:1]
 
     output_dir = "../Output/"
-    path = output_dir + "photon_matrix.csv"
+    path = output_dir + "photon_matrix%s_%d.csv"%(extra_out,ts)
     with open(path, "w", newline='') as csv_file:
         writer = csv.writer(csv_file, delimiter=',')
         for row in photon_matrix_full:

@@ -13,6 +13,8 @@ import particle_tracking as pt
 import photon_tracking as pht
 import muon_data as md
 import plot_geometries as pg
+import os
+import glob
 import csv
 from process_single_files import process
 
@@ -41,20 +43,26 @@ def main():
     # Name of csv containing muon data    
     file_name = "EndOfTracking_phase_space.csv"
         
-    m_theta_set = 1                     # 1, use m_theta below, 0 random
+    m_theta_set = 0                     # 1, use m_theta below, 0 random
     
     N = 5171                              # Number of muons in beam
-#    N = 5
-    steps = 8*10**5                     # Nnumber of steps for integration
+#    N = 1
+    steps = 5*10**6                     # Nnumber of steps for integration
 #    steps = 3
-    dt = 10**-12                        # Timestep for integration
+    ts = 13
+    dt = 10**-ts                        # Timestep for integration
+
+    # Used in naming spcecial output files.
+    # Folder within 'Output' must exist with this name and a subfolder with the
+    # name of the value of 'ts' must also exist.
+    extra = ""
     
     p_magic = 3.09435*10**9             # (eV/c) Muon magic momentum
     
-    if m_theta_set == 1:
-        m_theta = 2.3*np.pi/8   # (rad) Muon azimuth. position in global coords
-    else:
-        m_theta = -99
+#    if m_theta_set == 1:
+#        m_theta = 3*np.pi/8   # (rad) Muon azimuth. position in global coords
+#    else:
+#        m_theta = -99
         
     m_theta_array = np.array([0,2*np.pi])
     
@@ -63,7 +71,6 @@ def main():
     q = 1                                   # (e) Particle charge
     c = 2.99792458*10**8                    # (m/s) Speed of light
     m = 0.510999*10**6                      # (eV/c**2) Particle mass
-#    m_m = 105.65837*10**6                  # (eV/c**2) Muon mass
     B = np.array([0,0,1.4513])              # (T) Magnetic field
     
     geo_pack = geometry.geo()               # All the permanent geometries
@@ -76,6 +83,8 @@ def main():
                                  "Starting Global x-Position (mm)",
                                  "Starting Global y-Position (mm)",
                                  "Starting Global z-Position (mm)",
+                                 "Ending Calorimeter x-Position (mm)",
+                                 "Ending Calorimeter y-Position (mm)",
                                  "Starting Momentum (GeV/c)",
                                  "Ending Momentum (GeV/c)",
                                  "Delta Momentum (GeV/c)",
@@ -107,10 +116,15 @@ def main():
                                "Starting Global x-Position",
                                "Starting Global y-Position",
                                "Starting Global z-Position",
+                               "Ending Calorimeter x-Position (mm)",
+                               "Ending Calorimeter y-Position (mm)",
                                "Energy (GeV)","Steps Inside Matter",
                                "Distance Inside Matter (cm)",
                                "dt",
                                "Kill Timestamp"])
+                               
+    N_part_mat = len(particle_matrix_header)                               
+    N_phot_mat = len(photon_matrix_header)
     
     muon_number = 0         # Used as a counter for multiple particles
     
@@ -120,6 +134,12 @@ def main():
     N_particles = 50
     N_photons = 50
     
+    ## Delete all the current single files
+    
+    single_files = glob.glob("%s/../Output/Single_Files/*.csv"%(os.getcwd()))
+    if len(single_files) > 0:
+        for f in single_files:
+            os.remove(f)
 #==============================================================================
 #   Run the code!!
 #==============================================================================
@@ -132,8 +152,8 @@ def main():
         m_x = m_x_list[muon_number]
         m_p = m_p_list[muon_number]
         
-        particle_matrix = np.zeros((N_particles,33),dtype=object)
-        photon_matrix = np.zeros((N_photons,11),dtype=object)
+        particle_matrix = np.zeros((N_particles,N_part_mat),dtype=object)
+        photon_matrix = np.zeros((N_photons,N_phot_mat),dtype=object)
     
         particle_matrix[0] = particle_matrix_header
         photon_matrix[0] = photon_matrix_header
@@ -143,18 +163,18 @@ def main():
         particle_matrix,photon_matrix = \
             run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
                 particle_matrix,make_plots,save_plots,save_output,
-                N,steps,dt,q,B,muon_number,N_particles,N_photons)
+                N,steps,dt,q,B,muon_number,N_particles,N_photons,ts)
                 
         muon_number = muon_number + 1
                 
-        print("Percent complete: %0.3f%%"%(muon_number*(100/N)),
-              end="\r")
+        print("Percent complete: %0.3f%%"%(muon_number*(100/N)),end="\r")
               
     # Finally, convert all the single particle_matrix and photon_matrix files
     # into single files.
               
     if save_output == 1:
-        process(particle_matrix_header,photon_matrix_header)
+        process(particle_matrix_header,photon_matrix_header,N_part_mat,
+                N_phot_mat,ts,extra)
 
 #==============================================================================
 #==============================================================================
@@ -164,7 +184,7 @@ def main():
 
 def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
         particle_matrix,make_plots,save_plots,save_output,
-        N,steps,dt,q,B,muon_number,N_particles,N_photons):
+        N,steps,dt,q,B,muon_number,N_particles,N_photons,ts):
 
 #==============================================================================
 #   Initialization and setting variables
@@ -172,15 +192,14 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
 
     R = geo_pack[19]
         
-    photon_steps = 3*10**4
+    photon_steps = 3*10**5
     photon_dt = 10**-11
     
     particle_count = 0
-
-    # Momentum array for a single muon away from the magic momentum
-#        m_p = cf.getMuonMomentumAtDecay()       # (eV/c)
     
     '''Use local muon variables to get inital global particle variables'''
+    
+    m_m = 105.65837*10**6                  # (eV/c**2) Muon mass
     
     # Radial distance from center of ring
     r = R + m_x[0]                          # (m)
@@ -191,15 +210,15 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
     x[0,0] = r*np.cos(m_theta)            # (m) x-position
     x[0,1] = r*np.sin(m_theta)            # (m) y-position
     x[0,2] = m_x[1]                       # (m) z-position
-    p_range = np.array([0.2*10**9,m_p[2]])
+    p_range = np.array([1.8*10**9,cf.mag(m_p)])
 #        p_range = np.array([1.2,1.2])*10**9
     
-    p_s = cf.getParticleMomentumAtDecay(m_theta,p_range)
+    p_s = cf.getParticleMomentumAtDecay(p_range,m_p,m_theta,m_m)
     
     p = np.zeros((3))
     p[0] = p_s[0] + m_p[0]*np.cos(m_theta)
     p[1] = p_s[1] + m_p[0]*np.sin(m_theta)
-    p[2] = m_p[1]
+    p[2] = np.copy(m_p[1])
     
     particle_pos = np.zeros((N_particles,steps,3))
     photon_pos = np.zeros((photon_steps,3))
@@ -223,7 +242,7 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
     particle_row_index = 0
     photon_row_index = 0
     
-    while 1 < 2:
+    while True:
         
         particle_proc_old = np.copy(particle_proc)
             
@@ -280,6 +299,37 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
             
         # Counter used for setting multiple figures
         n = 0
+        
+        plt.figure(n)
+        ax = plt.subplot(1,1,1)
+        
+        index = 1 # As first row in particle_matrix is headers
+    
+        for particle in particle_pos:
+                     
+            x = float(particle_matrix[index,7])
+            y = float(particle_matrix[index,8])
+            index = index + 1
+            if x != 0.0 or y != 0.0:
+                ax.scatter(x,y,c='b',label='Particle on Calorimeter')
+        
+        index = 1 # As first row in particle_matrix is headers
+    
+        for photon in photon_proc:
+                       
+            x = float(photon_matrix[index,6])
+            y = float(photon_matrix[index,7])
+            index = index + 1
+            if x != 0.0 or y != 0.0:
+                ax.scatter(x,y,c='r',label='Photon on Calorimeter')
+            
+        plt.axis('equal')
+        plt.grid()
+        plt.xlim(-0.2,0.2)
+        plt.ylim(-0.15,0.15)
+        plt.title('Particle and Photon Positions on Calorimeter')
+        
+        n = n + 1
             
         # Figure
         plt.figure(n)
@@ -292,9 +342,9 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
     
         for particle in particle_pos:
             
-            final_index = int(particle_matrix[part_index,1])            
-            x = particle[0:final_index:1]                
-            part_index = part_index + 1                
+            final_index = int(particle_matrix[part_index,1])
+            x = particle[0:final_index:1]
+            part_index = part_index + 1
             ax.plot(x[:,0],x[:,1], label='Particle Track',lw = 0.5)
             
         # Add Bremsstrahlung photons if they were created
@@ -324,10 +374,12 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
         # Set axes limits based on min/max particle positions
 
         plt.axis('equal') # Prevents a skewed look
-        plt.xlim(min(x[:,0]-0.1),max(x[:,0]+0.2))
-        plt.ylim(min(x[:,1]-1),max(x[:,1]+1))
-#        plt.xlim(4.8,5.2)
-#        plt.ylim(4.7,5.1)
+        plt.xlim(min(x[:,0]-2),max(x[:,0]+2))
+        plt.ylim(min(x[:,1]-2),max(x[:,1]+2))
+#        plt.xlim(min(x[:,0]-0.1),max(x[:,0]+0.1))
+#        plt.ylim(min(x[:,1]-0.1),max(x[:,1]+0.1))
+#        plt.xlim(3.5,3.7)
+#        plt.ylim(-6.1,-6.0)
         plt.grid()
 
         if save_plots == 1:
@@ -343,14 +395,14 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
         photon_matrix_print = \
             photon_matrix[np.any(photon_matrix != 0,axis=1)]
 
-        output_dir = "../Output/Single_Files/"
+        output_dir = "../Output/Single_Files/%d/"%ts
         path = output_dir + "particle_matrix_%d.csv"%muon_number
         with open(path, "w", newline='') as csv_file:
             writer = csv.writer(csv_file, delimiter=',')
             for row in particle_matrix_print:
                 writer.writerow(row)
 
-        output_dir = "../Output/Single_Files/"
+        output_dir = "../Output/Single_Files/%d/"%ts
         path = output_dir + "photon_matrix_%d.csv"%muon_number
         with open(path, "w", newline='') as csv_file:
             writer = csv.writer(csv_file, delimiter=',')

@@ -29,6 +29,8 @@ A file 'geo_pack' is created here, to unpack, use:
     dqel_theta = geo_pack[18]
     R = geo_pack[19]
     R_i = geo_pack[20]
+    cal_width = geo_pack[21]
+    cal_height = geo_pack[22]
 
 '''
 
@@ -37,27 +39,27 @@ import numpy as np
 def geo():
 
     R = 7.112                   # (m) Radius of the ring
-    R_i = R - 0.5525            # (m) Inner radius limit for tracking
+#    R_i = R - 0.5525            # (m) Inner radius limit for tracking
+    R_i = 6.805
     
     ''' Calorimeters '''
     
-    cal_len = 0.36576           # (m) Calorimeter length
-    #cal_phi = 0                # (rad) Angle from radial line (Unused)
+    cal_width = 0.225           # (m) Calorimeter length (width)
     cal_depth = 0.4572          # (m) Depth of calorimeter
+    cal_height = 0.14          # (m) Height of the calorimeter
     
     # (rad) Location as a function of theta. 0.001 subtracted from
     # 'cal_theta_end' to prevent particles from being counted as contact with
     # the calorimeter by contacting the 'top' of the calorimeter.
     
     cal_theta_start = np.linspace(0,2*np.pi-np.pi/12,24) + np.pi/12
-#    cal_theta_start = np.array([0])
-    cal_box_theta_end = cal_theta_start - cal_depth/(R_i+cal_len)
+    cal_box_theta_end = cal_theta_start - cal_depth/(R_i+cal_width)
     cal_theta_end = cal_theta_start - .001
     cal_theta = np.column_stack((cal_theta_start,cal_theta_end))
     cal_box_theta = np.column_stack((cal_theta_start -0.001,cal_box_theta_end))
     
     # Radial position [r_min,r_max]
-    cal_rad = np.array([R_i,R_i+cal_len]) # (m)
+    cal_rad = np.array([R_i,R_i+cal_width]) # (m)
     
     ''' HV Standoff '''
     
@@ -148,6 +150,6 @@ def geo():
                          qel_z_max,
                          sqel_rad,sqel_theta,
                          dqel_rad,dqel_theta,
-                         R,R_i])
+                         R,R_i,cal_width,cal_height])
                          
     return geo_pack

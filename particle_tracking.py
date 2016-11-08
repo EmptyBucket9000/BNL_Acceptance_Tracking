@@ -34,20 +34,20 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
     min_detectable_energy = 0.2*10**9       # (eV) Minimum energy detectable
     
     # Counter for number of steps a particle is inside matter
-    # [sqel,dqel,sp,so]
+    # [sqel,dqel,sp,so,sos]
     steps_inside = np.zeros((5))
     
     # How far the particle has traveled in matter
-    # [sqel,dqel,sp,so]
+    # [sqel,dqel,sp,so,sos]
     d_matter = np.zeros((5))                             # (m)
     
     # Radiation lengths
     X0_al = 0.08897                  # (m) Radiation length of aluminum
     X0_ma = 0.05198                  # (m) Radiation length of macor
     X0_sibr = 0.01468                # (m) Radiation length of silicon bronze
-#    X0_al = 0.001
-#    X0_ma = 0.001
-#    X0_sibr = 0.001  
+#    X0_al = 10
+#    X0_ma = 10
+#    X0_sibr = 10  
 
     # Unpack 'geo_pack'
     
@@ -66,6 +66,8 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
     dqel_theta = geo_pack[18]
     R = geo_pack[19]
     R_i = geo_pack[20]
+    cal_width = geo_pack[21]
+    cal_height = geo_pack[22]
     
     n = .142                                # () Used in E-field
     
@@ -79,7 +81,7 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
     else:
         loc = "Out"
         
-    E = cf.getElectricField(x[0],B,R,n,loc)           # Set initial E-field values
+    E = cf.getElectricField(x[0],B,R,n,loc)       # Set initial E-field values
     
     # Event text
     kill_event_text = "Unknown failure" # In case nothing happens
@@ -99,6 +101,8 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
     i = 0
     ''' RK4 work '''
     while i < steps - 1:
+            
+        cal_con_x = np.zeros((2))
             
         a = q*c**2*(E + np.cross(p[i]/energy,B))
         dp1 = a*dt
@@ -308,10 +312,14 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
         
         # Calorimeter front
         
-        if cf.noPassthroughElementContact(x[i],cal_rad,cal_theta):
-            kill_event_text = "Calorimeter Contact"
-            break
+        if np.abs(x[i,2]) < cal_height:
         
+            if cf.noPassthroughElementContact(x[i],cal_rad,cal_theta):
+                kill_event_text = "Calorimeter Contact"
+                r = cf.getParticleRadialPosition(x[i])
+                cal_con_x = np.array([R_i + cal_width/2 - r,x[i,2]])
+                break
+            
         # Calorimeter top
         
         if cf.noPassthroughElementContact(x[i],cal_rad,cal_box_theta):
@@ -339,35 +347,52 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
     pp = particle_proc[particle_row_index,9]
         
     particle_matrix[particle_row_index + 1] = np.array(
-                         [particle_row_index,i,
-                          '%s'%kill_event_text,charge,
-                          '%0.3f'%(x[0,0]*10**3),
-                          '%0.3f'%(x[0,1]*10**3),
-                          '%0.3f'%(x[0,2]*10**3),
-                          '%0.7f'%(p_init_mag/10**9),
-                          '%0.7f'%(p_end_mag/10**9),
-                          '%0.7f'%((p_end_mag - p_init_mag)/10**9),
-                          steps_inside[0],d_matter[0]*100,
-                          sqel_photon_count[0],
-                          sqel_photon_count[1],
-                          steps_inside[1],d_matter[1]*100,
-                          dqel_photon_count[0],
-                          dqel_photon_count[1],
-                          steps_inside[2],d_matter[2]*100,
-                          sp_photon_count[0],
-                          sp_photon_count[1],
-                          steps_inside[3],d_matter[3]*100,
-                          so_photon_count[0],
-                          so_photon_count[1],
-                          steps_inside[4],d_matter[4]*100,
-                          sos_photon_count[0],
-                          sos_photon_count[1],
-                          '%2e'%dt,pp,
-                          '%5e'%(step_counter*dt)])
+                         [particle_row_index,                       # 0
+                          i,                                        # 1
+                          '%s'%kill_event_text,                     # 2
+                          charge,                                   # 3
+                          '%0.3f'%(x[0,0]*10**3),                   # 4
+                          '%0.3f'%(x[0,1]*10**3),                   # 5
+                          '%0.3f'%(x[0,2]*10**3),                   # 6
+                          cal_con_x[0],                             # 7
+                          cal_con_x[1],                             # 8
+                          '%0.7f'%(p_init_mag/10**9),               # 9
+                          '%0.7f'%(p_end_mag/10**9),                # 10
+                          '%0.7f'%((p_end_mag - p_init_mag)/10**9), # 11
+                          steps_inside[0],                          # 12
+                          d_matter[0]*100,                          # 13
+                          sqel_photon_count[0],                     # 14
+                          sqel_photon_count[1],                     # 15
+                          steps_inside[1],                          # 16
+                          d_matter[1]*100,                          # 17          
+                          dqel_photon_count[0],                     # 18
+                          dqel_photon_count[1],                     # 19
+                          steps_inside[2],                          # 20
+                          d_matter[2]*100,                          # 21
+                          sp_photon_count[0],                       # 22
+                          sp_photon_count[1],                       # 23
+                          steps_inside[3],                          # 24
+                          d_matter[3]*100,                          # 25
+                          so_photon_count[0],                       # 26
+                          so_photon_count[1],                       # 27
+                          steps_inside[4],                          # 28
+                          d_matter[4]*100,                          # 29
+                          sos_photon_count[0],                      # 30
+                          sos_photon_count[1],                      # 31
+                          '%2e'%dt,                                 # 32
+                          pp,                                       # 33
+                          '%5e'%(step_counter*dt)])                 # 34
     particle_count = particle_count + 1
     particle_proc[particle_row_index,7] = 1
     
-#    print('Delta Momentum: %0.7f'%((p_end_mag - p_init_mag)/10**9))
+#    if steps_inside[1] > 0:
+#        print('Inside dqel')
+#    
+#    elif steps_inside[0] > 0:
+#        print('Inside sqel')
+#    
+#    else:
+#        print('other')
                             
     return particle_pos,particle_matrix,particle_proc,photon_count, \
             photon_proc

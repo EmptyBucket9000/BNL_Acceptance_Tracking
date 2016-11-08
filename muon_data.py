@@ -29,7 +29,7 @@ def muon(N,file_name,p_magic,m_theta_array,m_theta_set):
                 m_theta_array[0]
                 
     else: 
-        m_theta = 2.3*np.pi/8
+        m_theta = 14*np.pi/8
         
     return m_x,m_p,m_theta
 
