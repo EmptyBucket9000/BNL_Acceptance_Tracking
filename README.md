@@ -119,55 +119,55 @@ The output variable that is saved to a file contains:
 ## For particles
 (the text is the column header and the number is the index in the array used to generate the output .csv):
 
-Particle #                          0  
-Steps                               1  
-Kill Event                          2  
-Charge                              3  
-Starting Global x-Position (mm)	 	4  
-Starting Global y-Position (mm)	 	5  
-Starting Global z-Position (mm)     6  
-Ending Calorimeter x (mm)           7  
-Ending Calorimeter y (mm)           8  
-Starting Momentum (GeV/c)           9  
-Ending Momentum (GeV/c)             10  
-Delta Momentum (GeV/c)              11  
-Steps Inside Short Quad             12  
-Distance Inside Short Quad (cm)	 	13  
-Total # of Photons Released         14  
-# of Detectable Photons Released	15  
-Steps Inside Long Quad              16  
-Distance Inside Long Quad (cm)	 	17  
-Total # of Photons Released         18  
-# of Detectable Photons Released	19  
-Steps Inside Standoff Plate         20  
-Distance Inside Standoff Plate (cm) 21  
-Total # of Photons Released         22  
-# of Detectable Photons Released	23  
-Steps Inside HV Standoff            24  
-Distance Inside HV Standoff (cm)	25  
-Total # of Photons Released         26  
-# of Detectable Photons Released	27  
-Steps Inside HV Standoff Screws     28  
-Distance Inside HV Standoff Screws	29  
-Total # of Photons Released         30  
-# of Detectable Photons Released	31  
-dt (particle timestep)		        32  
-Pair Produced (0 or 1)              33  
-Kill Timestamp                      34  
+Particle #                          	0  
+Steps                               	1  
+Kill Event                          	2  
+Charge                              	3  
+Starting Global x-Position (mm)	 		4  
+Starting Global y-Position (mm)	 		5  
+Starting Global z-Position (mm)     	6  
+Ending Calorimeter x (mm)           	7  
+Ending Calorimeter y (mm)           	8  
+Starting Momentum (GeV/c)           	9  
+Ending Momentum (GeV/c)             	10  
+Delta Momentum (GeV/c)              	11  
+Steps Inside Short Quad             	12  
+Distance Inside Short Quad (cm)	 		13  
+Total # of Photons Released         	14  
+Number of Detectable Photons Released	15  
+Steps Inside Long Quad              	16  
+Distance Inside Long Quad (cm)	 		17  
+Total # of Photons Released         	18  
+Number of Detectable Photons Released	19  
+Steps Inside Standoff Plate         	20  
+Distance Inside Standoff Plate (cm) 	21  
+Total # of Photons Released         	22  
+Number of Detectable Photons Released	23  
+Steps Inside HV Standoff            	24  
+Distance Inside HV Standoff (cm)		25  
+Total # of Photons Released         	26  
+Number of Detectable Photons Released	27  
+Steps Inside HV Standoff Screws     	28  
+Distance Inside HV Standoff Screws		29  
+Total # of Photons Released         	30  
+Number of Detectable Photons Released	31  
+dt (particle timestep)		        	32  
+Pair Produced (0 or 1)              	33  
+Kill Timestamp                      	34  
 
 ## For photons
 
-Photon #                        	0  
-Steps                           	1  
-Kill Event                      	2  
-Starting Global x-Position      	3  
-Starting Global y-Position      	4  
-Starting Global z-Position      	5  
-Ending Calorimeter x (mm)       	6  
-Ending Calorimeter y (mm)       	7  
-Energy (GeV)                    	8  
-Steps Inside Matter             	9  
-Distance Inside Matter (cm)     	10  
-dt (photon timestep)            	11  
-Kill Timestamp                  	12  
+Photon #                        		0  
+Steps                           		1  
+Kill Event                      		2  
+Starting Global x-Position      		3  
+Starting Global y-Position      		4  
+Starting Global z-Position      		5  
+Ending Calorimeter x (mm)       		6  
+Ending Calorimeter y (mm)       		7  
+Energy (GeV)                    		8  
+Steps Inside Matter             		9  
+Distance Inside Matter (cm)     		10  
+dt (photon timestep)            		11  
+Kill Timestamp                  		12  
 
