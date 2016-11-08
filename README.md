@@ -1,6 +1,5 @@
 # BNL_Admittance_Tracking
 # Eric Schmidt
-# schmide2@my.erau.edu
 
 ######################################
 # Initial Notes
