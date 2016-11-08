@@ -99,10 +99,10 @@ In addition, a different type of local coordinate system is used when determinin
 
 The muon data, i.e. momentum and position vectors (in local coordinates), come from a data file from the simulation group that contains muon information after 100 microseconds in the ring. The first 5 columns should be (including sample data from 2 muons):
 
-|:x:		|:xp:		|:y:		|:yp	   :|:pz:|
-|-----------|-----------|-----------|-----------|----------|
-|0.0033485	|0.0025989	|-0.0091195	|-0.00037342|0.0018116 |
-|-0.013607	|-0.00085284|-0.011613	|-0.0014243	|0.00037121|
+|x			|xp			|y			|yp			|pz			|		
+|-----------|-----------|-----------|-----------|-----------|
+|0.0033485	|0.0025989	|-0.0091195	|-0.00037342|0.0018116 	|
+|-0.013607	|-0.00085284|-0.011613	|-0.0014243	|0.00037121	|
 
 where x,y are positions in the local coordinate system, xp and yp are xprime and yprime (from x,y phase-spaces), and pz is (momentum - magic momentum)/magic momentum.
 
