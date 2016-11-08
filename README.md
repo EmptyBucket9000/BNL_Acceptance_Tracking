@@ -141,19 +141,19 @@ The output variable that is saved to a file contains:
 |Steps Inside Long Quad              	|16		|
 |Distance Inside Long Quad (cm)	 		|17		|  
 |Total # of Photons Released         	|18		|  
-|Number of Detectable Photons Released	|19		|  
+|# of Detectable Photons Released		|19		|  
 |Steps Inside Standoff Plate         	|20		|  
 |Distance Inside Standoff Plate (cm) 	|21		|  
 |Total # of Photons Released         	|22		|  
-|Number of Detectable Photons Released	|23		|  
+|# of Detectable Photons Released		|23		|  
 |Steps Inside HV Standoff            	|24		|  
 |Distance Inside HV Standoff (cm)		|25		|  
 |Total # of Photons Released         	|26		|  
-|Number of Detectable Photons Released	|27		|  
+|# of Detectable Photons Released		|27		|  
 |Steps Inside HV Standoff Screws     	|28		|  
 |Distance Inside HV Standoff Screws		|29		|  
 |Total # of Photons Released         	|30		|  
-|Number of Detectable Photons Released	|31		|  
+|# of Detectable Photons Released		|31		|  
 |dt (particle timestep)		        	|32		|  
 |Pair Produced (0 or 1)              	|33		|  
 |Kill Timestamp                      	|34		|  
