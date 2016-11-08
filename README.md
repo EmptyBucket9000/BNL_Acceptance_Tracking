@@ -124,39 +124,39 @@ The output variable that is saved to a file contains:
 |---------------------------------------|-------|
 |Particle #                          	|0		|
 |Steps                               	|1		|
-Kill Event                          	2  
-Charge                              	3  
-Starting Global x-Position (mm)	 		4  
-Starting Global y-Position (mm)	 		5  
-Starting Global z-Position (mm)     	6  
-Ending Calorimeter x (mm)           	7  
-Ending Calorimeter y (mm)           	8  
-Starting Momentum (GeV/c)           	9  
-Ending Momentum (GeV/c)             	10  
-Delta Momentum (GeV/c)              	11  
-Steps Inside Short Quad             	12  
-Distance Inside Short Quad (cm)	 		13  
-Total # of Photons Released         	14  
-Number of Detectable Photons Released	15  
-Steps Inside Long Quad              	16  
-Distance Inside Long Quad (cm)	 		17  
-Total # of Photons Released         	18  
-Number of Detectable Photons Released	19  
-Steps Inside Standoff Plate         	20  
-Distance Inside Standoff Plate (cm) 	21  
-Total # of Photons Released         	22  
-Number of Detectable Photons Released	23  
-Steps Inside HV Standoff            	24  
-Distance Inside HV Standoff (cm)		25  
-Total # of Photons Released         	26  
-Number of Detectable Photons Released	27  
-Steps Inside HV Standoff Screws     	28  
-Distance Inside HV Standoff Screws		29  
-Total # of Photons Released         	30  
-Number of Detectable Photons Released	31  
-dt (particle timestep)		        	32  
-Pair Produced (0 or 1)              	33  
-Kill Timestamp                      	34  
+|Kill Event                          	|2		|
+|Charge                              	|3		|
+|Starting Global x-Position (mm)	 	|4		|  
+|Starting Global y-Position (mm)	 	|5		|  
+|Starting Global z-Position (mm)     	|6		|  
+|Ending Calorimeter x (mm)           	|7		|  
+|Ending Calorimeter y (mm)           	|8		|  
+|Starting Momentum (GeV/c)           	|9		|  
+|Ending Momentum (GeV/c)             	|10		|  
+|Delta Momentum (GeV/c)              	|11		|
+|Steps Inside Short Quad             	|12		|  
+|Distance Inside Short Quad (cm)	 	|13		|  
+|Total # of Photons Released         	|14		|  
+|Number of Detectable Photons Released	|15		|  
+|Steps Inside Long Quad              	|16		|
+|Distance Inside Long Quad (cm)	 		|17		|  
+|Total # of Photons Released         	|18		|  
+|Number of Detectable Photons Released	|19		|  
+|Steps Inside Standoff Plate         	|20		|  
+|Distance Inside Standoff Plate (cm) 	|21		|  
+|Total # of Photons Released         	|22		|  
+|Number of Detectable Photons Released	|23		|  
+|Steps Inside HV Standoff            	|24		|  
+|Distance Inside HV Standoff (cm)		|25		|  
+|Total # of Photons Released         	|26		|  
+|Number of Detectable Photons Released	|27		|  
+|Steps Inside HV Standoff Screws     	|28		|  
+|Distance Inside HV Standoff Screws		|29		|  
+|Total # of Photons Released         	|30		|  
+|Number of Detectable Photons Released	|31		|  
+|dt (particle timestep)		        	|32		|  
+|Pair Produced (0 or 1)              	|33		|  
+|Kill Timestamp                      	|34		|  
 
 ## For photons
 
