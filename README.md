@@ -29,7 +29,7 @@ The variables that need editing are at the top of the 'main.py' file and are com
 
 'extra' - String to add uniqueness to the names of a certain set of output files if two different runs are being made at the same time. A folder must be created with this text inside the 'Single_Files' folder and the folder of the 'ts' value must exist within it. For example, if you set extra = "example/" (note the forward slash) and ts = 13, you must have the folder "../Output/Single_Files/example/13" where the origin of this path is the location of the code. The output files will also have 'example' such as 'particle_matrix_example_13.csv' will be created. 'extra' will generally be left as extra = "".
 
-## IMPORTANT ## if you have 'extra' set to not empty or you change 'ts', the following files must be edited:
+## IMPORTANT: if you have 'extra' set to non-empty or you change 'ts', the following files must be edited:
 
 	process_single_files.py
 	just_process.py
@@ -84,11 +84,14 @@ README.md - This file.
 
 Two primary coordinate systems are used, global and local, plus a third, temporary system:
  
-    Global is the entire ring in 3-dimensions cartesian coordinates where the origin is the center of the ring and the z-direction indicates 'up' and 'down', from the perspective of a person standing in the ring, and is parallel to the y-direction in the local coordinate system.
-     
-    Local is a 2-dimensional x,y cartesian coordinate where the origin is the beam centroid (assume point of view of the muons), the positive x-direction points towards the center of the ring and the y-direction is parallel to the z-direction in the global system. Local is used in determining particle initial conditions, i.e. the conditions describing the muon at decay
+## Global
+Global is the entire ring in 3-dimensions cartesian coordinates where the origin is the center of the ring and the z-direction indicates 'up' and 'down', from the perspective of a person standing in the ring, and is parallel to the y-direction in the local coordinate system.
 
-	In addition, a different type of local coordinate system is used when determining if a particle is inside matter. In some cases, a useful local coordinate system is used for the comparison, which is some x,y cartesian system used only for that particular matter, such as the high-voltage standoff.
+## Local  
+Local is a 2-dimensional x,y cartesian coordinate where the origin is the beam centroid (assume point of view of the muons), the positive x-direction points towards the center of the ring and the y-direction is parallel to the z-direction in the global system. Local is used in determining particle initial conditions, i.e. the conditions describing the muon at decay
+
+## Other
+In addition, a different type of local coordinate system is used when determining if a particle is inside matter. In some cases, a useful local coordinate system is used for the comparison, which is some x,y cartesian system used only for that particular matter, such as the high-voltage standoff.
 
 ######################################
 # Muons
@@ -96,7 +99,7 @@ Two primary coordinate systems are used, global and local, plus a third, tempora
 
 The muon data, i.e. momentum and position vectors (in local coordinates), come from a data file from the simulation group that contains muon information after 100 microseconds in the ring. The first 5 columns should be (including sample data from 2 muons):
 
-	x			xp			y			yp			pz
+x			xp			y			yp			pz
 0.0033485	0.0025989	-0.0091195	-0.00037342	0.0018116
 -0.013607	-0.00085284	-0.011613	-0.0014243	0.00037121
 
@@ -113,7 +116,7 @@ for a ring radius of 7.112 m.
 
 The output variable that is saved to a file contains:
 
-### For particles ###
+## For particles
 (the text is the column header and the number is the index in the array used to generate the output .csv):
 
 Particle #                          0
@@ -152,7 +155,7 @@ dt (particle timestep)		        32
 Pair Produced (0 or 1)              33
 Kill Timestamp                      34
 
-### For photons ###
+## For photons
 
 Photon #                        	0
 Steps                           	1
