@@ -137,7 +137,7 @@ The output variable that is saved to a file contains:
 |Steps Inside Short Quad             	|12		|  
 |Distance Inside Short Quad (cm)	 	|13		|  
 |Total # of Photons Released         	|14		|  
-|Number of Detectable Photons Released	|15		|  
+|# of Detectable Photons Released		|15		|  
 |Steps Inside Long Quad              	|16		|
 |Distance Inside Long Quad (cm)	 		|17		|  
 |Total # of Photons Released         	|18		|  
@@ -160,17 +160,19 @@ The output variable that is saved to a file contains:
 
 ## For photons
 
-Photon #                        		0  
-Steps                           		1  
-Kill Event                      		2  
-Starting Global x-Position      		3  
-Starting Global y-Position      		4  
-Starting Global z-Position      		5  
-Ending Calorimeter x (mm)       		6  
-Ending Calorimeter y (mm)       		7  
-Energy (GeV)                    		8  
-Steps Inside Matter             		9  
-Distance Inside Matter (cm)     		10  
-dt (photon timestep)            		11  
-Kill Timestamp                  		12  
+|Column Header							|Index	|
+|---------------------------------------|-------|
+|Photon #                        		|0		|
+|Steps                           		|1		|
+|Kill Event                      		|2		|  
+|Starting Global x-Position      		|3		|  
+|Starting Global y-Position      		|4		|  
+|Starting Global z-Position      		|5		|  
+|Ending Calorimeter x (mm)       		|6		|  
+|Ending Calorimeter y (mm)       		|7		|  
+|Energy (GeV)                    		|8		|  
+|Steps Inside Matter             		|9		|  
+|Distance Inside Matter (cm)     		|10		|  
+|dt (photon timestep)            		|11		|
+|Kill Timestamp                  		|12		|  
 
