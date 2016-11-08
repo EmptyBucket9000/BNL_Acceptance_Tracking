@@ -32,10 +32,7 @@ See README.md for information.
 def main():
 
     ''' Begin editable variables '''
-
-    # Output
     
-#    print_text = 1              # Set to 1 to print output text, 0 for none
     make_plots = 0              # Set to 1 to display plots
     save_plots = 0              # Set to 1 to save plots as images
     save_output = 1             # Set to 1 to save data output to csv
@@ -47,27 +44,19 @@ def main():
     
     N = 5171                              # Number of muons in beam
 #    N = 1
-    steps = 5*10**6                     # Nnumber of steps for integration
-#    steps = 3
     ts = 13
-    dt = 10**-ts                        # Timestep for integration
 
     # Used in naming spcecial output files.
     # Folder within 'Output' must exist with this name and a subfolder with the
     # name of the value of 'ts' must also exist.
     extra = ""
     
-    p_magic = 3.09435*10**9             # (eV/c) Muon magic momentum
-    
-#    if m_theta_set == 1:
-#        m_theta = 3*np.pi/8   # (rad) Muon azimuth. position in global coords
-#    else:
-#        m_theta = -99
-        
-    m_theta_array = np.array([0,2*np.pi])
-    
     ''' Permanent constants '''
     
+    steps = 5*10**6                         # Nnumber of steps for integration
+    dt = 10**-ts                            # Timestep for integration    
+    p_magic = 3.09435*10**9                 # (eV/c) Muon magic momentum        
+    m_theta_array = np.array([0,2*np.pi])   # Starting theta in global coords. 
     q = 1                                   # (e) Particle charge
     c = 2.99792458*10**8                    # (m/s) Speed of light
     m = 0.510999*10**6                      # (eV/c**2) Particle mass
