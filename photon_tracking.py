@@ -15,7 +15,6 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
     c = 2.99792458*10**8                    # (m/s) Speed of light
     photon_kill_event_text = "Unknown Failure"
     photon_energy = photon_proc[photon_row_index,6]
-#    print('photon energy: %0.3f'%(photon_energy/10**9))
     
     # Counter for number of steps a particle is inside matter
     steps_inside = 0
@@ -25,6 +24,10 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
     x = np.zeros((photon_steps,3))         # Initialize photon position array
     p = np.zeros((3))                      # Initialize particle momentum array
     
+    # Get the position of the photon and the momentum of the particle that
+    # created it at the time of creation. The momentum vector is used for
+    # directionality only.
+    
     x[0,0] = photon_proc[photon_row_index,0]
     x[0,1] = photon_proc[photon_row_index,1]
     x[0,2] = photon_proc[photon_row_index,2]
@@ -33,7 +36,7 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
     p[1] = photon_proc[photon_row_index,4]
     p[2] = photon_proc[photon_row_index,5]
 
-    # Unpack 'geo_pack'    
+    # Unpack 'geo_pack'
     
     cal_theta = geo_pack[0]
     cal_rad = geo_pack[2]
@@ -53,15 +56,17 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
     cal_width = geo_pack[21]
     cal_height = geo_pack[22]
     
-    # Get the normalized velocity vector           
+    # Get the normalized momentum vector to create the photon velocity vector
+    
     p_norm = p / cf.mag(p)
     v_photon = p_norm*c
+            
+    # Initialize the calorimeter contact position array
+    cal_con_x = np.zeros((2))
 
     i = 0
     
     while i < photon_steps - 1:
-            
-        cal_con_x = np.zeros((2))
         
         x[i+1] = x[i] + v_photon*photon_dt
         
@@ -89,12 +94,22 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
         if cf.outerLimit(x[i],R + 0.2):
             photon_kill_event_text = "Heading Out"
             break
+        
+        ## Check for and create pair-production events
 
+        # Check if the photon's z-position is within the maximum height of the
+        # HV standoff
         if x[i,2] < so_z_max:
                     
+            # Check if the photon is inside an HV standoff
             if cf.passthroughHVStandoff(x[i],so_rad,so_theta):
                 steps_inside = steps_inside + 1
+                
+                # Check if a pair-production event occurs
                 if cf.ifPairProduction(photon_energy,photon_dt,"Ma"):
+                    
+                    # Add the new particles to the particle_proc array and
+                    # increase the particle count
                     particle_proc,particle_count = \
                         cf.doPairProduction(photon_energy,particle_count,
                                             particle_proc,m,p_norm,x[i],
@@ -102,6 +117,7 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
                     photon_kill_event_text = "Pair-Production in HV Standoff"
                     break
                     
+            # Check if inside an HV standoff screw
             if cf.passthroughHVStandoffScrews(x[i],so_rad,so_theta):
                 steps_inside = steps_inside + 1
                 if cf.ifPairProduction(photon_energy,photon_dt,"SiBr"):
@@ -112,8 +128,11 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
                     photon_kill_event_text = "Pair-Production in HV Standoff Screw"
                     break
 
+        # Check if the photon's z-position is within the maximum height of the
+        # electrodes
         if x[i,2] < qel_z_max:
 
+            # Check if inside a double quad
             if cf.passthroughElementContact(x[i],dqel_rad,dqel_theta):
                 steps_inside = steps_inside + 1
                 if cf.ifPairProduction(photon_energy,photon_dt,"Al"):
@@ -123,7 +142,8 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
                                             step_counter)
                     photon_kill_event_text = "Pair-Production in Long Quad"
                     break
-    
+                
+            # Check if inside a single quad    
             if cf.passthroughElementContact(x[i],sqel_rad,sqel_theta):
                 steps_inside = steps_inside + 1
                 if cf.ifPairProduction(photon_energy,photon_dt,"Al"):
@@ -134,6 +154,7 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
                     photon_kill_event_text = "Pair-Production Short Quad"
                     break
 
+        # Check if inside a standoff plate
         if cf.passthroughElementContact(x[i],sp_rad,sp_theta):
             steps_inside = steps_inside + 1
             if cf.ifPairProduction(photon_energy,photon_dt,"Al"):
@@ -144,10 +165,12 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
                 photon_kill_event_text = "Pair-Production in Standoff Plate"
                 break
             
-    
+    # Update the photon_proc array to indicate how many steps this photon took
+    # and that it has been tracked
     photon_proc[photon_row_index,8] = i
     photon_proc[photon_row_index,9] = 1
     
+    # Add the new photon to the photon matrix for output to a single file
     photon_matrix[photon_row_index + 1] = np.array(
                          [photon_row_index,i,photon_kill_event_text,
                           x[0,0],

@@ -6,7 +6,7 @@
 # Initial Notes
 ######################################
 
-First, I should say that if I were to do this code again, I would make it more object-oriented and less procedural. When creating this code, I had only just learned about classes and therefore did not use them.
+First, I should say that if I were to do this code again, I would make it more object-oriented and less procedural. When creating this code, I had only just learned about classes and therefore did not use them. In particular, a variable called 'geo_pack' is passed around between multiple functions. This file contains all the permanent geometry information about the ring. A geometry class would have been much more user-friendly.
 
 ######################################
 # Running the Code
@@ -42,6 +42,8 @@ The edits are very obvious at the top of the files. This will hopefully get upda
 ### How the code works ###
 
 The code takes in one .csv file of the muon data (see the section 'Muons' below) then for each muon, creates a single positron that it tracks through the ring. The positron can create photons from Bremsstrahlung and thos photons can create electron-positron pairs from pair-production. Each photon and particle is tracked until it is killed from losing too much energy so it can be ignored, by coming into contact with the calorimeter or inner limit of the ring, or by leaving the outer limit of the ring.
+
+For each particle or x-ray created, a row in the applicable array (for photon or particle) is added with the starting position and momentum vectors plus an entry called 'processed' (initially set to 0). These rows are added at the time of creation. Since multiple particles and photons can be created from each muon decay (after Bremsstrahlung and pair-production) these array are used to keep track of the particles and photons that have or have not been tracked. Once a particle/photon has been fully tracked, it's 'processed' entry is set to 1 and is thus ignored in the future when checks of those arrays are conducted to see if untracked particles/photons exist.
 
 The output from each particle and photon is saved to its own file in the directory '../Output/Single_Files/ts' (where ts is the timestamp power as described above). It is does this way (instead of creating one large output array then writing that to file at the end) to keep memory usage down and to prevent having to restart from the beginning if the code crashes for some reason (e.g. power outage).
 

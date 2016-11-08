@@ -35,16 +35,16 @@ def main():
     
     make_plots = 0              # Set to 1 to display plots
     save_plots = 0              # Set to 1 to save plots as images
-    save_output = 0             # Set to 1 to save data output to csv
+    save_output = 1             # Set to 1 to save data output to csv
 
     # Name of csv containing muon data    
     file_name = "EndOfTracking_phase_space.csv"
         
     m_theta_set = 0                     # 1, use m_theta below, 0 random
     
-#    N = 5171                              # Number of muons in beam
-    N = 1
-    ts = 12
+    N = 5171                              # Number of muons in beam
+#    N = 1
+    ts = 13
 
     # Used in naming spcecial output files.
     # Folder within 'Output' must exist with this name and a subfolder with the
@@ -182,7 +182,7 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
 
     R = geo_pack[19]
         
-    photon_steps = 3*10**5
+    photon_steps = 5*10**6
     photon_dt = 10**-13
     
     particle_count = 0

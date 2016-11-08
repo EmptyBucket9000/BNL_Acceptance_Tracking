@@ -63,6 +63,12 @@ def getParticleRadialPosition(x):
     
 def ifPairProduction(E,photon_dt,mat):
     
+    '''
+    These probability functions come from fitting experimental data provided
+    by NIST. The data was attenuation length in cm**2/g as a function of 
+    the photon energy.
+    '''
+    
     # Divide energy by 10**9 as probability was calculated as a function of GeV
     E = E/10**9
     
@@ -139,7 +145,8 @@ def isPhotonReleased(k_min,energy,X0,p,dt,m):
     N = (d/X0) * ((4/3)*np.log(energy/k_min) - (4*(energy-k_min))/(3*energy) +
         (energy**2-k_min**2)/(2*energy**2))
         
-    # Determine the probability that 1,2,3 photon(s) is(are) released
+    # Determine the probability that 1,2,3,... photon(s) is(are) released using
+    # Poisson statistics
     P1 = poissonProb(N,1)
     P2 = poissonProb(N,2)
     P3 = poissonProb(N,3)
@@ -172,8 +179,8 @@ def adjustParticleMomentumFromBremsstrahlung(p,k_min,energy,m):
     # Normalize the velocity vector
     p_vec_norm = p/p_mag
     
-    ''' Randomly get the energy of the released photon between k_min and k_max
-    based on the Bremsstrahlung intensity plot '''
+    ## Randomly get the energy of the released photon between k_min and the
+    ## current energy based on the Bremsstrahlung intensity plot
     
     # Get the smallest wavelength available equal to the particle momentum
     lambda_min = energy2Wavelength(energy)
