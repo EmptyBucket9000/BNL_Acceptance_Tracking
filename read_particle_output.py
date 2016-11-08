@@ -11,17 +11,18 @@ import csv
 import os
 import glob
     
-def main(): 
-    c = 2.9792458*10**8
+def main():
+    
     ts = 13
-    extra = "_angle"
-#    extra = ""
+#    extra = "_angle" # Note the underscore that should be added
+    extra = ""
+    
 #==============================================================================
 # Particles
 #==============================================================================
     
     particle_file = glob.glob("%s/../Output/particle_matrix%s_%d.csv"%(
-        os.getcwd(),extra,ts))
+                                os.getcwd(),extra,ts))
     particle_file = particle_file[0]
     
     with open(particle_file, "rt") as inf:
@@ -66,6 +67,7 @@ def main():
         Pair Produced (0 or 1)              33
         Kill Timestamp                      34
         '''
+        
         N_particles = len(stuff)
         i = 0
                 
@@ -196,8 +198,6 @@ def main():
     print('Total particle calorimeter contacts: %d'%cal_con_particle)
     print('Total SO/SO screw contacts that hit the calorimeter: %d'\
             %cal_con_particle_so)
-    print(min(x[:,2]))
-    print(max(x[:,2]))
             
 #==============================================================================
 #     Plotting
@@ -210,8 +210,6 @@ def main():
     
     x_cal = np.array(x_cal, dtype = float)
     x_cal = x_cal[np.any(x_cal != 0, axis = 1)]
-    print(min(x_cal[:,1])*1000)
-    print(max(x_cal[:,1])*1000)
     ax = plt.subplot(1,1,1)
     ax.scatter(x_cal[:,0]*100, x_cal[:,1]*100,
                color='g',

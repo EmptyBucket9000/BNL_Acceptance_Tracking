@@ -12,6 +12,8 @@ First, I should say that if I were to do this code again, I would make it more o
 # Running the Code
 ######################################
 
+### Editable variables ###
+
 The variables that need editing are at the top of the 'main.py' file and are commented, but they are:
 
 'make_plots' - Set to 0 or 1. Determines if you want to display the plots from a single muon run. Plots are 1) global position of initial positron and any possible subsequest x-rays and pair-produced particles, and 2) location on calorimeter of particle(s)/x-ray(s) if they make contact.
@@ -20,11 +22,22 @@ The variables that need editing are at the top of the 'main.py' file and are com
 
 'save_output' - Set to 0 or 1. Determines if output files are created for the particles and x-rays. See below in the section 'Variables and Functions' for the output.
 
-'file_name' - The name of the CSV file (including extension) containing the muon data (see the 'Muons' section below for details).
+'file_name' - The name of the .csv file (including extension) containing the muon data (see the 'Muons' section below for details).
 
 'N' - Number of muons you want to create, must be <= the number of muons in the muon data file.
 
 'ts' - Timestep power. For example, to have a timestep of 10**-13, set ts = 13.
+
+'extra' - String to add uniqueness to the names of a certain set of output files if two different runs are being made at the same time. A folder must be created with this text inside the 'Single_Files' folder and the folder of the 'ts' value must exist within it. For example, if you set extra = "example/" (note the forward slash) and ts = 13, you must have the folder "../Output/Single_Files/example/13" where the origin of this path is the location of the code. The output files will also have 'example' such as 'particle_matrix_example_13.csv' will be created. 'extra' will generally be left as extra = "".
+
+## IMPORTANT ## if you have 'extra' set to not empty or you change 'ts', the following files must be edited:
+
+	process_single_files.py
+	just_process.py
+	read_particle_output.py
+	read_photon_output.py
+
+The edits are very obvious at the top of the files. This will hopefully get updated at some later time to be more automated.
 
 ### How the code works ###
 
@@ -99,7 +112,8 @@ for a ring radius of 7.112 m.
 
 The output variable that is saved to a file contains:
 
-### For particles (the text is the column header and the number is the index in the file used to generate the output CSV):
+### For particles ###
+(the text is the column header and the number is the index in the array used to generate the output .csv):
 
 Particle #                          0
 Steps                               1
@@ -137,7 +151,7 @@ dt (particle timestep)		        32
 Pair Produced (0 or 1)              33
 Kill Timestamp                      34
 
-### For photons: 
+### For photons ###
 
 Photon #                        	0
 Steps                           	1

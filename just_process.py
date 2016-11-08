@@ -9,7 +9,7 @@ import numpy as np
 from process_single_files import process
 
 ts = 13
-#extra = "angle/"
+#extra = "angle/" # Note the forward slash that must be added
 extra = ""
                          
 # Output for each particle

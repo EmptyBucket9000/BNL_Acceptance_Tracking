@@ -6,6 +6,7 @@ Created on Fri Sep 30 08:29:11 2016
 """
 
 import numpy as np
+
 #==============================================================================
 # Global Constants
 #==============================================================================
@@ -417,17 +418,6 @@ def energy2Momentum(E,m):
     
     return p
 
-## Get total energy from velocity and mass
-
-#def velocity2Energy(v,m):
-#    
-#    v_mag = mag(v)
-#    beta = v_mag/c
-#    p = beta2Momentum(beta,m)
-#    E_tot = momentum2Energy(p,m)
-#    
-#    return E_tot
-
 ## Get total energy from momentum and mass
 
 def momentum2Energy(p,m):
@@ -435,19 +425,6 @@ def momentum2Energy(p,m):
     energy = np.sqrt(np.dot(p,p) + m**2)
  
     return energy
-
-## Convert beta to momentum
-
-#def beta2Momentum(beta,m):
-#
-#    v = beta*c    
-#    v_mag = mag(v)
-#    beta_mag = v_mag/c
-##    beta_mag = mag(beta)
-#    gamma = beta2Gamma(beta_mag)
-#    p = gamma*m*beta
-#    
-#    return p
 
 ## Convert total energy to relativistic gamma
 
@@ -457,75 +434,17 @@ def energy2Gamma(E,m):
     
     return gamma
     
-## Convert relativistic beta to relativistic gamma
-    
-#def beta2Gamma(beta):
-#
-#    gamma = 1/np.sqrt(1-mag(beta)**2)
-#    
-#    return gamma
-    
-## Convert relativistic gamma to relativistic beta
-
-#def gamma2Beta(g):
-#
-#    beta = np.sqrt((g**2-1)/g**2)
-#    
-#    return beta
-    
-## Convert particle momentum to relativistic beta vector
-    
-#def momentumScalar2Beta(p,m):
-#
-#    beta = np.sqrt(p**2/(m**2 + p**2))
-#    
-#    return beta
-    
-#def momentum2Beta(p,m):
-#    
-#    p = np.array([p[0],p[1],p[2]])
-#    p_norm = mag(p)
-#    
-#    beta = 1/np.sqrt((m/p_norm)**2 + 1)
-#    v = beta*c
-#    v = v*(p/p_norm)
-#    beta = v/c
-#
-#    return beta
-    
-# Get the magnitude of some vector
+## Get the magnitude of some vector
     
 def mag(v):
     
     return np.sqrt(np.dot(v,v))
     
-## Adding velocities
-    
-#def addVelocities(v1,v2):
-#    
-#    v1mag = mag(v1)
-#    v2mag = mag(v2)    
-#    
-#    new_v = ((v1mag + v2mag) / (1 + (v1mag*v2mag)/(c**2))) * \
-#            (v1 + v2) / mag(v1 + v2)
-#    
-#    return new_v
 #==============================================================================
 # Setting initial conditions
 #==============================================================================
     
-## Return the muon momentum away from the magic momentum at decay
-
-def getMuonMomentumAtDecay():
-    
-    # Muon magic momentum
-#    p_magic = 3.094*10**9 # (eV/c)
-    
-    m_p = np.zeros((3))
-    
-    return m_p
-    
-## Return the particle momentum at decay
+## Return the particle momentum at decay in the local coordinate system
     
 def getParticleMomentumAtDecay(p_range,m_p,theta,m_m):
     
@@ -538,16 +457,24 @@ def getParticleMomentumAtDecay(p_range,m_p,theta,m_m):
     # Convert to momentum vector based on position
     p = np.array([p_tot*np.sin(theta),-p_tot*np.cos(theta),0])
     
+    # Add in the randomness of the angle away from the muon momentum vector
+    # 's' in the variable names refer to 'star', the center of mass frame
+    
     p_s_mag = mag(p)
     gamma = mag(m_p) / m_m
+    
+    # Make sure the momentum isn't greater than 1/2 of the rest mass of the
+    # muon as in the muon frame, the positron cannot take more than half its
+    # energy without failure to conserve momentum. The approximation is used
+    # that energy = momentum due to the highly relativistic nature of the
+    # particles.
     
     while True:
     
         ths = np.pi * np.random.random()
-#        cosths = 2 * np.random.random() - 1
         p_ss = p_s_mag / (gamma * (np.cos(ths) + 1))
         
-        if p_ss < 52.8*10**6:
+        if p_ss < 52.8*10**6: # 52.8 MeV/c: 1/2 the rest mass of the muon
             break
     
     phs = 2*np.pi * np.random.random()
@@ -559,6 +486,19 @@ def getParticleMomentumAtDecay(p_range,m_p,theta,m_m):
     
     return p
     
+'''  
+#==============================================================================
+# #============================================================================
+# # The following code is no longer used but left in for reference in case it
+# # gets used in the future. It was used to create the muon beam data 
+# # statistically from extrapolated beam shapes, phase-space data, etc... With
+# # the introduction of the muon data .csv file, this code became obsolete.
+# # It should be noted that it was not fully complete, only the code for the 
+# # x-direction was fully working.
+# #============================================================================
+#==============================================================================
+'''
+#
 ### Return the muon beam distribution width
 #    
 #def getParticleSigma(m_sigma_amp,m_sigma_ideal,m_sigma_0,num):

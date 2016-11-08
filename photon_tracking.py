@@ -156,7 +156,7 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
                           cal_con_x[0],
                           cal_con_x[1],
                           photon_energy/10**9,
-                          steps_inside,steps_inside*c,photon_dt,
+                          steps_inside,steps_inside*c*photon_dt,photon_dt,
                           step_counter*photon_dt])
     
     return particle_pos,particle_matrix,particle_proc,photon_proc, \
