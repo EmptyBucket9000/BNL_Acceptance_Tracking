@@ -19,9 +19,9 @@ c = 2.99792458*10**8 # (m/s) Speed of light
     
 ## Get the electric field based on position
 
-def getElectricField(x,B,R,n,loc):
+def getElectricField(x,B,R,n,inEField):
     
-    if loc == "In":
+    if inEField == 1:
         
         theta = getParticleTheta(x)
         r = getParticleRadialPosition(x)
@@ -213,7 +213,7 @@ def adjustParticleMomentumFromBremsstrahlung(p,k_min,energy,m):
     p_mag_new = energy2Momentum(E_new,m)
     
     # Get the new momentum vector
-    p_new = p_mag_new*p_vec_norm
+    p_new = p_mag_new * p_vec_norm
     
     return p_new,photon_energy
     
@@ -221,7 +221,6 @@ def adjustParticleMomentumFromBremsstrahlung(p,k_min,energy,m):
     
 def bremsstrahlung(p,m,k_min,energy,i,photon_count,
                    min_detectable_energy,total_photon_count):
-
     
     # Readjust the particle momentum from the photon's release
     p,photon_energy = \
@@ -376,6 +375,57 @@ def innerLimit(x,R_i):
 def outerLimit(x,R):
     if np.sqrt(x[0]**2 + x[1]**2) > R:
         return True
+        
+## Returns the position of the particle in the calorimeter local coordinates
+        
+def getPositionOnCalorimeter(x,cal_width,R_i):
+    
+    r = getParticleRadialPosition(x)
+    cal_con_x = np.array([R_i + cal_width/2 - r,x[2],0])
+    
+    return cal_con_x
+    
+## Returns the angles of the particle/photon vector relative to the calorimeter
+    
+def getAnglesFromCalorimeter(cal_con_pre_x,cal_con_x,cal_theta_glob):
+    
+    # Get the updated calorimeter basis x unit-vector due angle off radial
+    new_cal_x_unit_array = getUpdatedCalorimeterBasis(cal_theta_glob)
+                                
+    # Determine the momentum vector of the particle
+    inc_vec = cal_con_pre_x - cal_con_x
+    
+    # Get the angle of the momentum vector from the calorimeter x-axis
+    ang_x = np.arccos(np.dot(inc_vec,new_cal_x_unit_array) / mag(inc_vec))
+    
+    # Get the angle of the momentum vector from the calorimeter y-axis
+    ang_y = np.arccos(np.dot(inc_vec,np.array([0,1,0])) / mag(inc_vec))
+    
+    # Get the projection of the momentum vector onto the calorimeter,
+    # incorporating the angle of the calorimeter off radial
+    inc_vec_proj = np.array([cal_con_pre_x[2]*np.cos(ang_x),
+                             cal_con_pre_x[2]*np.cos(ang_y),
+                             0])
+                             
+    # Get the angle between the momentum vector and its projection            
+    ang_tot = np.arccos(np.dot(inc_vec_proj,inc_vec) / 
+                        (mag(inc_vec_proj) * mag(inc_vec)))
+                        
+    return ang_x,ang_y,ang_tot
+    
+## Returns updated calorimeter basis x unit-vector due angle to radial
+    
+def getUpdatedCalorimeterBasis(cal_theta_glob):
+        
+    # The calorimeter plane is originally assumed to have to angle wrt the
+    # radial from the center of the ring. A3 is the z-component of the
+    # new x-basis unit vector that takes into account the angle off radial.
+    # new_cal_x_unit_array is the new x-basis unit vector for the plane.
+    
+    A3 = np.sqrt(1-np.cos(cal_theta_glob))
+    new_cal_x_unit_array = np.array([np.cos(cal_theta_glob),0,A3])
+    
+    return new_cal_x_unit_array
 
 #==============================================================================
 # Misc. functions
@@ -520,17 +570,18 @@ def getParticleMomentumAtDecay(p_range,m_p,theta,m_m):
 #            sigma[i] = 0
 #            
 #        elif m_sigma_ideal[i] == 0:
-#        
-#            # Range of possible particle positions. The subraction is due to the fact
-#            # that the probability function of a cosine goes to infinity at the
-#            # cosine amplitudes.
+#    
+#        # Range of possible particle positions. The subraction is due to the 
+#        # fact that the probability function of a cosine goes to infinity at
+#        # the cosine amplitudes.
 #            dist_range = np.linspace(-(m_sigma_amp[i] - m_sigma_amp[i]/30),
 #                                     m_sigma_amp[i] - m_sigma_amp[i]/30,
 #                                     num[i]) # (m)
 #            
 #            # Weights for the random mean position based on the distribution
 #            
-#            dist_weights = (np.pi*np.sqrt(1-(dist_range/m_sigma_amp[i])**2))**(-1)
+#            dist_weights = (np.pi*np.sqrt(1-(dist_range/m_sigma_amp[i])**2)) \
+#                               **(-1)
 #            
 #            # Normalize the weights to give a total probability of 1
 #            dist_weights = dist_weights/sum(dist_weights)
@@ -555,9 +606,9 @@ def getParticleMomentumAtDecay(p_range,m_p,theta,m_m):
 #        
 #    elif m_xbar_ideal == 0:
 #    
-#        # Range of possible particle positions. The subraction is due to the fact
-#        # that the probability function of a cosine goes to infinity at the
-#        # cosine amplitudes.
+#        # Range of possible particle positions. The subraction is due to the 
+#        # fact that the probability function of a cosine goes to infinity at
+#        # the cosine amplitudes.
 #        dist_range = np.linspace(-(m_xbar_amp - m_xbar_amp/30),
 #                                 m_xbar_amp - m_xbar_amp/30,
 #                                 num) # (m)

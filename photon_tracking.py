@@ -55,6 +55,7 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
     R_i = geo_pack[20]
     cal_width = geo_pack[21]
     cal_height = geo_pack[22]
+    cal_theta_glob = geo_pack[23]
     
     # Get the normalized momentum vector to create the photon velocity vector
     
@@ -79,8 +80,7 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
         
             if cf.noPassthroughElementContact(x[i],cal_rad,cal_theta):
                 photon_kill_event_text = "Calorimeter Contact"
-                r = cf.getParticleRadialPosition(x[i])
-                cal_con_x = np.array([R_i + cal_width/2 - r,x[i,2]])
+                cal_con_x = cf.getPositionOnCalorimeter(x[i],cal_width,R_i)
                 break
 
         # Calorimeter top
@@ -125,7 +125,8 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
                         cf.doPairProduction(photon_energy,particle_count,
                                             particle_proc,m,p_norm,x[i],
                                             step_counter)
-                    photon_kill_event_text = "Pair-Production in HV Standoff Screw"
+                    photon_kill_event_text = "Pair-Production in HV Standoff \
+                                                Screw"
                     break
 
         # Check if the photon's z-position is within the maximum height of the
@@ -151,7 +152,7 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
                         cf.doPairProduction(photon_energy,particle_count,
                                             particle_proc,m,p_norm,x[i],
                                             step_counter)
-                    photon_kill_event_text = "Pair-Production Short Quad"
+                    photon_kill_event_text = "Pair-Production in Short Quad"
                     break
 
         # Check if inside a standoff plate
@@ -170,6 +171,36 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
     photon_proc[photon_row_index,8] = i
     photon_proc[photon_row_index,9] = 1
     
+    ang_x = 0
+    ang_y = 0
+    ang_tot = 0
+    
+    # Get the angle at which the incident particle/x-ray hits the calorimeter.
+    
+    if photon_kill_event_text == "Calorimeter Contact":
+        
+        # Get the projeced position on the calorimeter from the 2nd to last
+        # photon position, this does not take into account A3
+        cal_con_pre_x = cf.getPositionOnCalorimeter(x[i-1],cal_width,R_i)
+        
+        # Set this to pi/2 for now as sin(ang_tot) is needed in the second
+        # iteration below but not in the first
+        ang_tot = np.pi/2
+        
+        # See similar section in particle_tracking.py for comments on the loop
+        k = 0
+        while k < 2:
+            
+            # Add a z-component to the projection array from above, the 2nd
+            # iteration of the code improves this value
+            cal_con_pre_x[2] = np.sin(ang_tot) * c * dt
+            
+            ang_x,ang_y,ang_tot = \
+                cf.getAnglesFromCalorimeter(cal_con_pre_x,cal_con_x,
+                                            cal_theta_glob)
+            
+            k = k + 1
+    
     # Add the new photon to the photon matrix for output to a single file
     photon_matrix[photon_row_index + 1] = np.array(
                          [photon_row_index,i,photon_kill_event_text,
@@ -180,7 +211,10 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
                           cal_con_x[1],
                           photon_energy/10**9,
                           steps_inside,steps_inside*c*photon_dt,photon_dt,
-                          step_counter*photon_dt])
+                          step_counter*photon_dt,
+                          ang_x,
+                          ang_y,
+                          ang_tot])
     
     return particle_pos,particle_matrix,particle_proc,photon_proc, \
            particle_count,photon_matrix

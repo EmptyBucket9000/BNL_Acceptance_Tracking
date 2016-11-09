@@ -31,6 +31,7 @@ A file 'geo_pack' is created here, to unpack, use:
     R_i = geo_pack[20]
     cal_width = geo_pack[21]
     cal_height = geo_pack[22]
+    cal_theta_glob = geo_pack[23]
 
 '''
 
@@ -39,14 +40,14 @@ import numpy as np
 def geo():
 
     R = 7.112                   # (m) Radius of the ring
-#    R_i = R - 0.5525            # (m) Inner radius limit for tracking
     R_i = 6.805
     
     ''' Calorimeters '''
     
     cal_width = 0.225           # (m) Calorimeter length (width)
     cal_depth = 0.4572          # (m) Depth of calorimeter
-    cal_height = 0.14          # (m) Height of the calorimeter
+    cal_height = 0.14           # (m) Height of the calorimeter
+    cal_theta_glob = 0.070      # (rad) Angle of cal w.r.t. radial
     
     # (rad) Location as a function of theta. 0.001 subtracted from
     # 'cal_theta_end' to prevent particles from being counted as contact with
@@ -63,7 +64,7 @@ def geo():
     
     ''' HV Standoff '''
     
-    rot = 9.23+0.48
+    rot = 9.23 + 0.48
     so_z_max = 3.8*10**-3       # (m) Top of standoff
     so_length = 7.62*10**-3     # (m) Width of standoff
     so_depth = 27.5*10**-3      # (m) Standoff depth
@@ -150,6 +151,6 @@ def geo():
                          qel_z_max,
                          sqel_rad,sqel_theta,
                          dqel_rad,dqel_theta,
-                         R,R_i,cal_width,cal_height])
+                         R,R_i,cal_width,cal_height,cal_theta_glob])
                          
     return geo_pack

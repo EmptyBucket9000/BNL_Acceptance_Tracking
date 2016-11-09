@@ -9,7 +9,7 @@ import numpy as np
 import csv
 import random
             
-def muon(N,file_name,p_magic,m_theta_array,m_theta_set):
+def muon(N,file_name,p_magic):
     
     m,length = readFile(file_name)
     lines = random.sample(range(length), N)
@@ -23,15 +23,8 @@ def muon(N,file_name,p_magic,m_theta_array,m_theta_set):
         m_x[i,1] = m[line,2]
         m_p[i,1] = m[line,3]*m_p[i,2]
         i = i + 1
-    
-    if m_theta_set == 0:
-        m_theta = (m_theta_array[1] - m_theta_array[0])*random.random() + \
-                m_theta_array[0]
-                
-    else: 
-        m_theta = 14*np.pi/8
         
-    return m_x,m_p,m_theta
+    return m_x,m_p
 
 def readFile(file_name):
     

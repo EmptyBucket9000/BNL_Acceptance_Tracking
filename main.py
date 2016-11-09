@@ -33,22 +33,25 @@ def main():
 
     ''' Begin editable variables '''
     
-    make_plots = 0              # Set to 1 to display plots
-    save_plots = 0              # Set to 1 to save plots as images
-    save_output = 1             # Set to 1 to save data output to csv
+    make_plots = 0                      # Set to 1 to display plots
+    save_plots = 0                      # Set to 1 to save plots as images
+    save_output = 1                     # Set to 1 to save data output to csv
 
     # Name of csv containing muon data    
     file_name = "EndOfTracking_phase_space.csv"
         
     m_theta_set = 0                     # 1, use m_theta below, 0 random
     
-    N = 5171                              # Number of muons in beam
+    if m_theta_set == 1:
+        m_theta = 2.3*np.pi / 8
+    
+    N = 5171                           # Number of muons in beam
 #    N = 1
-    ts = 13
+    ts = 12
 
-    # Used in naming spcecial output files.
-    # Folder within 'Output' must exist with this name and a subfolder with the
-    # name of the value of 'ts' must also exist.
+    # Used in naming spcecial output files. Folder within 'Output' must exist
+    # with this name and a subfolder with the name of the value of 'ts' must
+    # also exist.
 #    extra = "angle/"  # Note the forward slash that must be added
     extra = ""
     
@@ -99,7 +102,10 @@ def main():
                                  "Total # of Photons Released",
                                  "# of Detectable Photons Released",
                                  "dt","Pair Produced",
-                                 "Kill Timestamp"])
+                                 "Kill Timestamp",
+                                 "x Calorimeter Angle",
+                                 "y Calorimeter Angle",
+                                 "Total Calorimeter Angle"])
           
     # Output for each photon
     photon_matrix_header = np.array(["Photon #","Steps","Kill Event",
@@ -111,7 +117,10 @@ def main():
                                "Energy (GeV)","Steps Inside Matter",
                                "Distance Inside Matter (cm)",
                                "dt",
-                               "Kill Timestamp"])
+                               "Kill Timestamp",
+                               "x Calorimeter Angle",
+                               "y Calorimeter Angle",
+                               "Total Calorimeter Angle"])
                                
     N_part_mat = len(particle_matrix_header)                               
     N_phot_mat = len(photon_matrix_header)
@@ -121,8 +130,8 @@ def main():
     # Estimated maximum # of particles and photons that could be created from
     # each muon decay (smaller -> less memory usage but too small and an
     # error could be thrown)
-    N_particles = 50
-    N_photons = 50
+    N_particles = 25
+    N_photons = 25
     
     ## Delete all the current single files
     
@@ -133,14 +142,28 @@ def main():
 #==============================================================================
 #   Run the code!!
 #==============================================================================
-                             
+    
+    # Loop through all the muons
+    
     while muon_number < N:
         
-        m_x_list,m_p_list,m_theta = \
-            md.muon(N,file_name,p_magic,m_theta_array,m_theta_set)
+        # Get a list of 'N' muons' position/momentum in random order
+        if muon_number == 0:
+            m_x_list,m_p_list = \
+                md.muon(N,file_name,p_magic)
+        
+        # Get the current muon's position/momentum in local and theta in global
+        # where theta is random between 0 and 2pi
         
         m_x = m_x_list[muon_number]
         m_p = m_p_list[muon_number]
+    
+        if m_theta_set == 0:
+            m_theta = (m_theta_array[1] - m_theta_array[0])*np.random.random() + \
+                    m_theta_array[0]
+
+        # Initialize the particle and photon arrays that will contain all the
+        # data that will be saved to a file for later processing
         
         particle_matrix = np.zeros((N_particles,N_part_mat),dtype=object)
         photon_matrix = np.zeros((N_photons,N_phot_mat),dtype=object)
@@ -148,13 +171,15 @@ def main():
         particle_matrix[0] = particle_matrix_header
         photon_matrix[0] = photon_matrix_header
         
-        # Set all initial local muon variables
+        # Run the code that will create the positrons and track all the
+        # particles and photons created from pair-production and Bremsstralung
                 
         particle_matrix,photon_matrix = \
             run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
                 particle_matrix,make_plots,save_plots,save_output,
                 N,steps,dt,q,B,muon_number,N_particles,N_photons,ts)
                 
+        # Move to the next muon
         muon_number = muon_number + 1
                 
         print("Percent complete: %0.3f%%"%(muon_number*(100/N)),end="\r")
@@ -183,7 +208,7 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
     R = geo_pack[19]
         
     photon_steps = 5*10**6
-    photon_dt = 10**-13
+    photon_dt = 10**-ts
     
     particle_count = 0
     
@@ -194,21 +219,30 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
     # Radial distance from center of ring
     r = R + m_x[0]                          # (m)
     
-    # Set x,y,z positions
+    # Set x,y,z positions in global
     
     x = np.zeros((1,3))                   # Initialize position array
     x[0,0] = r*np.cos(m_theta)            # (m) x-position
     x[0,1] = r*np.sin(m_theta)            # (m) y-position
     x[0,2] = m_x[1]                       # (m) z-position
-    p_range = np.array([1.8*10**9,cf.mag(m_p)])
-#        p_range = np.array([1.2,1.2])*10**9
     
+    # Set the possible range of positron momentums that we want to track
+#    p_range = np.array([1.8*10**9,cf.mag(m_p)])
+    p_range = np.array([2,2])*10**9
+    
+    # Determine the positron momentum in local with the addition of the z-axis
+    # being the direction of travel of the optimal muon
     p_s = cf.getParticleMomentumAtDecay(p_range,m_p,m_theta,m_m)
     
+    # Set the positron momentum vector in global
     p = np.zeros((3))
     p[0] = p_s[0] + m_p[0]*np.cos(m_theta)
     p[1] = p_s[1] + m_p[0]*np.sin(m_theta)
     p[2] = np.copy(m_p[1])
+    
+    # Initialize the positron and photon position arrays (for plotting) and the
+    # 'proc' arrays that contain the basic information about the particles and
+    # the photons and whether or not they have been tracked
     
     particle_pos = np.zeros((N_particles,steps,3))
     photon_pos = np.zeros((photon_steps,3))
@@ -225,17 +259,25 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
     
     # Possible energies of Bremsstrahlung photons
     k_min = 0.04*10**9                          # (eV)
-    k_max = cf.momentum2Energy(p,m)     # (eV)
+    k_max = cf.momentum2Energy(p,m)             # (eV)
     
-    # Photon position array
+    # Set index variables that are used as counters to go through the 'proc'
+    # arrays checking if any particles/photons have yet to be tracked
     
     particle_row_index = 0
     photon_row_index = 0
     
+    # Loop through all the rows in the 'proc' arrays and if any row shows that
+    # the particle or photon has not been tracked, track that element. This
+    # will continue until all particles/photons have been tracked and no new
+    # particles or photons are added to the 'proc' arrays during tracking
+    
     while True:
         
+        # Get the current particle_proc array        
         particle_proc_old = np.copy(particle_proc)
-            
+        
+        # Loop through the particles and track if necessary
         for row in particle_proc:
         
             if (np.any(row != 0)) and row[7] == 0:
@@ -248,9 +290,11 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
                              particle_row_index,muon_number)
                              
             particle_row_index = particle_row_index + 1
-            
+        
+        # Get the current photon_proc array
         photon_proc_old = np.copy(photon_proc)
             
+        # Loop through the photons and track if necessary
         for row in photon_proc:
             
             if (np.any(row != 0)) and row[9] == 0:
@@ -264,10 +308,14 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
                              
             photon_row_index = photon_row_index + 1
             
+        # Check and see if any changes were made to the 'proc' arrays during
+        # tracking (i.e. if any new photons or particles were added). If no
+        # changes were made, exit the loop and finish the code
         if np.array_equal(photon_proc,photon_proc_old) and \
             np.array_equal(particle_proc,particle_proc_old):
             break
         
+        # Reset the index variable for the next loop through the 'proc' arrays
         particle_row_index = 0
         photon_row_index = 0                
         
@@ -303,7 +351,8 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
             if x != 0.0 or y != 0.0:
                 ax.scatter(x,y,c='b',label='Particle on Calorimeter')
         
-        index = 1 # As first row in particle_matrix is headers
+        # Start counting index at one as first row in particle_matrix is header
+        index = 1
     
         for photon in photon_proc:
                        
@@ -364,19 +413,23 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
         # Set axes limits based on min/max particle positions
 
         plt.axis('equal') # Prevents a skewed look
-        plt.xlim(min(x[:,0]-2),max(x[:,0]+2))
-        plt.ylim(min(x[:,1]-2),max(x[:,1]+2))
-#        plt.xlim(min(x[:,0]-0.1),max(x[:,0]+0.1))
-#        plt.ylim(min(x[:,1]-0.1),max(x[:,1]+0.1))
+#        plt.xlim(min(x[:,0]-2),max(x[:,0]+2))
+#        plt.ylim(min(x[:,1]-2),max(x[:,1]+2))
+        plt.xlim(min(x[:,0]-0.1),max(x[:,0]+0.1))
+        plt.ylim(min(x[:,1]-0.1),max(x[:,1]+0.1))
 #        plt.xlim(3.5,3.7)
 #        plt.ylim(-6.1,-6.0)
         plt.grid()
 
         if save_plots == 1:
-            plt.savefig('../Output/Images/plot.png', bbox_inches='tight', dpi=500)
+            plt.savefig('../Output/Images/plot.png',bbox_inches='tight',
+                        dpi=500)
     
         # Show plot
         plt.show()
+        
+    # If save_output is set to 1, save the data for each positron from a single
+    # muon decay and the subsequent photons, pair-production particles to files
         
     if save_output == 1:
         
@@ -398,7 +451,8 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
             writer = csv.writer(csv_file, delimiter=',')
             for row in photon_matrix_print:
                 writer.writerow(row)
-    
+                
+    # Return from the 'run' function so start a new muon decay    
     return particle_matrix,photon_matrix
         
 #==============================================================================

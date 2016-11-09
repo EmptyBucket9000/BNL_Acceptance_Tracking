@@ -13,7 +13,7 @@ import glob
     
 def main():
     
-    ts = 13
+    ts = 12
 #    extra = "_angle" # Note the underscore that should be added
     extra = ""
     
@@ -66,11 +66,14 @@ def main():
         dt                                  32
         Pair Produced (0 or 1)              33
         Kill Timestamp                      34
+        x Calorimeter Angle                 35
+        y Calorimeter Angle                 36
+        Total Calorimeter Angle             37
         '''
         
         N_particles = len(stuff)
         i = 0
-                
+        
         # [Kill event,dt,charge]
         particle = np.zeros((N_particles,3),dtype=object)
         
@@ -89,13 +92,13 @@ def main():
         in_dqel = np.zeros((N_particles,4))
         in_sp = np.zeros((N_particles,4))
         in_so = np.zeros((N_particles,4))
-        in_so_screw = np.zeros((N_particles,4))
+        in_sos = np.zeros((N_particles,4))
                 
         # Counters
         
         cal_con_particle = 0        # Calorimeter contact
         so_contact = 0              # HV standoff contact
-        so_screw_contact = 0        # HV standoff screw contact
+        sos_contact = 0             # HV standoff screw contact
         sqel_contact = 0            # Single quad contact
         dqel_contact = 0            # Double quad contact
         sp_contact = 0              # Standoff plate contact
@@ -153,52 +156,42 @@ def main():
             if float(row[24]) > 0:
                 so_contact = so_contact + 1
             
-            in_so_screw[i,0] = row[28]
-            in_so_screw[i,1] = row[29]
-            in_so_screw[i,2] = row[30]
-            in_so_screw[i,3] = row[31]
+            in_sos[i,0] = row[28]
+            in_sos[i,1] = row[29]
+            in_sos[i,2] = row[30]
+            in_sos[i,3] = row[31]
             
             if float(row[28]) > 0:
-                so_screw_contact = so_screw_contact + 1
+                sos_contact = sos_contact + 1
             
             if row[2] == "Calorimeter Contact" and \
                 (float(row[24]) > 0 or float(row[28]) > 0):
                 cal_con_particle_so = cal_con_particle_so + 1
-            
+                
             i = i + 1
             
 #==============================================================================
 # Data Processing
 #==============================================================================
-        
-    ## Remove 'zero' rows
-        
-    x = x[0:i:1]
-    p = p[0:i:1]
-    in_sqel = in_sqel[0:i:1]
-    in_dqel = in_dqel[0:i:1]
-    in_sp = in_sp[0:i:1]
-    in_so = in_so[0:i:1]
-        
+                
     total_particles = len(x)
     total_photons = sum(in_sqel[:,2]) + sum(in_dqel[:,2]) + \
-                    sum(in_sp[:,2]) + sum(in_so[:,2])
-    total_in_matter = sum(in_sqel[:,1]) + sum(in_dqel[:,1]) + \
-                      sum(in_sp[:,1]) + sum(in_so[:,1] + sum(in_so_screw[:,1]))
+                    sum(in_sp[:,2]) + sum(in_so[:,2]) + sum(in_sos[:,2])
+#    total_in_matter = sum(in_sqel[:,1]) + sum(in_dqel[:,1]) + \
+#                      sum(in_sp[:,1]) + sum(in_so[:,1] + sum(in_sos[:,1]))
                       
-    print('Total muon decays: %d'%total_particles)
+#    print('Total muon decays: %d'%total_particles)
     print('Total particles: %d'%total_particles)
-    print('Total distance in matter: %0.3f cm'%(total_in_matter))
+#    print('Total distance in matter: %0.3f cm'%(total_in_matter))
     print('Total photons: %d'%total_photons)
     print('Total single quad contacts: %d'%sqel_contact)
     print('Total double quad contacts: %d'%dqel_contact)
     print('Total standoff plate contacts: %d'%sp_contact)
     print('Total HV standoff contacts: %d'%so_contact)
-    print('Total HV standoff screw contacts: %d'%so_screw_contact)
+    print('Total HV standoff screw contacts: %d'%sos_contact)
     print('Total particle calorimeter contacts: %d'%cal_con_particle)
     print('Total SO/SO screw contacts that hit the calorimeter: %d'\
             %cal_con_particle_so)
-            
 #==============================================================================
 #     Plotting
 #==============================================================================
@@ -208,8 +201,12 @@ def main():
     plt.figure(n)
     n = n + 1
     
+    # Convert string to float
     x_cal = np.array(x_cal, dtype = float)
+    
+    # Remove 'zero' rows
     x_cal = x_cal[np.any(x_cal != 0, axis = 1)]
+    
     ax = plt.subplot(1,1,1)
     ax.scatter(x_cal[:,0]*100, x_cal[:,1]*100,
                color='g',

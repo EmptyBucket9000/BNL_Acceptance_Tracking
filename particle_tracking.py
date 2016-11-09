@@ -75,6 +75,7 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
     R_i = geo_pack[20]
     cal_width = geo_pack[21]
     cal_height = geo_pack[22]
+    cal_theta_glob = geo_pack[23]
     
     n = .142                                # () Used in E-field
     
@@ -83,17 +84,17 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
         
     if cf.isInSQuad(x[0],sqel_theta,R) or \
         cf.isInDQuad(x[0],dqel_theta,R):
-            loc = "In"
-            
+            inEField = 1
+
     else:
-        loc = "Out"
+        inEField = 0
         
-    E = cf.getElectricField(x[0],B,R,n,loc)       # Set initial E-field values
+    E = cf.getElectricField(x[0],B,R,n,inEField)       # Set initial E-field values
     
     # Event text
     kill_event_text = "Unknown failure" # In case nothing happens
     
-    # of photons released
+    # of photons released [total, above min. energy]
     sqel_photon_count = np.zeros([2], dtype=int)
     dqel_photon_count = np.zeros([2], dtype=int)
     sp_photon_count = np.zeros([2], dtype=int)
@@ -180,7 +181,7 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
                                           p_norm[0],p_norm[1],p_norm[2],
                                           photon_energy,particle_row_index,
                                           0,0,step_counter])
-                            k = k + 1
+                        k = k + 1
             
             # Double-quad electrode
             
@@ -211,7 +212,7 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
                                           p_norm[0],p_norm[1],p_norm[2],
                                           photon_energy,particle_row_index,
                                           0,0,step_counter])
-                            k = k + 1
+                        k = k + 1
         
         # Side support plate
         
@@ -242,7 +243,7 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
                                           p_norm[0],p_norm[1],p_norm[2],
                                           photon_energy,particle_row_index,
                                           0,0,step_counter])
-                            k = k + 1
+                        k = k + 1
         
         # High-voltage standoff
         
@@ -274,7 +275,7 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
                                           p_norm[0],p_norm[1],p_norm[2],
                                           photon_energy,particle_row_index,
                                           0,0,step_counter])
-                            k = k + 1
+                        k = k + 1
         
             # High-voltage standoff screws
         
@@ -305,7 +306,7 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
                                           p_norm[0],p_norm[1],p_norm[2],
                                           photon_energy,particle_row_index,
                                           0,0,step_counter])
-                            k = k + 1
+                        k = k + 1
             
         # Break if particle energy below detectability/10
         
@@ -319,23 +320,22 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
         
         if cf.isInSQuad(x[i],sqel_theta,R) or \
             cf.isInDQuad(x[i],dqel_theta,R):
-                loc = "In"
+                inEField = 1
                 
         else:
-            loc = "Out"
+            inEField = 0
         
         # Get the electric field based on position
-        E = cf.getElectricField(x[i],B,R,n,loc)
+        E = cf.getElectricField(x[i],B,R,n,inEField)
         
         # Check if the particle has come into contact with the calorimeter and
         # kill the loop if it has
         
-        if np.abs(x[i,2]) < cal_height:
+        if np.abs(x[i,2]) < cal_height/2:
         
             if cf.noPassthroughElementContact(x[i],cal_rad,cal_theta):
                 kill_event_text = "Calorimeter Contact"
-                r = cf.getParticleRadialPosition(x[i])
-                cal_con_x = np.array([R_i + cal_width/2 - r,x[i,2]])
+                cal_con_x = cf.getPositionOnCalorimeter(x[i],cal_width,R_i)
                 break
             
         # Calorimeter top
@@ -364,6 +364,45 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
     particle_pos[particle_row_index] = np.copy(x)
     charge = particle_proc[particle_row_index,6]
     pp = particle_proc[particle_row_index,9]
+    
+    ang_x = 0
+    ang_y = 0
+    ang_tot = 0
+    
+    # Get the angle at which the incident particle/x-ray hits the calorimeter
+    
+    if kill_event_text == "Calorimeter Contact":
+        
+        # Get the projeced position on the calorimeter from the 2nd to last
+        # particle position, this does not take into account A3
+        cal_con_pre_x = cf.getPositionOnCalorimeter(x[i-1],cal_width,R_i)
+        
+        # Set this to pi/2 for now as sin(ang_tot) is needed in the second
+        # iteration below but not in the first
+        ang_tot = np.pi/2
+        
+        k = 0
+        
+        # Loop twice to provide better accuracy as the first loop assumes the
+        # z-component of the particle vector is equal to the magnitude of the
+        # velocity of the particle * dt, when in fact it is v*dt*sin(angle),
+        # where angle is the angle of the particle vector with respect to the
+        # calorimeter plane. The second iteration used the angle found in the
+        # first iteration to provide a better z-component. The further the
+        # angle between the vector and the plane is from pi/2, the less
+        # accurate the first iteration is.
+        while k < 2:
+            
+            # Add a z-component to the projection array from above, the 2nd
+            # iteration of the code improves this value
+            cal_con_pre_x[2] = p_end_mag/cf.momentum2Energy(p_end_mag,m) * \
+                                np.sin(ang_tot) * c * dt
+            
+            ang_x,ang_y,ang_tot = \
+                cf.getAnglesFromCalorimeter(cal_con_pre_x,cal_con_x,
+                                            cal_theta_glob)
+                                
+            k = k + 1
         
     # Add the new line to the particle matrix array that will be saved to file
     particle_matrix[particle_row_index + 1] = np.array(
@@ -401,21 +440,15 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
                           sos_photon_count[1],                      # 31
                           '%2e'%dt,                                 # 32
                           pp,                                       # 33
-                          '%5e'%(step_counter*dt)])                 # 34
+                          '%5e'%(step_counter*dt),                  # 34
+                          ang_x,                                    # 35
+                          ang_y,                                    # 36
+                          ang_tot])                                 # 37
                           
     # Update the particle tracking array to account for having fully tracked
     # this particle
     particle_count = particle_count + 1
     particle_proc[particle_row_index,7] = 1
-    
-#    if steps_inside[1] > 0:
-#        print('Inside dqel')
-#    
-#    elif steps_inside[0] > 0:
-#        print('Inside sqel')
-#    
-#    else:
-#        print('other')
                             
     return particle_pos,particle_matrix,particle_proc,photon_count, \
             photon_proc

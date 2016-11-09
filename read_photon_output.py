@@ -44,6 +44,9 @@ def main():
         Distance Inside Matter (cm)     10
         dt                              11
         Kill Timestamp                  12
+        x Calorimeter Angle             13
+        y Calorimeter Angle             14
+        Total Calorimeter Angle         15
         '''
         
         i = 0
@@ -122,16 +125,16 @@ def main():
     pp_tot = pp_sqel_counter + pp_dqel_counter + pp_sp_counter + \
             pp_so_counter + pp_sos_counter
     in_matter = np.array(in_matter,dtype=float)
-    d_tot = sum(in_matter[:,1])*float(photon[0,2])
+    d_tot = sum(in_matter[:,1])
             
     print('Total # of photons created: %d'%N_photons)
-    print('Total distance inside matter: %0.3f cm'%d_tot)
+    print('Total distance inside matter: %0.2f cm'%(d_tot*100))
     print('Total # of pair-production events: %d'%pp_tot)
-    print('# of pair-products events in sqel: %d'%pp_sqel_counter)
-    print('# of pair-products events in dqel: %d'%pp_dqel_counter)
-    print('# of pair-products events in sp: %d'%pp_sp_counter)
-    print('# of pair-products events in so: %d'%pp_so_counter)
-    print('# of pair-products events in sos: %d'%pp_sos_counter)
+    print('# of pair-production events in sqel: %d'%pp_sqel_counter)
+    print('# of pair-production events in dqel: %d'%pp_dqel_counter)
+    print('# of pair-production events in sp: %d'%pp_sp_counter)
+    print('# of pair-production events in so: %d'%pp_so_counter)
+    print('# of pair-production events in sos: %d'%pp_sos_counter)
     print('# of calorimeter contacts: %d'%cal_counter)
             
 #==============================================================================

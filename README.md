@@ -38,7 +38,7 @@ read_photon_output.py
 
 The edits are very obvious at the top of the files. This will hopefully get updated at some later time to be more automated.
 
-### How the code works ###
+### How the code works
 
 The code takes in one .csv file of the muon data (see the section 'Muons' below) then for each muon, creates a single positron that it tracks through the ring. The positron can create photons from Bremsstrahlung and thos photons can create electron-positron pairs from pair-production. Each photon and particle is tracked until it is killed from losing too much energy so it can be ignored, by coming into contact with the calorimeter or inner limit of the ring, or by leaving the outer limit of the ring.
 
@@ -156,7 +156,10 @@ The output variable that is saved to a file contains:
 |# of Detectable Photons Released		|31		|  
 |dt (particle timestep)		        	|32		|  
 |Pair Produced (0 or 1)              	|33		|  
-|Kill Timestamp                      	|34		|  
+|Kill Timestamp                      	|34		|
+|x Calorimeter Angle					|35		|
+|y Calorimeter Angle					|36		|
+|Total Calorimeter Angle				|37		|
 
 ## For photons
 
@@ -175,4 +178,7 @@ The output variable that is saved to a file contains:
 |Distance Inside Matter (cm)     		|10		|  
 |dt (photon timestep)            		|11		|
 |Kill Timestamp                  		|12		|  
+|x Calorimeter Angle					|13		|
+|y Calorimeter Angle					|14		|
+|Total Calorimeter Angle				|15		|
 

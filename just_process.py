@@ -8,7 +8,7 @@ Created on Mon Nov  7 06:21:29 2016
 import numpy as np
 from process_single_files import process
 
-ts = 13
+ts = 12
 #extra = "angle/" # Note the forward slash that must be added
 extra = ""
                          
@@ -44,7 +44,10 @@ particle_matrix_header = np.array(["Particle #","Steps","Kill Event",
                              "Total # of Photons Released",
                              "# of Detectable Photons Released",
                              "dt","Pair Produced",
-                             "Kill Timestamp"])
+                             "Kill Timestamp"
+                             "x Calorimeter Angle",
+                             "y Calorimeter Angle",
+                             "Total Calorimeter Angle"])
       
 # Output for each photon
 photon_matrix_header = np.array(["Photon #","Steps","Kill Event",
@@ -56,9 +59,13 @@ photon_matrix_header = np.array(["Photon #","Steps","Kill Event",
                            "Energy (GeV)","Steps Inside Matter",
                            "Distance Inside Matter (cm)",
                            "dt",
-                           "Kill Timestamp"])
+                           "Kill Timestamp",
+                           "x Calorimeter Angle",
+                           "y Calorimeter Angle",
+                           "Total Calorimeter Angle"])
                            
 N_part_mat = len(particle_matrix_header)                               
 N_phot_mat = len(photon_matrix_header)
 
-process(particle_matrix_header,photon_matrix_header,N_part_mat,N_phot_mat,ts,extra)
+process(particle_matrix_header,photon_matrix_header,N_part_mat,N_phot_mat,ts,
+        extra)
