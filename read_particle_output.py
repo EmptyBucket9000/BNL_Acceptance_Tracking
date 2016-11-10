@@ -13,6 +13,10 @@ import glob
     
 def main():
     
+    save_plots = 1                      # Set to 1 to save plots, 0 otherwise
+    save_dir = "../Output/Images"       # Set save directory
+    image_dpi = 500                     # Set saved image dpi
+    
     ts = 12
 #    extra = "_angle" # Note the underscore that should be added
     extra = ""
@@ -93,6 +97,9 @@ def main():
         in_sp = np.zeros((N_particles,4))
         in_so = np.zeros((N_particles,4))
         in_sos = np.zeros((N_particles,4))
+        
+        # Calorimeter contact angles [x,y,total]
+        angles = np.zeros((N_particles,3))
                 
         # Counters
         
@@ -168,33 +175,46 @@ def main():
                 (float(row[24]) > 0 or float(row[28]) > 0):
                 cal_con_particle_so = cal_con_particle_so + 1
                 
+            angles[i,0] = float(row[35])*180/np.pi
+            angles[i,1] = float(row[36])*180/np.pi
+            angles[i,2] = float(row[37])*180/np.pi
+                
             i = i + 1
             
 #==============================================================================
 # Data Processing
 #==============================================================================
-                
+    
+    # Remove rows of all zeros
+    angles = angles[np.any(angles != 0, axis = 1)]
+    
     total_particles = len(x)
     total_photons = sum(in_sqel[:,2]) + sum(in_dqel[:,2]) + \
                     sum(in_sp[:,2]) + sum(in_so[:,2]) + sum(in_sos[:,2])
 #    total_in_matter = sum(in_sqel[:,1]) + sum(in_dqel[:,1]) + \
 #                      sum(in_sp[:,1]) + sum(in_so[:,1] + sum(in_sos[:,1]))
                       
-#    print('Total muon decays: %d'%total_particles)
     print('Total particles: %d'%total_particles)
 #    print('Total distance in matter: %0.3f cm'%(total_in_matter))
     print('Total photons: %d'%total_photons)
     print('Total single quad contacts: %d'%sqel_contact)
+    print('Total # of sqel photons released: %d'%sum(in_sqel[:,2]))
     print('Total double quad contacts: %d'%dqel_contact)
+    print('Total # of dqel photons released: %d'%sum(in_dqel[:,2]))
     print('Total standoff plate contacts: %d'%sp_contact)
+    print('Total # of sp photons released: %d'%sum(in_sp[:,2]))
     print('Total HV standoff contacts: %d'%so_contact)
+    print('Total # of so photons released: %d'%sum(in_so[:,2]))
     print('Total HV standoff screw contacts: %d'%sos_contact)
+    print('Total # of sos photons released: %d'%sum(in_sos[:,2]))
     print('Total particle calorimeter contacts: %d'%cal_con_particle)
     print('Total SO/SO screw contacts that hit the calorimeter: %d'\
             %cal_con_particle_so)
 #==============================================================================
 #     Plotting
 #==============================================================================
+            
+    calorimeter_angle_hist = 40
         
     n = 0
     
@@ -220,10 +240,54 @@ def main():
     plt.ylim(-15.5,15.5)
     ax.grid(True)
     ax.legend(bbox_to_anchor=(1.33,1.11))
-    ax.set_title("Calorimeter Contact Position")
+    ax.set_title("Calorimeter Contact Position (Particles)")
     ax.set_xlabel('x-Position (cm)')
     ax.set_ylabel('y-position (cm)')
-    plt.axis('equal') # Prevents a skewed look
+    plt.axis('equal')
+    
+    if save_plots == 1:
+            plt.savefig('%s/particle_calorimeter_contact.png'%save_dir,
+                        bbox_inches='tight',dpi=image_dpi)
+    
+    plt.figure(n)
+    n = n + 1
+    
+    ax = plt.subplot(1,1,1)
+    ax.hist(angles[:,0],calorimeter_angle_hist)
+    ax.set_title("x Calorimter Contact Angles (Particles)")
+    ax.set_xlabel('Angle (deg)')
+    ax.set_ylabel('Count')
+    
+    if save_plots == 1:
+            plt.savefig('%s/particle_calorimeter_contact_x_angle.png'%save_dir,
+                        bbox_inches='tight',dpi=image_dpi)
+    
+    plt.figure(n)
+    n = n + 1
+    
+    ax = plt.subplot(1,1,1)
+    ax.hist(angles[:,1],calorimeter_angle_hist)
+    ax.set_title("y Calorimter Contact Angles (Particles)")
+    ax.set_xlabel('Angle (deg)')
+    ax.set_ylabel('Count')
+    
+    if save_plots == 1:
+            plt.savefig('%s/particle_calorimeter_contact_y_angle.png'%save_dir,
+                        bbox_inches='tight',dpi=image_dpi)
+    
+    plt.figure(n)
+    n = n + 1
+    
+    ax = plt.subplot(1,1,1)
+    ax.hist(angles[:,2],calorimeter_angle_hist)
+    ax.set_title("Total Calorimter Contact Angles (Particles)")
+    ax.set_xlabel('Angle (deg)')
+    ax.set_ylabel('Count')
+    
+    if save_plots == 1:
+            plt.savefig('%s/particle_calorimeter_contact_angle.png'%save_dir,
+                        bbox_inches='tight',dpi=image_dpi)
+    
     
 if __name__ == '__main__':
 

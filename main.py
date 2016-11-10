@@ -33,9 +33,9 @@ def main():
 
     ''' Begin editable variables '''
     
-    make_plots = 0                      # Set to 1 to display plots
+    make_plots = 1                      # Set to 1 to display plots
     save_plots = 0                      # Set to 1 to save plots as images
-    save_output = 1                     # Set to 1 to save data output to csv
+    save_output = 0                     # Set to 1 to save data output to csv
 
     # Name of csv containing muon data    
     file_name = "EndOfTracking_phase_space.csv"
@@ -45,8 +45,8 @@ def main():
     if m_theta_set == 1:
         m_theta = 2.3*np.pi / 8
     
-    N = 5171                           # Number of muons in beam
-#    N = 1
+#    N = 5171                           # Number of muons in beam
+    N = 1
     ts = 12
 
     # Used in naming spcecial output files. Folder within 'Output' must exist
@@ -58,7 +58,7 @@ def main():
     ''' Permanent constants '''
     
     steps = 5*10**6                         # Nnumber of steps for integration
-    dt = 10**-ts                            # Timestep for integration    
+    dt = 10**-ts                            # Timestep for integration
     p_magic = 3.09435*10**9                 # (eV/c) Muon magic momentum        
     m_theta_array = np.array([0,2*np.pi])   # Starting theta in global coords. 
     q = 1                                   # (e) Particle charge

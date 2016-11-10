@@ -2,7 +2,7 @@
 """
 Created on Mon Nov  7 06:21:29 2016
 
-@author: schmidte
+@author: Eric Schmidt
 """
 
 import numpy as np
@@ -44,7 +44,7 @@ particle_matrix_header = np.array(["Particle #","Steps","Kill Event",
                              "Total # of Photons Released",
                              "# of Detectable Photons Released",
                              "dt","Pair Produced",
-                             "Kill Timestamp"
+                             "Kill Timestamp",
                              "x Calorimeter Angle",
                              "y Calorimeter Angle",
                              "Total Calorimeter Angle"])

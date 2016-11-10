@@ -13,6 +13,10 @@ import glob
     
 def main():
     
+    save_plots = 1                      # Set to 1 to save plots, 0 otherwise
+    save_dir = "../Output/Images"       # Set save directory
+    image_dpi = 500                     # Set saved image dpi
+    
     ts = 12
 #    extra = "_angle" # Note the underscore that should be added
     extra = ""
@@ -72,6 +76,9 @@ def main():
         # [Steps inside matter, Distance inside matter]
         in_matter = np.zeros((N_photons,2))
         
+        # Calorimeter contact angles [x,y,total]
+        angles = np.zeros((N_photons,3))
+        
         # Counters
         
         pp_sqel_counter = 0
@@ -115,12 +122,19 @@ def main():
             
             in_matter[i,0] = row[9]
             in_matter[i,1] = row[10]
+                
+            angles[i,0] = float(row[13])*180/np.pi
+            angles[i,1] = float(row[14])*180/np.pi
+            angles[i,2] = float(row[15])*180/np.pi
             
             i = i + 1
             
 #==============================================================================
 # Data Processing and Display
 #==============================================================================
+            
+    # Remove rows of all zeros
+    angles = angles[np.any(angles != 0, axis = 1)]
             
     pp_tot = pp_sqel_counter + pp_dqel_counter + pp_sp_counter + \
             pp_so_counter + pp_sos_counter
@@ -140,6 +154,8 @@ def main():
 #==============================================================================
 #     Plotting
 #==============================================================================
+            
+    calorimeter_angle_hist = 20
         
     n = 0
     
@@ -161,10 +177,53 @@ def main():
     plt.ylim(-15.5,15.5)
     ax.grid(True)
     ax.legend(bbox_to_anchor=(1.33,1.11))
-    ax.set_title("Calorimeter Contact Position")
+    ax.set_title("Calorimeter Contact Position (Photons)")
     ax.set_xlabel('x-Position (cm)')
     ax.set_ylabel('y-position (cm)')
-    plt.axis('equal') # Prevents a skewed look
+    plt.axis('equal')
+    
+    if save_plots == 1:
+            plt.savefig('%s/photon_calorimeter_contact.png'%save_dir,
+                        bbox_inches='tight',dpi=image_dpi)
+    
+    plt.figure(n)
+    n = n + 1
+    
+    ax = plt.subplot(1,1,1)
+    ax.hist(angles[:,0],calorimeter_angle_hist)
+    ax.set_title("x Calorimter Contact Angles (Photons)")
+    ax.set_xlabel('Angle (deg)')
+    ax.set_ylabel('Count')
+    
+    if save_plots == 1:
+            plt.savefig('%s/photon_calorimeter_contact_x_angle.png'%save_dir,
+                        bbox_inches='tight',dpi=image_dpi)
+    
+    plt.figure(n)
+    n = n + 1
+    
+    ax = plt.subplot(1,1,1)
+    ax.hist(angles[:,1],calorimeter_angle_hist)
+    ax.set_title("y Calorimter Contact Angles (Photons)")
+    ax.set_xlabel('Angle (deg)')
+    ax.set_ylabel('Count')
+    
+    if save_plots == 1:
+            plt.savefig('%s/photon_calorimeter_contact_y_angle.png'%save_dir,
+                        bbox_inches='tight',dpi=image_dpi)
+    
+    plt.figure(n)
+    n = n + 1
+    
+    ax = plt.subplot(1,1,1)
+    ax.hist(angles[:,2],calorimeter_angle_hist)
+    ax.set_title("Total Calorimter Contact Angles (Photons)")
+    ax.set_xlabel('Angle (deg)')
+    ax.set_ylabel('Count')
+    
+    if save_plots == 1:
+            plt.savefig('%s/photon_calorimeter_contact_angle.png'%save_dir,
+                        bbox_inches='tight',dpi=image_dpi)
     
 if __name__ == '__main__':
 

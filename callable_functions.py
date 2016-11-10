@@ -94,6 +94,8 @@ def ifPairProduction(E,photon_dt,mat):
             1.61749*10**-6 / E**3 + 0.0000188146 / E**2 - 0.000152661 / E)
             
         P = P_n + P_e
+        
+        print(P)
          
              
     elif mat == "Ma":
@@ -108,6 +110,8 @@ def ifPairProduction(E,photon_dt,mat):
             2.56364*10**-6 / E**3 + 0.0000293949 / E**2 - 0.000220787 / E)
             
         P = P_n + P_e
+        
+        print(P)
          
     # Adjust the probability based on actual photon_dt as the above equations
     # assume photon_dt = 10**-11
