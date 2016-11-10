@@ -21,6 +21,8 @@ def main():
 #    extra = "_angle" # Note the underscore that should be added
     extra = ""
     
+    R = 7.112*100
+    
 #==============================================================================
 # Particles
 #==============================================================================
@@ -104,13 +106,22 @@ def main():
         # Counters
         
         rail_contact = 0            # Trolly rail contact
-        cal_con_particle = 0        # Calorimeter contact
+        cal_con = 0                 # Calorimeter contact
         so_contact = 0              # HV standoff contact
         sqel_contact = 0            # Single quad contact
         dqel_contact = 0            # Double quad contact
         sos_contact = 0             # HV standoff screw contact
         sp_contact = 0              # Standoff plate contact
-        cal_con_particle_so = 0     # Calorimeter and HV standoff contact
+        cal_con_so = 0              # Calorimeter and HV standoff contact
+        
+        through_quad = np.zeros((1,8),dtype=int)
+        data = np.zeros((1,8))
+        
+        # sqel or dqel contact then cal contact
+        through_quad_contact = np.zeros((1,8),dtype=int)
+        
+        # No sqel or dqel contact then cal contact
+        no_through_quad_contact = np.zeros((1,8),dtype=int)
         
         for row in stuff:
             
@@ -119,14 +130,17 @@ def main():
             particle[i,2] = row[3]
             
             if row[2] == "Calorimeter Contact":
-                cal_con_particle = cal_con_particle + 1
+                cal_con = cal_con + 1
             
             if row[2] == "Trolly Rail Contact":
                 rail_contact = rail_contact + 1
             
-            x[i,0] = row[4]
-            x[i,1] = row[5]
-            x[i,2] = row[6]
+            x[i,0] = float(row[4])
+            x[i,1] = float(row[5])
+            x[i,2] = float(row[6])
+            
+            r = np.sqrt(x[i,0]**2 + x[i,1]**2)/10   # (cm) Starting radius
+            d = (R - r)                             # (cm) Starting local x
             
             x_cal[i,0] = row[7]
             x_cal[i,1] = row[8]
@@ -177,11 +191,123 @@ def main():
             
             if row[2] == "Calorimeter Contact" and \
                 (float(row[24]) > 0 or float(row[28]) > 0):
-                cal_con_particle_so = cal_con_particle_so + 1
+                cal_con_so = cal_con_so + 1
                 
             angles[i,0] = float(row[35])*180/np.pi
             angles[i,1] = float(row[36])*180/np.pi
             angles[i,2] = float(row[37])*180/np.pi
+                
+            if d >= 3:
+                
+                through_quad[0,7] = through_quad[0,7] + 1
+                
+                if particle[i,0] == "Calorimeter Contact" and \
+                    (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
+                        
+                    through_quad_contact[0,7] = through_quad_contact[0,7] + 1
+                
+                if particle[i,0] == "Calorimeter Contact" and \
+                    (float(in_sqel[i,0]) == 0 and float(in_dqel[i,0]) == 0):
+                        
+                    no_through_quad_contact[0,7] = no_through_quad_contact[0,7] + 1
+            
+            if d < 3 and d >= 2:
+                
+                through_quad[0,6] = through_quad[0,6] + 1
+                
+                if particle[i,0] == "Calorimeter Contact" and \
+                    (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
+                        
+                    through_quad_contact[0,6] = through_quad_contact[0,6] + 1
+                
+                if particle[i,0] == "Calorimeter Contact" and \
+                    (float(in_sqel[i,0]) == 0 and float(in_dqel[i,0]) == 0):
+                        
+                    no_through_quad_contact[0,6] = no_through_quad_contact[0,6] + 1
+            
+            if d < 2 and d >= 1:
+                
+                through_quad[0,5] = through_quad[0,5] + 1
+                
+                if particle[i,0] == "Calorimeter Contact" and \
+                    (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
+                        
+                    through_quad_contact[0,5] = through_quad_contact[0,5] + 1
+                
+                if particle[i,0] == "Calorimeter Contact" and \
+                    (float(in_sqel[i,0]) == 0 and float(in_dqel[i,0]) == 0):
+                        
+                    no_through_quad_contact[0,5] = no_through_quad_contact[0,5] + 1
+                    
+            if d < 1 and d >= 0:
+                
+                through_quad[0,4] = through_quad[0,4] + 1
+                
+                if particle[i,0] == "Calorimeter Contact" and \
+                    (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
+                        
+                    through_quad_contact[0,4] = through_quad_contact[0,4] + 1
+                
+                if particle[i,0] == "Calorimeter Contact" and \
+                    (float(in_sqel[i,0]) == 0 and float(in_dqel[i,0]) == 0):
+                        
+                    no_through_quad_contact[0,4] = no_through_quad_contact[0,4] + 1
+            
+            if d < 0 and d >= -1:
+                
+                through_quad[0,3] = through_quad[0,3] + 1
+                
+                if particle[i,0] == "Calorimeter Contact" and \
+                    (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
+                        
+                    through_quad_contact[0,3] = through_quad_contact[0,3] + 1
+                
+                if particle[i,0] == "Calorimeter Contact" and \
+                    (float(in_sqel[i,0]) == 0 and float(in_dqel[i,0]) == 0):
+                        
+                    no_through_quad_contact[0,3] = no_through_quad_contact[0,3] + 1
+            
+            if d < -1 and d > -2:
+                
+                through_quad[0,2] = through_quad[0,2] + 1
+                
+                if particle[i,0] == "Calorimeter Contact" and \
+                    (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
+                        
+                    through_quad_contact[0,2] = through_quad_contact[0,2] + 1
+                
+                if particle[i,0] == "Calorimeter Contact" and \
+                    (float(in_sqel[i,0]) == 0 and float(in_dqel[i,0]) == 0):
+                        
+                    no_through_quad_contact[0,2] = no_through_quad_contact[0,2] + 1
+            
+            if d < -2 and d >= -3:
+                
+                through_quad[0,1] = through_quad[0,1] + 1
+                
+                if particle[i,0] == "Calorimeter Contact" and \
+                    (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
+                        
+                    through_quad_contact[0,1] = through_quad_contact[0,1] + 1
+                
+                if particle[i,0] == "Calorimeter Contact" and \
+                    (float(in_sqel[i,0]) == 0 and float(in_dqel[i,0]) == 0):
+                        
+                    no_through_quad_contact[0,1] = no_through_quad_contact[0,1] + 1
+            
+            if d < -3:
+                
+                through_quad[0,0] = through_quad[0,0] + 1
+                
+                if particle[i,0] == "Calorimeter Contact" and \
+                    (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
+                        
+                    through_quad_contact[0,0] = through_quad_contact[0,0] + 1
+                
+                if particle[i,0] == "Calorimeter Contact" and \
+                    (float(in_sqel[i,0]) == 0 and float(in_dqel[i,0]) == 0):
+                        
+                    no_through_quad_contact[0,0] = no_through_quad_contact[0,0] + 1            
                 
             i = i + 1
             
@@ -214,25 +340,43 @@ def main():
     print('Total # of sos photons released: %d'%sum(in_sos[:,2]))
     print('Total # of trolley rail contacts: %d'%rail_contact)
     print('Average calorimeter contact angle: %0.3f'%angles_mean)
-    print('Total particle calorimeter contacts: %d'%cal_con_particle)
+    print('Total particle calorimeter contacts: %d'%cal_con)
+    print('# of calorimeter contacts after qel contact: %d'%np.sum(through_quad_contact))
+    print('# of calorimeter contacts without qel contact: %d'%np.sum(no_through_quad_contact))
     print('Total SO/SO screw contacts that hit the calorimeter: %d'\
-            %cal_con_particle_so)
+            %cal_con_so)
 #==============================================================================
 #     Plotting
 #==============================================================================
             
-    calorimeter_angle_hist = 40
-        
-    n = 0
+    i = 0
     
-    plt.figure(n)
-    n = n + 1
+    while i < np.shape(through_quad)[1]:
+        
+        data[0,i] = through_quad_contact[0,i] / through_quad[0,i]
+        print('%d: %d'%(i,through_quad_contact[0,i]))
+        print('%d: %d'%(i,through_quad[0,i]))
+        i = i + 1
+            
+    calorimeter_angle_hist = 40
     
     # Convert string to float
     x_cal = np.array(x_cal, dtype = float)
     
     # Remove 'zero' rows
     x_cal = x_cal[np.any(x_cal != 0, axis = 1)]
+        
+    n = 0
+    
+    plt.figure(n)
+    n = n + 1
+    
+    xx = np.arange(-3.5,4).reshape(1,8)
+    ax = plt.subplot(1,1,1)
+    ax.scatter(xx,data[0,:])
+    
+    plt.figure(n)
+    n = n + 1
     
     ax = plt.subplot(1,1,1)
     ax.scatter(x_cal[:,0]*100, x_cal[:,1]*100,

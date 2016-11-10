@@ -13,11 +13,11 @@ import glob
     
 def main():
     
-    save_plots = 0                      # Set to 1 to save plots, 0 otherwise
+    save_plots = 1                      # Set to 1 to save plots, 0 otherwise
     save_dir = "../Output/Images"       # Set save directory
     image_dpi = 500                     # Set saved image dpi
     
-    ts = 13
+    ts = 12
 #    extra = "_angle" # Note the underscore that should be added
     extra = ""
     
