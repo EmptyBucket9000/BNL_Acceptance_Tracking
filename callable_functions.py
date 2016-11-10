@@ -94,9 +94,6 @@ def ifPairProduction(E,photon_dt,mat):
             1.61749*10**-6 / E**3 + 0.0000188146 / E**2 - 0.000152661 / E)
             
         P = P_n + P_e
-        
-        print(P)
-         
              
     elif mat == "Ma":
     
@@ -110,8 +107,6 @@ def ifPairProduction(E,photon_dt,mat):
             2.56364*10**-6 / E**3 + 0.0000293949 / E**2 - 0.000220787 / E)
             
         P = P_n + P_e
-        
-        print(P)
          
     # Adjust the probability based on actual photon_dt as the above equations
     # assume photon_dt = 10**-11
@@ -371,13 +366,28 @@ def noPassthroughElementContact(x,cal_rad,cal_theta):
 ## Checks if reaches inner radial limit
 
 def innerLimit(x,R_i):
-    if np.sqrt(x[0]**2 + x[1]**2) < R_i:
+    
+    r = getParticleRadialPosition(x)
+    
+    if r < R_i:
         return True
     
 ## Checks if reaches outer radial limit
 
 def outerLimit(x,R):
-    if np.sqrt(x[0]**2 + x[1]**2) > R:
+    
+    r = getParticleRadialPosition(x)
+    
+    if r > R + 0.2:
+        return True
+        
+## Checks if contact with trolly rail
+        
+def railContact(x,R,rail_height,rail_rad):
+    
+    r = getParticleRadialPosition(x)
+    
+    if r > rail_rad[0] and r < rail_rad[1] and np.abs(x[2]) > rail_height:
         return True
         
 ## Returns the position of the particle in the calorimeter local coordinates

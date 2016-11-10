@@ -56,6 +56,8 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
     cal_width = geo_pack[21]
     cal_height = geo_pack[22]
     cal_theta_glob = geo_pack[23]
+    rail_height = geo_pack[24]
+    rail_rad = geo_pack[25]
     
     # Get the normalized momentum vector to create the photon velocity vector
     
@@ -91,8 +93,14 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
         
         # Outer radius limit
         
-        if cf.outerLimit(x[i],R + 0.2):
+        if cf.outerLimit(x[i],R):
             photon_kill_event_text = "Heading Out"
+            break
+        
+        # Trolly rail contact
+        
+        if cf.railContact(x[i],R,rail_height,rail_rad):
+            photon_kill_event_text = "Trolly Rail Contact"
             break
         
         ## Check for and create pair-production events

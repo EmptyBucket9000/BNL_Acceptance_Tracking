@@ -33,9 +33,9 @@ def main():
 
     ''' Begin editable variables '''
     
-    make_plots = 1                      # Set to 1 to display plots
+    make_plots = 0                      # Set to 1 to display plots
     save_plots = 0                      # Set to 1 to save plots as images
-    save_output = 0                     # Set to 1 to save data output to csv
+    save_output = 1                     # Set to 1 to save data output to csv
 
     # Name of csv containing muon data    
     file_name = "EndOfTracking_phase_space.csv"
@@ -45,9 +45,10 @@ def main():
     if m_theta_set == 1:
         m_theta = 2.3*np.pi / 8
     
-#    N = 5171                           # Number of muons in beam
-    N = 1
-    ts = 12
+    N = 5171                            # Number of muons in beam
+#    N = 1
+    ts = 13
+    photon_ts = 13
 
     # Used in naming spcecial output files. Folder within 'Output' must exist
     # with this name and a subfolder with the name of the value of 'ts' must
@@ -177,7 +178,7 @@ def main():
         particle_matrix,photon_matrix = \
             run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
                 particle_matrix,make_plots,save_plots,save_output,
-                N,steps,dt,q,B,muon_number,N_particles,N_photons,ts)
+                N,steps,dt,q,B,muon_number,N_particles,N_photons,ts,photon_ts)
                 
         # Move to the next muon
         muon_number = muon_number + 1
@@ -199,7 +200,7 @@ def main():
 
 def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
         particle_matrix,make_plots,save_plots,save_output,
-        N,steps,dt,q,B,muon_number,N_particles,N_photons,ts):
+        N,steps,dt,q,B,muon_number,N_particles,N_photons,ts,photon_ts):
 
 #==============================================================================
 #   Initialization and setting variables
@@ -208,7 +209,7 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
     R = geo_pack[19]
         
     photon_steps = 5*10**6
-    photon_dt = 10**-ts
+    photon_dt = 10**-photon_ts
     
     particle_count = 0
     

@@ -143,6 +143,12 @@ def geo():
         
     dqel_theta = dqel_theta*np.pi/180
     
+    ''' Trolly Rail '''
+    
+    rail_height = 40*10**-3                  # (m) Where the rail starts in y
+    rail_rad = R - np.array([56,46])*10**-3  # (m) Distance from R 
+    
+    
 #     Pack up the geometry variables for easier transfer
     geo_pack = np.array([cal_theta,cal_theta_start,cal_rad,
                          cal_box_theta,cal_box_theta_end,
@@ -151,6 +157,7 @@ def geo():
                          qel_z_max,
                          sqel_rad,sqel_theta,
                          dqel_rad,dqel_theta,
-                         R,R_i,cal_width,cal_height,cal_theta_glob])
+                         R,R_i,cal_width,cal_height,cal_theta_glob,
+                         rail_height,rail_rad])
                          
     return geo_pack

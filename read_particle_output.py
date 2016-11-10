@@ -13,7 +13,7 @@ import glob
     
 def main():
     
-    save_plots = 1                      # Set to 1 to save plots, 0 otherwise
+    save_plots = 0                      # Set to 1 to save plots, 0 otherwise
     save_dir = "../Output/Images"       # Set save directory
     image_dpi = 500                     # Set saved image dpi
     
@@ -103,11 +103,12 @@ def main():
                 
         # Counters
         
+        rail_contact = 0            # Trolly rail contact
         cal_con_particle = 0        # Calorimeter contact
         so_contact = 0              # HV standoff contact
-        sos_contact = 0             # HV standoff screw contact
         sqel_contact = 0            # Single quad contact
         dqel_contact = 0            # Double quad contact
+        sos_contact = 0             # HV standoff screw contact
         sp_contact = 0              # Standoff plate contact
         cal_con_particle_so = 0     # Calorimeter and HV standoff contact
         
@@ -120,8 +121,11 @@ def main():
             if row[2] == "Calorimeter Contact":
                 cal_con_particle = cal_con_particle + 1
             
-            x[i,0] = row[4]         
-            x[i,1] = row[5]         
+            if row[2] == "Trolly Rail Contact":
+                rail_contact = rail_contact + 1
+            
+            x[i,0] = row[4]
+            x[i,1] = row[5]
             x[i,2] = row[6]
             
             x_cal[i,0] = row[7]
@@ -187,6 +191,7 @@ def main():
     
     # Remove rows of all zeros
     angles = angles[np.any(angles != 0, axis = 1)]
+    angles_mean = np.mean(angles[:,2])
     
     total_particles = len(x)
     total_photons = sum(in_sqel[:,2]) + sum(in_dqel[:,2]) + \
@@ -207,6 +212,8 @@ def main():
     print('Total # of so photons released: %d'%sum(in_so[:,2]))
     print('Total HV standoff screw contacts: %d'%sos_contact)
     print('Total # of sos photons released: %d'%sum(in_sos[:,2]))
+    print('Total # of trolley rail contacts: %d'%rail_contact)
+    print('Average calorimeter contact angle: %0.3f'%angles_mean)
     print('Total particle calorimeter contacts: %d'%cal_con_particle)
     print('Total SO/SO screw contacts that hit the calorimeter: %d'\
             %cal_con_particle_so)

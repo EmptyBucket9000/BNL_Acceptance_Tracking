@@ -13,11 +13,11 @@ import glob
     
 def main():
     
-    save_plots = 1                      # Set to 1 to save plots, 0 otherwise
+    save_plots = 0                      # Set to 1 to save plots, 0 otherwise
     save_dir = "../Output/Images"       # Set save directory
     image_dpi = 500                     # Set saved image dpi
     
-    ts = 12
+    ts = 13
 #    extra = "_angle" # Note the underscore that should be added
     extra = ""
     
@@ -87,6 +87,7 @@ def main():
         pp_so_counter = 0
         pp_sos_counter = 0
         cal_counter = 0
+        rail_contact_counter = 0
         
         for row in stuff:
             
@@ -113,6 +114,9 @@ def main():
             if photon[i,0] == "Calorimeter Contact":
                 cal_counter = cal_counter + 1
             
+            if photon[i,0] == "Trolly Rail Contact":
+                rail_contact_counter = rail_contact_counter + 1
+            
             x[i,0] = row[3]
             x[i,1] = row[4]
             x[i,2] = row[5]
@@ -135,6 +139,7 @@ def main():
             
     # Remove rows of all zeros
     angles = angles[np.any(angles != 0, axis = 1)]
+    angles_mean = np.mean(angles[:,2])
             
     pp_tot = pp_sqel_counter + pp_dqel_counter + pp_sp_counter + \
             pp_so_counter + pp_sos_counter
@@ -149,6 +154,8 @@ def main():
     print('# of pair-production events in sp: %d'%pp_sp_counter)
     print('# of pair-production events in so: %d'%pp_so_counter)
     print('# of pair-production events in sos: %d'%pp_sos_counter)
+    print('Total # of trolley rail contacts: %d'%rail_contact_counter)
+    print('Average calorimeter contact angle: %0.3f'%angles_mean)
     print('# of calorimeter contacts: %d'%cal_counter)
             
 #==============================================================================

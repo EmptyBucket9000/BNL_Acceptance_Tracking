@@ -76,6 +76,8 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
     cal_width = geo_pack[21]
     cal_height = geo_pack[22]
     cal_theta_glob = geo_pack[23]
+    rail_height = geo_pack[24]
+    rail_rad = geo_pack[25]
     
     n = .142                                # () Used in E-field
     
@@ -352,8 +354,14 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
         
         # Outer radius limit
         
-        if cf.outerLimit(x[i],R + 0.2):
+        if cf.outerLimit(x[i],R):
             kill_event_text = "Into the Iron"
+            break
+        
+        # Trolly rail contact
+        
+        if cf.railContact(x[i],R,rail_height,rail_rad):
+            kill_event_text = "Trolly Rail Contact"
             break
         
     # Prepare the data to be saved into the particle matrix for later saving
