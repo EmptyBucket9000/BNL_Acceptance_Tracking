@@ -13,7 +13,7 @@ import glob
     
 def main():
     
-    save_plots = 1                      # Set to 1 to save plots, 0 otherwise
+    save_plots = 0                      # Set to 1 to save plots, 0 otherwise
     save_dir = "../Output/Images"       # Set save directory
     image_dpi = 500                     # Set saved image dpi
     
@@ -25,7 +25,9 @@ def main():
 # Particles
 #==============================================================================
     
-    particle_file = glob.glob("%s/../Output/photon_matrix%s_%d.csv"%(
+#    particle_file = glob.glob("%s/../Output/photon_matrix%s_%d.csv"%(
+#                                os.getcwd(),extra,ts))
+    particle_file = glob.glob("%s/photon_matrix%s_%d.csv"%(
                                 os.getcwd(),extra,ts))
     particle_file = particle_file[0]
     

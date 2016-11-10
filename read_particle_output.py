@@ -27,7 +27,9 @@ def main():
 # Particles
 #==============================================================================
     
-    particle_file = glob.glob("%s/../Output/particle_matrix%s_%d.csv"%(
+#    particle_file = glob.glob("%s/../Output/particle_matrix%s_%d.csv"%(
+#                                os.getcwd(),extra,ts))
+    particle_file = glob.glob("%s/particle_matrix%s_%d.csv"%(
                                 os.getcwd(),extra,ts))
     particle_file = particle_file[0]
     
