@@ -19,7 +19,7 @@ def main():
     
     ts = 12
 #    extra = "_angle" # Note the underscore that should be added
-    extra = ""
+    extra = "_group_2"
     
     R = 7.112*100
     
@@ -27,10 +27,10 @@ def main():
 # Particles
 #==============================================================================
     
-#    particle_file = glob.glob("%s/../Output/particle_matrix%s_%d.csv"%(
-#                                os.getcwd(),extra,ts))
-    particle_file = glob.glob("%s/particle_matrix%s_%d.csv"%(
+    particle_file = glob.glob("%s/../Output/particle_matrix%s_%d.csv"%(
                                 os.getcwd(),extra,ts))
+#    particle_file = glob.glob("%s/particle_matrix%s_%d.csv"%(
+#                                os.getcwd(),extra,ts))
     particle_file = particle_file[0]
     
     with open(particle_file, "rt") as inf:
@@ -117,7 +117,10 @@ def main():
         cal_con_so = 0              # Calorimeter and HV standoff contact
         
         through_quad = np.zeros((1,8),dtype=int)
-        data = np.zeros((1,8))
+        data_qel_contact = np.zeros((8))
+        data_no_qel_contact = np.zeros((8))
+        yerr_qel_contact = np.zeros((8))
+        yerr_no_qel_contact = np.zeros((8))
         
         # sqel or dqel contact then cal contact
         through_quad_contact = np.zeros((1,8),dtype=int)
@@ -142,7 +145,7 @@ def main():
             x[i,2] = float(row[6])
             
             r = np.sqrt(x[i,0]**2 + x[i,1]**2)/10   # (cm) Starting radius
-            d = (R - r)                             # (cm) Starting local x
+            d = R - r                               # (cm) Starting local x
             
             x_cal[i,0] = row[7]
             x_cal[i,1] = row[8]
@@ -198,19 +201,29 @@ def main():
             angles[i,0] = float(row[35])*180/np.pi
             angles[i,1] = float(row[36])*180/np.pi
             angles[i,2] = float(row[37])*180/np.pi
-                
+            
+            ## For different starting x-position limits, check if calorimeter
+            ## contact was made and if so, if the positron passed through any
+            ## quads on the way
+            
+            # If starting x-position (cm) is greater 3
             if d >= 3:
                 
+                # Add 1 to the counter for the total # of particles
                 through_quad[0,7] = through_quad[0,7] + 1
                 
+                # Check if the particle hit the calorimeter and a quad
                 if particle[i,0] == "Calorimeter Contact" and \
                     (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
                         
+                    # Count the particle
                     through_quad_contact[0,7] = through_quad_contact[0,7] + 1
                 
+                # Check if the particle hit the calorimter and missed all quads
                 if particle[i,0] == "Calorimeter Contact" and \
                     (float(in_sqel[i,0]) == 0 and float(in_dqel[i,0]) == 0):
                         
+                    # Count the particle
                     no_through_quad_contact[0,7] = no_through_quad_contact[0,7] + 1
             
             if d < 3 and d >= 2:
@@ -269,7 +282,7 @@ def main():
                         
                     no_through_quad_contact[0,3] = no_through_quad_contact[0,3] + 1
             
-            if d < -1 and d > -2:
+            if d < -1 and d >= -2:
                 
                 through_quad[0,2] = through_quad[0,2] + 1
                 
@@ -309,7 +322,7 @@ def main():
                 if particle[i,0] == "Calorimeter Contact" and \
                     (float(in_sqel[i,0]) == 0 and float(in_dqel[i,0]) == 0):
                         
-                    no_through_quad_contact[0,0] = no_through_quad_contact[0,0] + 1            
+                    no_through_quad_contact[0,0] = no_through_quad_contact[0,0] + 1   
                 
             i = i + 1
             
@@ -322,14 +335,14 @@ def main():
     angles_mean = np.mean(angles[:,2])
     
     total_particles = len(x)
-    total_photons = sum(in_sqel[:,2]) + sum(in_dqel[:,2]) + \
-                    sum(in_sp[:,2]) + sum(in_so[:,2]) + sum(in_sos[:,2])
+#    total_photons = sum(in_sqel[:,2]) + sum(in_dqel[:,2]) + \
+#                    sum(in_sp[:,2]) + sum(in_so[:,2]) + sum(in_sos[:,2])
 #    total_in_matter = sum(in_sqel[:,1]) + sum(in_dqel[:,1]) + \
 #                      sum(in_sp[:,1]) + sum(in_so[:,1] + sum(in_sos[:,1]))
                       
     print('Total particles: %d'%total_particles)
 #    print('Total distance in matter: %0.3f cm'%(total_in_matter))
-    print('Total photons: %d'%total_photons)
+#    print('Total photons: %d'%total_photons)
     print('Total single quad contacts: %d'%sqel_contact)
     print('Total # of sqel photons released: %d'%sum(in_sqel[:,2]))
     print('Total double quad contacts: %d'%dqel_contact)
@@ -343,8 +356,10 @@ def main():
     print('Total # of trolley rail contacts: %d'%rail_contact)
     print('Average calorimeter contact angle: %0.3f'%angles_mean)
     print('Total particle calorimeter contacts: %d'%cal_con)
-    print('# of calorimeter contacts after qel contact: %d'%np.sum(through_quad_contact))
-    print('# of calorimeter contacts without qel contact: %d'%np.sum(no_through_quad_contact))
+    print('# of calorimeter contacts after qel contact: %d'%np.sum(
+            through_quad_contact))
+    print('# of calorimeter contacts without qel contact: %d'%np.sum(
+            no_through_quad_contact))
     print('Total SO/SO screw contacts that hit the calorimeter: %d'\
             %cal_con_so)
 #==============================================================================
@@ -355,11 +370,27 @@ def main():
     
     while i < np.shape(through_quad)[1]:
         
-        data[0,i] = through_quad_contact[0,i] / through_quad[0,i]
+        # Get the fraction that passed through a quad and hit a calorimeter to
+        # the total # in that starting x-position range
+        data_qel_contact[i] = through_quad_contact[0,i] / through_quad[0,i]
+        
+        # Get Poisson uncertainties
+        yerr_qel_contact[i] = np.sqrt(through_quad_contact[0,i]) / \
+                                through_quad[0,i]
+        
+        # Get the fraction that did not pass through a quad and hit a
+        # calorimeter to the total # in that starting x-position range
+        data_no_qel_contact[i] = no_through_quad_contact[0,i] / through_quad[0,i]
+        
+        # Poisson uncertainties
+        yerr_no_qel_contact[i] = np.sqrt(no_through_quad_contact[0,i]) / \
+                                    through_quad[0,i]
         print('%d: %d'%(i,through_quad_contact[0,i]))
+        print('%d: %d'%(i,no_through_quad_contact[0,i]))
         print('%d: %d'%(i,through_quad[0,i]))
         i = i + 1
             
+    # Number of bins in the calorimeter contact angle histogram
     calorimeter_angle_hist = 40
     
     # Convert string to float
@@ -370,12 +401,33 @@ def main():
         
     n = 0
     
+    # Create a scatter plot of the fraction of particles that passed through
+    # a quad and hit a calorimeter to the total # in that starting x-position
+    # range, and create a scatter plot of the fraction that did not pass
+    # through a quad to the total # in that starting x-position range
+    
     plt.figure(n)
     n = n + 1
     
-    xx = np.arange(-3.5,4).reshape(1,8)
+    xx = np.arange(-3.5,4)
     ax = plt.subplot(1,1,1)
-    ax.scatter(xx,data[0,:])
+    ax.errorbar(xx,data_no_qel_contact,yerr=yerr_no_qel_contact,fmt='.',
+                color='g',
+                label='No through-quad')
+    ax.errorbar(xx,data_qel_contact,yerr=yerr_qel_contact,fmt='.',
+                color='b',
+                label='Through-quad')
+    ax.legend(bbox_to_anchor=(0.48,0.26))
+    ax.set_title("Admittance as a function of muon position")
+    ax.set_xlabel("x-Position (cm)")
+    ax.set_ylabel("Particles Detected / Total")
+    
+    if save_plots == 1:
+            plt.savefig('%s/admittance.png'%save_dir,
+                        bbox_inches='tight',dpi=image_dpi)
+    
+    # Plot the contact points on the calorimeter in the calorimeter local
+    # coordinate system
     
     plt.figure(n)
     n = n + 1
@@ -385,10 +437,10 @@ def main():
                color='g',
                s = 0.7,
                label='Contact Points')
-    ax.plot([-11.25,11.25],[7,7],'k-',label='Perimeter')
-    ax.plot([-11.25,11.25],[-7,-7],'k-')
-    ax.plot([-11.25,-11.25],[-7,7],'k-')
-    ax.plot([11.25,11.25],[-7,7],'k-')
+    ax.plot([-11.25,11.25],[7,7],'b-',label='Perimeter')
+    ax.plot([-11.25,11.25],[-7,-7],'b-')
+    ax.plot([-11.25,-11.25],[-7,7],'b-')
+    ax.plot([11.25,11.25],[-7,7],'b-')
     plt.xlim(-24,24)
     plt.ylim(-15.5,15.5)
     ax.grid(True)
@@ -401,6 +453,9 @@ def main():
     if save_plots == 1:
             plt.savefig('%s/particle_calorimeter_contact.png'%save_dir,
                         bbox_inches='tight',dpi=image_dpi)
+                        
+    # Plot a histogram of calorimeter contact angles where the angle is from
+    # the positive x-axis
     
     plt.figure(n)
     n = n + 1
@@ -414,6 +469,9 @@ def main():
     if save_plots == 1:
             plt.savefig('%s/particle_calorimeter_contact_x_angle.png'%save_dir,
                         bbox_inches='tight',dpi=image_dpi)
+
+    # Plot a histogram of calorimeter contact angles where the angle is from
+    # the positive y-axis
     
     plt.figure(n)
     n = n + 1
@@ -427,6 +485,10 @@ def main():
     if save_plots == 1:
             plt.savefig('%s/particle_calorimeter_contact_y_angle.png'%save_dir,
                         bbox_inches='tight',dpi=image_dpi)
+
+    # Plot a histogram of calorimeter contact angles where the angle is from
+    # the projection of the final momentum vector onto the calorimeter plane to
+    # the the final momentum vector (in local calorimeter coordinates)
     
     plt.figure(n)
     n = n + 1

@@ -86,8 +86,8 @@ def ifPairProduction(E,photon_dt,mat):
     elif mat == "SiBr":
     
         # Probability of pair production as a function of photon energy
-        P_n = (0.00458041 - 1.18887*10**-9 / E**5 + 7.07671*10**-8 / E**4 - 
-            1.64353*10**-6 / E**3 + 0.0000205231 / E**2 - 0.000214327 / E)
+        P_n = (0.044872 - 1.13514*10**-8 / E**5 + 6.75616*10**-7 / E**4 - 
+            0.000015688 / E**3 + 0.000195951 / E**2 - 0.00205794 / E)
              
         # Probability of electron pair production
         P_e = (0.0018329 - 1.21326*10**-9 / E**5 + 7.13317*10**-8 / E**4 - 
@@ -98,8 +98,8 @@ def ifPairProduction(E,photon_dt,mat):
     elif mat == "Ma":
     
         # Probability of pair production as a function of photon energy
-        P_n = (0.00211593 - 6.73464*10**-10 / E**5 + 4.04079*10**-8 / E**4 - 
-            9.45324*10**-7 / E**3 + 0.0000117739 / E**2 - 0.000114957 / E)
+        P_n = (0.0209591 - 6.58903*10**-9 / E**5 + 3.95365*10**-7 / E**4 - 
+            9.25002*10**-6 / E**3 + 0.00011525 / E**2 - 0.0011283 / E)
              
         # Probability of electron pair production
             
@@ -417,13 +417,15 @@ def getAnglesFromCalorimeter(cal_con_pre_x,cal_con_x,cal_theta_glob):
     
     # Get the projection of the momentum vector onto the calorimeter,
     # incorporating the angle of the calorimeter off radial
-    inc_vec_proj = np.array([cal_con_pre_x[2]*np.cos(ang_x),
+    inc_vec_proj = np.array([-np.abs(cal_con_pre_x[2]*np.cos(ang_x)),
                              cal_con_pre_x[2]*np.cos(ang_y),
                              0])
                              
     # Get the angle between the momentum vector and its projection            
     ang_tot = np.arccos(np.dot(inc_vec_proj,inc_vec) / 
                         (mag(inc_vec_proj) * mag(inc_vec)))
+                        
+    
                         
     return ang_x,ang_y,ang_tot
     
@@ -517,16 +519,17 @@ def mag(v):
     
 ## Return the particle momentum at decay in the local coordinate system
     
-def getParticleMomentumAtDecay(p_range,m_p,theta,m_m):
+def getParticleMomentumAtDecay(m_p,m_theta,m_m):
     
     # Magnitude of the particle momentum
     rn = np.random.random()
-    p_tot = (1.79453 + 5.92129*10**-7*np.exp(12.8423*rn**3) + 0.756197*rn - 
+    p_tot = (1.79453 + 5.92129*10**-7 * np.exp(12.8423*rn**3) + 0.756197*rn - 
     0.276462*rn**2 + 0.580407*rn**3) * 10**9
-#    p_tot = 2.3*10**9
+    #    p_tot = 2.3*10**9
     
     # Convert to momentum vector based on position
-    p = np.array([p_tot*np.sin(theta),-p_tot*np.cos(theta),0])
+#    p = np.array([p_tot*np.sin(m_theta),-p_tot*np.cos(m_theta),0])
+    p = p_tot * m_p / mag(m_p)
     
     # Add in the randomness of the angle away from the muon momentum vector
     # 's' in the variable names refer to 'star', the center of mass frame
@@ -536,7 +539,7 @@ def getParticleMomentumAtDecay(p_range,m_p,theta,m_m):
     
     # Make sure the momentum isn't greater than 1/2 of the rest mass of the
     # muon as in the muon frame, the positron cannot take more than half its
-    # energy without failure to conserve momentum. The approximation is used
+    # energy without failing to conserve momentum. The approximation is used
     # that energy = momentum due to the highly relativistic nature of the
     # particles.
     

@@ -17,7 +17,7 @@ def main():
     save_dir = "../Output/Images"       # Set save directory
     image_dpi = 500                     # Set saved image dpi
     
-    ts = 12
+    ts = 13
 #    extra = "_angle" # Note the underscore that should be added
     extra = ""
     
@@ -25,10 +25,10 @@ def main():
 # Particles
 #==============================================================================
     
-#    particle_file = glob.glob("%s/../Output/photon_matrix%s_%d.csv"%(
-#                                os.getcwd(),extra,ts))
-    particle_file = glob.glob("%s/photon_matrix%s_%d.csv"%(
+    particle_file = glob.glob("%s/../Output/photon_matrix%s_%d.csv"%(
                                 os.getcwd(),extra,ts))
+#    particle_file = glob.glob("%s/photon_matrix%s_%d.csv"%(
+#                                os.getcwd(),extra,ts))
     particle_file = particle_file[0]
     
     with open(particle_file, "rt") as inf:
@@ -59,6 +59,8 @@ def main():
         
         # of photons
         N_photons = len(stuff)
+        
+        photon_number_after_0 = 0
         
         # [Kill Event, Energy, dt, Kill Timestamp]
         # Possible kill events:
@@ -92,6 +94,9 @@ def main():
         rail_contact_counter = 0
         
         for row in stuff:
+        
+#            if int(row[0]) > 0:
+#                photon_number_after_0 = photon_number_after_0 + 1
             
             photon[i,0] = row[2]
             photon[i,1] = row[8]
@@ -100,18 +105,33 @@ def main():
             
             if photon[i,0] == "Pair-Production in Short Quad":
                 pp_sqel_counter = pp_sqel_counter + 1
+        
+                if int(row[0]) == 1:
+                    photon_number_after_0 = photon_number_after_0 + 1
             
             if photon[i,0] == "Pair-Production in Long Quad":
                 pp_dqel_counter = pp_dqel_counter + 1
+        
+                if int(row[0]) == 1:
+                    photon_number_after_0 = photon_number_after_0 + 1
             
             if photon[i,0] == "Pair-Production in Standoff Plate":
                 pp_sp_counter = pp_sp_counter + 1
+        
+                if int(row[0]) == 1:
+                    photon_number_after_0 = photon_number_after_0 + 1
             
             if photon[i,0] == "Pair-Production in HV Standoff":
                 pp_so_counter = pp_so_counter + 1
+        
+                if int(row[0]) == 1:
+                    photon_number_after_0 = photon_number_after_0 + 1
             
             if photon[i,0] == "Pair-Production in HV Standoff Screw":
                 pp_sos_counter = pp_sos_counter + 1
+        
+                if int(row[0]) == 1:
+                    photon_number_after_0 = photon_number_after_0 + 1
             
             if photon[i,0] == "Calorimeter Contact":
                 cal_counter = cal_counter + 1
@@ -149,6 +169,7 @@ def main():
     d_tot = sum(in_matter[:,1])
             
     print('Total # of photons created: %d'%N_photons)
+    print('Total # of photons created beyond 1: %d'%photon_number_after_0)    
     print('Total distance inside matter: %0.2f cm'%(d_tot*100))
     print('Total # of pair-production events: %d'%pp_tot)
     print('# of pair-production events in sqel: %d'%pp_sqel_counter)
@@ -178,10 +199,10 @@ def main():
                color='g',
                s = 0.7,
                label='Contact Points')
-    ax.plot([-11.25,11.25],[7,7],'k-',label='Perimeter')
-    ax.plot([-11.25,11.25],[-7,-7],'k-')
-    ax.plot([-11.25,-11.25],[-7,7],'k-')
-    ax.plot([11.25,11.25],[-7,7],'k-')
+    ax.plot([-11.25,11.25],[7,7],'b-',label='Perimeter')
+    ax.plot([-11.25,11.25],[-7,-7],'b-')
+    ax.plot([-11.25,-11.25],[-7,7],'b-')
+    ax.plot([11.25,11.25],[-7,7],'b-')
     plt.xlim(-24,24)
     plt.ylim(-15.5,15.5)
     ax.grid(True)

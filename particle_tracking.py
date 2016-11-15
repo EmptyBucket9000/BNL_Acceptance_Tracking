@@ -10,7 +10,8 @@ import callable_functions as cf
 
 def track(particle_pos,particle_matrix,particle_proc,photon_pos,
                  photon_proc,dt,steps,m,B,k_min,energy,geo_pack,
-                 particle_count,photon_count,particle_row_index,muon_number):
+                 particle_count,photon_count,particle_row_index,muon_number,
+                 min_tracking):
 
     c = 2.99792458*10**8                    # (m/s) Speed of light
     
@@ -314,8 +315,8 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
         
         energy = cf.momentum2Energy(p[i],m)
         
-        if energy <= k_min:
-            kill_event_text = "Energy Very Low"
+        if energy <= min_tracking:
+            kill_event_text = "Energy Below Minimum"
             break
                 
         photons_released = 0 # Reset for next step in particle motion
@@ -409,7 +410,7 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
             ang_x,ang_y,ang_tot = \
                 cf.getAnglesFromCalorimeter(cal_con_pre_x,cal_con_x,
                                             cal_theta_glob)
-                                
+            
             k = k + 1
         
     # Add the new line to the particle matrix array that will be saved to file

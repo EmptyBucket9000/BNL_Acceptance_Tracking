@@ -16,7 +16,7 @@ import plot_geometries as pg
 import os
 import glob
 import csv
-from process_single_files import process
+import process_single_files as psf
 
 """
 See README.md for information.
@@ -50,9 +50,14 @@ def main():
     ts = 13
     photon_ts = 13
 
-    # Used in naming spcecial output files. Folder within 'Output' must exist
-    # with this name and a subfolder with the name of the value of 'ts' must
-    # also exist.
+    '''
+    ***IMPORTANT***
+    "extra" is used in naming unique output files. A folder within
+    "Output/Single_Files" must exist with this name and a subfolder with the
+    name of the value of 'ts' must also exist. For example, if extra == temp
+    and ts = 13, you would need a folder (with respect to the directory 
+    containing this scripts) "../Output/Single_Files/temp/13".
+    '''
 #    extra = "angle/"  # Note the forward slash that must be added
     extra = ""
     
@@ -178,7 +183,8 @@ def main():
         particle_matrix,photon_matrix = \
             run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
                 particle_matrix,make_plots,save_plots,save_output,
-                N,steps,dt,q,B,muon_number,N_particles,N_photons,ts,photon_ts)
+                N,steps,dt,q,B,muon_number,N_particles,N_photons,ts,photon_ts,
+                extra)
                 
         # Move to the next muon
         muon_number = muon_number + 1
@@ -189,7 +195,7 @@ def main():
     # into single files.
               
     if save_output == 1:
-        process(particle_matrix_header,photon_matrix_header,N_part_mat,
+        psf.process(particle_matrix_header,photon_matrix_header,N_part_mat,
                 N_phot_mat,ts,extra)
 
 #==============================================================================
@@ -200,7 +206,7 @@ def main():
 
 def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
         particle_matrix,make_plots,save_plots,save_output,
-        N,steps,dt,q,B,muon_number,N_particles,N_photons,ts,photon_ts):
+        N,steps,dt,q,B,muon_number,N_particles,N_photons,ts,photon_ts,extra):
 
 #==============================================================================
 #   Initialization and setting variables
@@ -229,17 +235,16 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
     
     # Set the possible range of positron momentums that we want to track
 #    p_range = np.array([1.8*10**9,cf.mag(m_p)])
-    p_range = np.array([2,2])*10**9
     
     # Determine the positron momentum in local with the addition of the z-axis
     # being the direction of travel of the optimal muon
-    p_s = cf.getParticleMomentumAtDecay(p_range,m_p,m_theta,m_m)
+    p_s = cf.getParticleMomentumAtDecay(m_p,m_theta,m_m)
     
     # Set the positron momentum vector in global
     p = np.zeros((3))
-    p[0] = p_s[0] + m_p[0]*np.cos(m_theta)
-    p[1] = p_s[1] + m_p[0]*np.sin(m_theta)
-    p[2] = np.copy(m_p[1])
+    p[0] = p_s[0]*np.cos(m_theta) + p_s[2]*np.sin(m_theta)
+    p[1] = -p_s[0]*np.sin(m_theta) - p_s[2]*np.cos(m_theta)
+    p[2] = np.copy(p_s[1])
     
     # Initialize the positron and photon position arrays (for plotting) and the
     # 'proc' arrays that contain the basic information about the particles and
@@ -261,6 +266,9 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
     # Possible energies of Bremsstrahlung photons
     k_min = 0.04*10**9                          # (eV)
     k_max = cf.momentum2Energy(p,m)             # (eV)
+    
+    # Minimum particle/x-ray tracking energy
+    min_tracking = 0.2*10**9                    # (eV)
     
     # Set index variables that are used as counters to go through the 'proc'
     # arrays checking if any particles/photons have yet to be tracked
@@ -288,7 +296,7 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
                     pt.track(particle_pos,particle_matrix,particle_proc,
                              photon_pos,photon_proc,dt,steps,m,B,k_min,
                              k_max,geo_pack,particle_count,photon_count,
-                             particle_row_index,muon_number)
+                             particle_row_index,muon_number,min_tracking)
                              
             particle_row_index = particle_row_index + 1
         
@@ -305,7 +313,8 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
                     pht.track(particle_pos,particle_matrix,particle_proc,
                               photon_pos,photon_proc,photon_matrix,dt,steps,
                               m,B,k_min,k_max,geo_pack,particle_count,
-                              photon_steps,photon_dt,photon_row_index)
+                              photon_steps,photon_dt,photon_row_index,
+                              min_tracking)
                              
             photon_row_index = photon_row_index + 1
             
@@ -439,14 +448,14 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
         photon_matrix_print = \
             photon_matrix[np.any(photon_matrix != 0,axis=1)]
 
-        output_dir = "../Output/Single_Files/%d/"%ts
+        output_dir = "../Output/Single_Files/%s%d/"%(extra,ts)
         path = output_dir + "particle_matrix_%d.csv"%muon_number
         with open(path, "w", newline='') as csv_file:
             writer = csv.writer(csv_file, delimiter=',')
             for row in particle_matrix_print:
                 writer.writerow(row)
 
-        output_dir = "../Output/Single_Files/%d/"%ts
+        output_dir = "../Output/Single_Files/%s%d/"%(extra,ts)
         path = output_dir + "photon_matrix_%d.csv"%muon_number
         with open(path, "w", newline='') as csv_file:
             writer = csv.writer(csv_file, delimiter=',')

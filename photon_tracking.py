@@ -10,7 +10,7 @@ import callable_functions as cf
 
 def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
           photon_matrix,dt,steps,m,B,k_min,k_max,geo_pack,particle_count,
-          photon_steps,photon_dt,photon_row_index):
+          photon_steps,photon_dt,photon_row_index,min_tracking):
     
     c = 2.99792458*10**8                    # (m/s) Speed of light
     photon_kill_event_text = "Unknown Failure"
@@ -75,6 +75,12 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
         
         i = i + 1
         step_counter = step_counter + 1
+        
+        # Kill if energy below tracking energy        
+        
+        if photon_energy <= min_tracking:
+            photon_kill_event_text = "Energy Below Minimum"
+            break
 
         # Calorimeter front contact
 
@@ -133,8 +139,8 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
                         cf.doPairProduction(photon_energy,particle_count,
                                             particle_proc,m,p_norm,x[i],
                                             step_counter)
-                    photon_kill_event_text = "Pair-Production in HV Standoff \
-                                                Screw"
+                    photon_kill_event_text = \
+                        "Pair-Production in HV Standoff Screw"
                     break
 
         # Check if the photon's z-position is within the maximum height of the
