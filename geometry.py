@@ -32,6 +32,8 @@ A file 'geo_pack' is created here, to unpack, use:
     cal_width = geo_pack[21]
     cal_height = geo_pack[22]
     cal_theta_glob = geo_pack[23]
+    
+See README.md for information.
 
 '''
 

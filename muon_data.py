@@ -5,6 +5,10 @@ Created on Wed Nov 02 07:02:36 2016
 @author: Eric Schmidt
 """
 
+'''
+See README.md for information.
+'''
+
 import numpy as np
 import csv
 import random

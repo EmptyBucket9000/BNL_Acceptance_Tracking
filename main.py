@@ -5,6 +5,11 @@ Created on Fri Sep 30 08:29:51 2016
 @author: Eric Schmidt
 """
 
+"""
+See README.md for information.
+
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 import callable_functions as cf
@@ -17,11 +22,6 @@ import os
 import glob
 import csv
 import process_single_files as psf
-
-"""
-See README.md for information.
-
-"""
 
 #==============================================================================
 #==============================================================================

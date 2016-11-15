@@ -8,6 +8,8 @@ Created on Mon Nov  7 06:21:29 2016
 '''
 'just_process.py' is used only when the 'main.py' code is still running (to see
 the current progress) or the file processing failed for some reason.
+
+See README.md for information.
 '''
 
 import numpy as np

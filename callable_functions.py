@@ -5,6 +5,11 @@ Created on Fri Sep 30 08:29:11 2016
 @author: Eric Schmidt
 """
 
+"""
+See README.md for information.
+
+"""
+
 import numpy as np
 
 #==============================================================================

@@ -5,6 +5,10 @@ Created on Fri Sep 30 08:29:51 2016
 @author: Eric Schmidt
 """
 
+'''
+See README.md for information.
+'''
+
 import numpy as np
 
 def plot(geo_pack,steps,ax):

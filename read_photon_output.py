@@ -5,6 +5,11 @@ Created on Thu Nov  3 11:21:46 2016
 @author: Eric Schmidt
 """
 
+"""
+See README.md for information.
+
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 import csv

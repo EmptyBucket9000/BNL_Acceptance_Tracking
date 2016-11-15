@@ -11,9 +11,29 @@ First, I should say that if I were to do this code again, I would make it more o
 # Known Bugs
 ######################################
 
-### Miscounts
-(Priority: low)
+### Miscounts (Priority: low)
 When looking at the counts for the number of x-rays created and the number of pair-production events, there is a discrepancy between what particle_matrix.csv reports vs. what photon_matrix.csv reports. This is due to the way the code (incorrectly) counts when multiple x-rays are created within a single step. This is set to low priority as it only affects the counting of some elements, it does not affect whether or not an x-ray or particle is tracked.
+
+######################################
+# Assumptions
+######################################
+
+This section covers assumptions made and whether or not I plan to remove them.
+
+###Bremsstrahlung (Priority: low)
+The x-ray momentum vector released via Bremsstrahlung was assumed to be parallel to the particle momentum vector \cite{bib:brem_angle}.
+
+###Compton Scattering  (Priority: medium)
+Due to the high-energy of the x-rays produced from Bremsstrahlung, Compton scattering was ignored \cite{bib:scattering_rates}.
+
+###Ring Geometries (Priority: low)
+Two ring structures, high-voltage standoffs and standoff plates, were geometrically approximated by allowing them to 'bend' radially around the ring (to greatly simplify their coding). However, due to their small sizes, this approximation causes deviations of only small fractions of a millimeter from their true shapes.
+
+###Electrode Curls (Priority: low)
+The edges of the electrodes curl around. This is more a complicated geometry to code plus it only has a very small effect on tracking. Therefore it is common practice in G-2 to ignore them, which I have done.
+
+###Trolley Rails (Priority: medium)
+Due to the odd shape (being very difficult to represent digitally), it was assumed that if any particle or x-ray made contact with them, the particle or x-ray would no longer be tracked, i.e. it was 'killed'. This is a valid assumption because 1) the rails were large enough to cause a very large reduction in energy of the particle passing through them (preventing them from contacting the calorimeter), and 2) only about 0.2\% of particles make contact with them.
 
 ######################################
 # Running the Code
