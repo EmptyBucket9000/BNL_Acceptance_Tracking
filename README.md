@@ -11,7 +11,7 @@ First, I should say that if I were to do this code again, I would make it more o
 # Known Bugs
 ######################################
 
-# Miscounts - Priority: low
+### Miscounts - Priority: low
 When looking at the counts for the number of x-rays created and the number of pair-production events, there is a discrepancy between what particle_matrix.csv reports vs. what photon_matrix.csv reports. This is due to the way the code (incorrectly) counts when multiple x-rays are created within a single step. This is set to low priority as it only affects the counting of some elements, it does not affect whether or not an x-ray or particle is tracked.
 
 ######################################
