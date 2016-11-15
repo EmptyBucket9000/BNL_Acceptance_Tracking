@@ -420,7 +420,8 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
         # Add legend
 #        ax.legend()
 
-        # Set axes limits based on min/max particle positions
+        # Set axes limits based on min/max particle positions. These three
+        # sets are simply ones I commonly used.
 
         plt.axis('equal') # Prevents a skewed look
 #        plt.xlim(min(x[:,0]-2),max(x[:,0]+2))

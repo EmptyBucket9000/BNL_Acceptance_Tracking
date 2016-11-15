@@ -5,10 +5,15 @@ Created on Mon Nov  7 06:21:29 2016
 @author: Eric Schmidt
 """
 
-import numpy as np
-from process_single_files import process
+'''
+'just_process.py' is used only when the 'main.py' code is still running (to see
+the current progress) or the file processing failed for some reason.
+'''
 
-ts = 12
+import numpy as np
+import process_single_files as psf
+
+ts = 13
 #extra = "angle/" # Note the forward slash that must be added
 extra = ""
                          
@@ -67,5 +72,5 @@ photon_matrix_header = np.array(["Photon #","Steps","Kill Event",
 N_part_mat = len(particle_matrix_header)                               
 N_phot_mat = len(photon_matrix_header)
 
-process(particle_matrix_header,photon_matrix_header,N_part_mat,N_phot_mat,ts,
+psf.process(particle_matrix_header,photon_matrix_header,N_part_mat,N_phot_mat,ts,
         extra)
