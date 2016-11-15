@@ -8,11 +8,14 @@
 First, I should say that if I were to do this code again, I would make it more object-oriented and less procedural. When creating this code, I had only just learned about classes and therefore did not use them. In particular, a variable called 'geo_pack' is passed around between multiple functions. This file contains all the permanent geometry information about the ring. A geometry class would have been much more user-friendly.
 
 ######################################
-# Known Bugs
+# Known Bugs/Issues
 ######################################
 
 ### Miscounts (Priority: low)
 When looking at the counts for the number of x-rays created and the number of pair-production events, there is a discrepancy between what particle_matrix.csv reports vs. what photon_matrix.csv reports. This is due to the way the code (incorrectly) counts when multiple x-rays are created within a single step. This is set to low priority as it only affects the counting of some elements, it does not affect whether or not an x-ray or particle is tracked.
+
+### Unique Output Files (Priority: low)
+Adding a clarifying string to the output files by making 'extra' non-empty allows the code to be run multiple times without overwriting previous output. Improve this process by having the required folders automatically created.
 
 ######################################
 # Assumptions
@@ -20,19 +23,19 @@ When looking at the counts for the number of x-rays created and the number of pa
 
 This section covers assumptions made and whether or not I plan to remove them.
 
-###Bremsstrahlung (Priority: low)
+### Bremsstrahlung (Priority: low)
 The x-ray momentum vector released via Bremsstrahlung was assumed to be parallel to the particle momentum vector \cite{bib:brem_angle}.
 
-###Compton Scattering  (Priority: medium)
+### Compton Scattering  (Priority: medium)
 Due to the high-energy of the x-rays produced from Bremsstrahlung, Compton scattering was ignored \cite{bib:scattering_rates}.
 
-###Ring Geometries (Priority: low)
+### Ring Geometries (Priority: low)
 Two ring structures, high-voltage standoffs and standoff plates, were geometrically approximated by allowing them to 'bend' radially around the ring (to greatly simplify their coding). However, due to their small sizes, this approximation causes deviations of only small fractions of a millimeter from their true shapes.
 
-###Electrode Curls (Priority: low)
+### Electrode Curls (Priority: low)
 The edges of the electrodes curl around. This is more a complicated geometry to code plus it only has a very small effect on tracking. Therefore it is common practice in G-2 to ignore them, which I have done.
 
-###Trolley Rails (Priority: medium)
+### Trolley Rails (Priority: medium)
 Due to the odd shape (being very difficult to represent digitally), it was assumed that if any particle or x-ray made contact with them, the particle or x-ray would no longer be tracked, i.e. it was 'killed'. This is a valid assumption because 1) the rails were large enough to cause a very large reduction in energy of the particle passing through them (preventing them from contacting the calorimeter), and 2) only about 0.2\% of particles make contact with them.
 
 ######################################
@@ -84,9 +87,9 @@ The files used are the following:
 
 main.py - The primary file that is run and where the editable variables live.
 
-callable_functions.py - A file of functions used through the other files.
+callable_functions.py - A file of functions used by the other files.
 
-geometry.py - Builds the geometry of the ring to be used in determining if a particle/x-ray is inside it and used for plotting.
+geometry.py - Builds the geometry of the ring to be used in determining if a particle/x-ray is inside it, and used for plotting.
 
 muon_data.py - Returns the muon position and momentum vectors in the local coordinate system.
 

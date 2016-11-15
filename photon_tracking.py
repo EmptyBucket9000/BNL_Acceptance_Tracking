@@ -62,6 +62,7 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
     cal_theta_glob = geo_pack[23]
     rail_height = geo_pack[24]
     rail_rad = geo_pack[25]
+    cal_det_theta = geo_pack[26]
     
     # Get the normalized momentum vector to create the photon velocity vector
     
@@ -97,8 +98,12 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
 
         # Calorimeter top
         
+        if cf.noPassthroughElementContact(x[i],cal_rad,cal_det_theta):
+            photon_kill_event_text = "Calorimeter Edge Contact"
+            break
+        
         if cf.noPassthroughElementContact(x[i],cal_rad,cal_box_theta):
-            photon_kill_event_text = "Calorimeter Top Contact"
+            photon_kill_event_text = "Calorimeter End Edge Contact"
             break
         
         # Outer radius limit

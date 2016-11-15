@@ -83,6 +83,7 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
     cal_theta_glob = geo_pack[23]
     rail_height = geo_pack[24]
     rail_rad = geo_pack[25]
+    cal_det_theta = geo_pack[26]
     
     n = .142                                # () Used in E-field
     
@@ -347,8 +348,12 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
             
         # Calorimeter top
         
+        if cf.noPassthroughElementContact(x[i],cal_rad,cal_det_theta):
+            kill_event_text = "Calorimeter Edge Contact"
+            break
+        
         if cf.noPassthroughElementContact(x[i],cal_rad,cal_box_theta):
-            kill_event_text = "Calorimeter Top Contact"
+            kill_event_text = "Calorimeter End Edge Contact"
             break
                         
         # Inner radius limit

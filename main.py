@@ -39,7 +39,7 @@ def main():
 
     # Name of csv containing muon data    
     file_name = "EndOfTracking_phase_space.csv"
-        
+    
     m_theta_set = 0                     # 1, use m_theta below, 0 random
     
     if m_theta_set == 1:
@@ -47,7 +47,7 @@ def main():
     
     N = 5171                            # Number of muons in beam
 #    N = 1
-    ts = 13
+    ts = 12
     photon_ts = 13
 
     '''

@@ -31,6 +31,7 @@ def plot(geo_pack,steps,ax):
     dqel_rad = geo_pack[17]
     dqel_theta = geo_pack[18]
     R_i = geo_pack[20]
+    cal_det_theta_end = geo_pack[27]
     
     # Add inner radius
                 
@@ -189,6 +190,14 @@ def plot(geo_pack,steps,ax):
             cal_rad[1]*np.cos(cal_theta_start[k])],
             [cal_rad[0]*np.sin(cal_theta_start[k]),
             cal_rad[1]*np.sin(cal_theta_start[k])],
+            'k-',lw=lw
+        )
+            
+        ax.plot(
+            [cal_rad[0]*np.cos(cal_det_theta_end[k]),
+            cal_rad[1]*np.cos(cal_det_theta_end[k])],
+            [cal_rad[0]*np.sin(cal_det_theta_end[k]),
+            cal_rad[1]*np.sin(cal_det_theta_end[k])],
             'k-',lw=lw
         )
             

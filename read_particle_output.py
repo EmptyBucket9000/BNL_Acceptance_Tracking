@@ -20,7 +20,7 @@ def main():
     
     save_plots = 0                      # Set to 1 to save plots, 0 otherwise
     save_dir = "../Output/Images"       # Set save directory
-    image_dpi = 500                     # Set saved image dpi
+    image_dpi = 300                     # Set saved image dpi
     
     ts = 12
 #    extra = "_angle" # Note the underscore that should be added
@@ -120,6 +120,7 @@ def main():
         sos_contact = 0             # HV standoff screw contact
         sp_contact = 0              # Standoff plate contact
         cal_con_so = 0              # Calorimeter and HV standoff contact
+        cal_top_contact = 0         # Calorimeter top contact
         
         through_quad = np.zeros((1,8),dtype=int)
         data_qel_contact = np.zeros((8))
@@ -144,6 +145,9 @@ def main():
             
             if row[2] == "Trolly Rail Contact":
                 rail_contact = rail_contact + 1
+                
+            if row[2] == "Calorimeter Top Contact":
+                cal_top_contact = cal_top_contact + 1
             
             x[i,0] = float(row[4])
             x[i,1] = float(row[5])
@@ -359,6 +363,7 @@ def main():
     print('Total HV standoff screw contacts: %d'%sos_contact)
     print('Total # of sos photons released: %d'%sum(in_sos[:,2]))
     print('Total # of trolley rail contacts: %d'%rail_contact)
+    print('Total # of calorimeter top contacts: %d'%cal_top_contact)
     print('Average calorimeter contact angle: %0.3f'%angles_mean)
     print('Total particle calorimeter contacts: %d'%cal_con)
     print('# of calorimeter contacts after qel contact: %d'%np.sum(
@@ -377,7 +382,7 @@ def main():
         
         # Get the fraction that passed through a quad and hit a calorimeter to
         # the total # in that starting x-position range
-        data_qel_contact[i] = through_quad_contact[0,i] / through_quad[0,i]
+        data_qel_contact[i] = (through_quad_contact[0,i]) / through_quad[0,i]
         
         # Get Poisson uncertainties
         yerr_qel_contact[i] = np.sqrt(through_quad_contact[0,i]) / \
@@ -385,7 +390,7 @@ def main():
         
         # Get the fraction that did not pass through a quad and hit a
         # calorimeter to the total # in that starting x-position range
-        data_no_qel_contact[i] = no_through_quad_contact[0,i] / through_quad[0,i]
+        data_no_qel_contact[i] = (no_through_quad_contact[0,i]) / through_quad[0,i]
         
         # Poisson uncertainties
         yerr_no_qel_contact[i] = np.sqrt(no_through_quad_contact[0,i]) / \

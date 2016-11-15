@@ -46,8 +46,9 @@ def geo():
     
     ''' Calorimeters '''
     
-    cal_width = 0.225           # (m) Calorimeter length (width)
+    cal_width = 0.225           # (m) Calorimeter width
     cal_depth = 0.4572          # (m) Depth of calorimeter
+    cal_depth_det = 0.15            # (m) Depth of detector part of calorimeter
     cal_height = 0.14           # (m) Height of the calorimeter
     cal_theta_glob = 0.070      # (rad) Angle of cal w.r.t. radial
     
@@ -56,10 +57,12 @@ def geo():
     # the calorimeter by contacting the 'top' of the calorimeter.
     
     cal_theta_start = np.linspace(0,2*np.pi-np.pi/12,24) + np.pi/12
-    cal_box_theta_end = cal_theta_start - cal_depth/(R_i+cal_width)
-    cal_theta_end = cal_theta_start - .001
+    cal_det_theta_end = cal_theta_start - cal_depth_det/(R_i+cal_width)
+    cal_box_theta_end = cal_det_theta_end - (cal_depth-cal_depth_det)/(R_i+cal_width)
+    cal_theta_end = cal_theta_start - 0.001
     cal_theta = np.column_stack((cal_theta_start,cal_theta_end))
-    cal_box_theta = np.column_stack((cal_theta_start -0.001,cal_box_theta_end))
+    cal_det_theta = np.column_stack((cal_theta_start -0.001,cal_det_theta_end))
+    cal_box_theta = np.column_stack((cal_det_theta_end,cal_box_theta_end))
     
     # Radial position [r_min,r_max]
     cal_rad = np.array([R_i,R_i+cal_width]) # (m)
@@ -160,6 +163,6 @@ def geo():
                          sqel_rad,sqel_theta,
                          dqel_rad,dqel_theta,
                          R,R_i,cal_width,cal_height,cal_theta_glob,
-                         rail_height,rail_rad])
+                         rail_height,rail_rad,cal_det_theta,cal_det_theta_end])
                          
     return geo_pack
