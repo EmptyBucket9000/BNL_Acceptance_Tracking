@@ -23,9 +23,9 @@ def muon(N,file_name,p_magic):
     for line in lines:
         m_p[i,2] = p_magic + (m[line,4]*p_magic)
         m_x[i,0] = m[line,0]
-        m_p[i,0] = m[line,1]*m_p[i,2]
+        m_p[i,0] = m[line,1]
         m_x[i,1] = m[line,2]
-        m_p[i,1] = m[line,3]*m_p[i,2]
+        m_p[i,1] = m[line,3]
         i = i + 1
         
     return m_x,m_p
@@ -44,9 +44,9 @@ def readFile(file_name):
         m = np.zeros((length,5))
         
         for row in stuff:
-            m[i,0] = row[0]                
+            m[i,0] = row[0]           
             m[i,1] = row[1]
-            m[i,2] = row[2]                
+            m[i,2] = row[2]
             m[i,3] = row[3]
             m[i,4] = row[4]
                 

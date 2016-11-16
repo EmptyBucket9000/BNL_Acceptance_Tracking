@@ -19,10 +19,7 @@ import glob
 def process(particle_matrix_header,photon_matrix_header,N_part_mat,N_phot_mat,
             ts,extra):
                 
-    if extra == "group_2/":
-        extra_out = "_group_2" # Note the underscore that should be added
-    if extra == "":
-        extra_out = ""
+    extra_out = "_" + extra[:-1]
     
 #==============================================================================
 # Particle Files

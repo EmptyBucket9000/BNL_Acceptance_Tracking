@@ -24,7 +24,7 @@ def main():
     
     ts = 12
 #    extra = "_angle" # Note the underscore that should be added
-    extra = "_group_2"
+    extra = ""
     
     R = 7.112*100
     
@@ -82,6 +82,10 @@ def main():
         x Calorimeter Angle                 35
         y Calorimeter Angle                 36
         Total Calorimeter Angle             37
+        Starting Local x (mm)               38
+        Startine Local y (mm)               39
+        Starting Local x-prime (mrad)       40
+        Starting Local y-prime (mrad)       41
         '''
         
         N_particles = len(stuff)
@@ -120,9 +124,10 @@ def main():
         sos_contact = 0             # HV standoff screw contact
         sp_contact = 0              # Standoff plate contact
         cal_con_so = 0              # Calorimeter and HV standoff contact
-        cal_top_contact = 0         # Calorimeter top contact
+        cal_edge_contact = 0        # Calorimeter edge contact (detected)
+        cal_end_edge_contact = 0    # Cal end edge contact (not detected)
         
-        through_quad = np.zeros((1,8),dtype=int)
+        starting_pos = np.zeros((1,8),dtype=int)
         data_qel_contact = np.zeros((8))
         data_no_qel_contact = np.zeros((8))
         yerr_qel_contact = np.zeros((8))
@@ -130,6 +135,9 @@ def main():
         
         # sqel or dqel contact then cal contact
         through_quad_contact = np.zeros((1,8),dtype=int)
+        
+        # sqel or dqel contact then cal edge contact
+        through_quad_edge_contact = np.zeros((1,8),dtype=int)
         
         # No sqel or dqel contact then cal contact
         no_through_quad_contact = np.zeros((1,8),dtype=int)
@@ -146,8 +154,11 @@ def main():
             if row[2] == "Trolly Rail Contact":
                 rail_contact = rail_contact + 1
                 
-            if row[2] == "Calorimeter Top Contact":
-                cal_top_contact = cal_top_contact + 1
+            if row[2] == "Calorimeter Edge Contact":
+                cal_edge_contact = cal_edge_contact + 1
+                
+            if row[2] == "Calorimeter End Edge Contact":
+                cal_end_edge_contact = cal_end_edge_contact + 1
             
             x[i,0] = float(row[4])
             x[i,1] = float(row[5])
@@ -219,7 +230,7 @@ def main():
             if d >= 3:
                 
                 # Add 1 to the counter for the total # of particles
-                through_quad[0,7] = through_quad[0,7] + 1
+                starting_pos[0,7] = starting_pos[0,7] + 1
                 
                 # Check if the particle hit the calorimeter and a quad
                 if particle[i,0] == "Calorimeter Contact" and \
@@ -228,110 +239,190 @@ def main():
                     # Count the particle
                     through_quad_contact[0,7] = through_quad_contact[0,7] + 1
                 
+                # Check if the particle hit the calorimeter edge and a quad
+                if particle[i,0] == "Calorimeter Edge Contact" and \
+                    (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
+                        
+                    # Count the particle
+                    through_quad_edge_contact[0,7] = \
+                        through_quad_edge_contact[0,7] + 1
+                
                 # Check if the particle hit the calorimter and missed all quads
-                if particle[i,0] == "Calorimeter Contact" and \
+                if (particle[i,0] == "Calorimeter Contact" or 
+                    particle[i,0] == "Calorimeter Edge Contact") and \
                     (float(in_sqel[i,0]) == 0 and float(in_dqel[i,0]) == 0):
                         
                     # Count the particle
-                    no_through_quad_contact[0,7] = no_through_quad_contact[0,7] + 1
+                    no_through_quad_contact[0,7] = \
+                        no_through_quad_contact[0,7] + 1
             
             if d < 3 and d >= 2:
                 
-                through_quad[0,6] = through_quad[0,6] + 1
+                starting_pos[0,6] = starting_pos[0,6] + 1
                 
                 if particle[i,0] == "Calorimeter Contact" and \
                     (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
                         
                     through_quad_contact[0,6] = through_quad_contact[0,6] + 1
                 
-                if particle[i,0] == "Calorimeter Contact" and \
+                # Check if the particle hit the calorimeter edge and a quad
+                if particle[i,0] == "Calorimeter Edge Contact" and \
+                    (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
+                        
+                    # Count the particle
+                    through_quad_edge_contact[0,6] = \
+                        through_quad_edge_contact[0,6] + 1
+                
+                if (particle[i,0] == "Calorimeter Contact" or 
+                    particle[i,0] == "Calorimeter Edge Contact") and \
                     (float(in_sqel[i,0]) == 0 and float(in_dqel[i,0]) == 0):
                         
-                    no_through_quad_contact[0,6] = no_through_quad_contact[0,6] + 1
+                    no_through_quad_contact[0,6] = \
+                        no_through_quad_contact[0,6] + 1
             
             if d < 2 and d >= 1:
                 
-                through_quad[0,5] = through_quad[0,5] + 1
+                starting_pos[0,5] = starting_pos[0,5] + 1
                 
                 if particle[i,0] == "Calorimeter Contact" and \
                     (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
                         
                     through_quad_contact[0,5] = through_quad_contact[0,5] + 1
                 
-                if particle[i,0] == "Calorimeter Contact" and \
+                # Check if the particle hit the calorimeter edge and a quad
+                if particle[i,0] == "Calorimeter Edge Contact" and \
+                    (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
+                        
+                    # Count the particle
+                    through_quad_edge_contact[0,5] = \
+                        through_quad_edge_contact[0,5] + 1
+                
+                if (particle[i,0] == "Calorimeter Contact" or 
+                    particle[i,0] == "Calorimeter Edge Contact") and \
                     (float(in_sqel[i,0]) == 0 and float(in_dqel[i,0]) == 0):
                         
-                    no_through_quad_contact[0,5] = no_through_quad_contact[0,5] + 1
+                    no_through_quad_contact[0,5] = \
+                        no_through_quad_contact[0,5] + 1
                     
             if d < 1 and d >= 0:
                 
-                through_quad[0,4] = through_quad[0,4] + 1
+                starting_pos[0,4] = starting_pos[0,4] + 1
                 
                 if particle[i,0] == "Calorimeter Contact" and \
                     (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
                         
                     through_quad_contact[0,4] = through_quad_contact[0,4] + 1
                 
-                if particle[i,0] == "Calorimeter Contact" and \
+                # Check if the particle hit the calorimeter edge and a quad
+                if particle[i,0] == "Calorimeter Edge Contact" and \
+                    (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
+                        
+                    # Count the particle
+                    through_quad_edge_contact[0,4] = \
+                        through_quad_edge_contact[0,4] + 1
+                
+                if (particle[i,0] == "Calorimeter Contact" or 
+                    particle[i,0] == "Calorimeter Edge Contact") and \
                     (float(in_sqel[i,0]) == 0 and float(in_dqel[i,0]) == 0):
                         
-                    no_through_quad_contact[0,4] = no_through_quad_contact[0,4] + 1
+                    no_through_quad_contact[0,4] = \
+                        no_through_quad_contact[0,4] + 1
             
             if d < 0 and d >= -1:
                 
-                through_quad[0,3] = through_quad[0,3] + 1
+                starting_pos[0,3] = starting_pos[0,3] + 1
                 
                 if particle[i,0] == "Calorimeter Contact" and \
                     (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
                         
                     through_quad_contact[0,3] = through_quad_contact[0,3] + 1
                 
-                if particle[i,0] == "Calorimeter Contact" and \
+                # Check if the particle hit the calorimeter edge and a quad
+                if particle[i,0] == "Calorimeter Edge Contact" and \
+                    (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
+                        
+                    # Count the particle
+                    through_quad_edge_contact[0,3] = \
+                        through_quad_edge_contact[0,3] + 1
+                
+                if (particle[i,0] == "Calorimeter Contact" or 
+                    particle[i,0] == "Calorimeter Edge Contact") and \
                     (float(in_sqel[i,0]) == 0 and float(in_dqel[i,0]) == 0):
                         
-                    no_through_quad_contact[0,3] = no_through_quad_contact[0,3] + 1
+                    no_through_quad_contact[0,3] = \
+                        no_through_quad_contact[0,3] + 1
             
             if d < -1 and d >= -2:
                 
-                through_quad[0,2] = through_quad[0,2] + 1
+                starting_pos[0,2] = starting_pos[0,2] + 1
                 
                 if particle[i,0] == "Calorimeter Contact" and \
                     (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
                         
                     through_quad_contact[0,2] = through_quad_contact[0,2] + 1
                 
-                if particle[i,0] == "Calorimeter Contact" and \
+                # Check if the particle hit the calorimeter edge and a quad
+                if particle[i,0] == "Calorimeter Edge Contact" and \
+                    (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
+                        
+                    # Count the particle
+                    through_quad_edge_contact[0,2] = \
+                        through_quad_edge_contact[0,2] + 1
+                
+                if (particle[i,0] == "Calorimeter Contact" or 
+                    particle[i,0] == "Calorimeter Edge Contact") and \
                     (float(in_sqel[i,0]) == 0 and float(in_dqel[i,0]) == 0):
                         
-                    no_through_quad_contact[0,2] = no_through_quad_contact[0,2] + 1
+                    no_through_quad_contact[0,2] = \
+                        no_through_quad_contact[0,2] + 1
             
             if d < -2 and d >= -3:
                 
-                through_quad[0,1] = through_quad[0,1] + 1
+                starting_pos[0,1] = starting_pos[0,1] + 1
                 
                 if particle[i,0] == "Calorimeter Contact" and \
                     (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
                         
                     through_quad_contact[0,1] = through_quad_contact[0,1] + 1
                 
-                if particle[i,0] == "Calorimeter Contact" and \
+                # Check if the particle hit the calorimeter edge and a quad
+                if particle[i,0] == "Calorimeter Edge Contact" and \
+                    (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
+                        
+                    # Count the particle
+                    through_quad_edge_contact[0,1] = \
+                        through_quad_edge_contact[0,1] + 1
+                
+                if (particle[i,0] == "Calorimeter Contact" or 
+                    particle[i,0] == "Calorimeter Edge Contact") and \
                     (float(in_sqel[i,0]) == 0 and float(in_dqel[i,0]) == 0):
                         
-                    no_through_quad_contact[0,1] = no_through_quad_contact[0,1] + 1
+                    no_through_quad_contact[0,1] = \
+                        no_through_quad_contact[0,1] + 1
             
             if d < -3:
                 
-                through_quad[0,0] = through_quad[0,0] + 1
+                starting_pos[0,0] = starting_pos[0,0] + 1
                 
                 if particle[i,0] == "Calorimeter Contact" and \
                     (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
                         
                     through_quad_contact[0,0] = through_quad_contact[0,0] + 1
                 
-                if particle[i,0] == "Calorimeter Contact" and \
+                # Check if the particle hit the calorimeter edge and a quad
+                if particle[i,0] == "Calorimeter Edge Contact" and \
+                    (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
+                        
+                    # Count the particle
+                    through_quad_edge_contact[0,0] = \
+                        through_quad_edge_contact[0,0] + 1
+                
+                if (particle[i,0] == "Calorimeter Contact" or 
+                    particle[i,0] == "Calorimeter Edge Contact") and \
                     (float(in_sqel[i,0]) == 0 and float(in_dqel[i,0]) == 0):
                         
-                    no_through_quad_contact[0,0] = no_through_quad_contact[0,0] + 1   
+                    no_through_quad_contact[0,0] = \
+                        no_through_quad_contact[0,0] + 1   
                 
             i = i + 1
             
@@ -363,7 +454,7 @@ def main():
     print('Total HV standoff screw contacts: %d'%sos_contact)
     print('Total # of sos photons released: %d'%sum(in_sos[:,2]))
     print('Total # of trolley rail contacts: %d'%rail_contact)
-    print('Total # of calorimeter top contacts: %d'%cal_top_contact)
+    print('Total # of calorimeter edge contacts: %d'%cal_edge_contact)
     print('Average calorimeter contact angle: %0.3f'%angles_mean)
     print('Total particle calorimeter contacts: %d'%cal_con)
     print('# of calorimeter contacts after qel contact: %d'%np.sum(
@@ -378,26 +469,29 @@ def main():
             
     i = 0
     
-    while i < np.shape(through_quad)[1]:
+    while i < np.shape(starting_pos)[1]:
         
         # Get the fraction that passed through a quad and hit a calorimeter to
         # the total # in that starting x-position range
-        data_qel_contact[i] = (through_quad_contact[0,i]) / through_quad[0,i]
+        data_qel_contact[i] = ((through_quad_contact[0,i]) + 
+                    through_quad_edge_contact[0,i]) / starting_pos[0,i]
         
         # Get Poisson uncertainties
-        yerr_qel_contact[i] = np.sqrt(through_quad_contact[0,i]) / \
-                                through_quad[0,i]
+        yerr_qel_contact[i] = np.sqrt(through_quad_contact[0,i] + 
+                                    through_quad_edge_contact[0,i]) / \
+                                starting_pos[0,i]
         
         # Get the fraction that did not pass through a quad and hit a
         # calorimeter to the total # in that starting x-position range
-        data_no_qel_contact[i] = (no_through_quad_contact[0,i]) / through_quad[0,i]
+        data_no_qel_contact[i] = (no_through_quad_contact[0,i]) / starting_pos[0,i]
         
         # Poisson uncertainties
         yerr_no_qel_contact[i] = np.sqrt(no_through_quad_contact[0,i]) / \
-                                    through_quad[0,i]
-        print('%d: %d'%(i,through_quad_contact[0,i]))
-        print('%d: %d'%(i,no_through_quad_contact[0,i]))
-        print('%d: %d'%(i,through_quad[0,i]))
+                                    starting_pos[0,i]
+        print('%d-Through, front contact: %d'%(i,through_quad_contact[0,i]))
+        print('%d-Through, edge contact: %d'%(i,through_quad_edge_contact[0,i]))
+        print('%d-No through, contact: %d'%(i,no_through_quad_contact[0,i]))
+        print('%d-Total in starting range: %d'%(i,starting_pos[0,i]))
         i = i + 1
             
     # Number of bins in the calorimeter contact angle histogram
@@ -427,7 +521,7 @@ def main():
     ax.errorbar(xx,data_qel_contact,yerr=yerr_qel_contact,fmt='.',
                 color='b',
                 label='Through-quad')
-    ax.legend(bbox_to_anchor=(0.48,0.26))
+    ax.legend(bbox_to_anchor=(0.48,0.66))
     ax.set_title("Admittance as a function of muon position")
     ax.set_xlabel("x-Position (cm)")
     ax.set_ylabel("Particles Detected / Total")

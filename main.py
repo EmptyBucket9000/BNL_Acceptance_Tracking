@@ -33,9 +33,10 @@ def main():
 
     ''' Begin editable variables '''
     
-    make_plots = 0                      # Set to 1 to display plots
+    make_plots = 1                      # Set to 1 to display plots
     save_plots = 0                      # Set to 1 to save plots as images
-    save_output = 1                     # Set to 1 to save data output to csv
+    save_output = 0                     # Set to 1 to save data output to csv
+    detele_old_single_files = 1         # Delete single files first
 
     # Name of csv containing muon data    
     file_name = "EndOfTracking_phase_space.csv"
@@ -45,8 +46,8 @@ def main():
     if m_theta_set == 1:
         m_theta = 2.3*np.pi / 8
     
-    N = 5171                            # Number of muons in beam
-#    N = 1
+#    N = 5171                            # Number of muons in beam
+    N = 1
     ts = 12
     photon_ts = 13
 
@@ -59,10 +60,10 @@ def main():
     containing this scripts) "../Output/Single_Files/temp/13".
     '''
 #    extra = "angle/"  # Note the forward slash that must be added
-    extra = ""
+    extra = "test/"
     
     ''' Permanent constants '''
-    
+#    rmax_max = 0
     steps = 5*10**6                         # Nnumber of steps for integration
     dt = 10**-ts                            # Timestep for integration
     p_magic = 3.09435*10**9                 # (eV/c) Muon magic momentum        
@@ -111,7 +112,11 @@ def main():
                                  "Kill Timestamp",
                                  "x Calorimeter Angle",
                                  "y Calorimeter Angle",
-                                 "Total Calorimeter Angle"])
+                                 "Total Calorimeter Angle",
+                                 "Starting Local x (m)",
+                                 "Starting Local y (m)",
+                                 "Starting Local x-prime (rad)",
+                                 "Starting Local y-prime (rad)"])
           
     # Output for each photon
     photon_matrix_header = np.array(["Photon #","Steps","Kill Event",
@@ -141,10 +146,13 @@ def main():
     
     ## Delete all the current single files
     
-    single_files = glob.glob("%s/../Output/Single_Files/*.csv"%(os.getcwd()))
-    if len(single_files) > 0:
-        for f in single_files:
-            os.remove(f)
+    if detele_old_single_files == 1:
+    
+        single_files = glob.glob("%s/../Output/Single_Files/%s%d/*.csv"%(
+                        os.getcwd(),extra,ts))
+        if len(single_files) > 0:
+            for f in single_files:
+                os.remove(f)
 #==============================================================================
 #   Run the code!!
 #==============================================================================
@@ -152,7 +160,7 @@ def main():
     # Loop through all the muons
     
     while muon_number < N:
-        
+
         # Get a list of 'N' muons' position/momentum in random order
         if muon_number == 0:
             m_x_list,m_p_list = \
@@ -161,8 +169,10 @@ def main():
         # Get the current muon's position/momentum in local and theta in global
         # where theta is random between 0 and 2pi
         
-        m_x = m_x_list[muon_number]
-        m_p = m_p_list[muon_number]
+        m_x = np.copy(m_x_list[muon_number])
+        m_p = np.copy(m_p_list[muon_number])
+        m_p[0] = m_p[0]*m_p[2]
+        m_p[1] = m_p[1]*m_p[2]
     
         if m_theta_set == 0:
             m_theta = (m_theta_array[1] - m_theta_array[0])*np.random.random() + \
@@ -184,11 +194,11 @@ def main():
             run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
                 particle_matrix,make_plots,save_plots,save_output,
                 N,steps,dt,q,B,muon_number,N_particles,N_photons,ts,photon_ts,
-                extra)
+                extra,m_p_list[muon_number])
                 
         # Move to the next muon
         muon_number = muon_number + 1
-                
+        
         print("Percent complete: %0.3f%%"%(muon_number*(100/N)),end="\r")
               
     # Finally, convert all the single particle_matrix and photon_matrix files
@@ -206,7 +216,8 @@ def main():
 
 def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
         particle_matrix,make_plots,save_plots,save_output,
-        N,steps,dt,q,B,muon_number,N_particles,N_photons,ts,photon_ts,extra):
+        N,steps,dt,q,B,muon_number,N_particles,N_photons,ts,photon_ts,extra,
+        m_p_local):
 
 #==============================================================================
 #   Initialization and setting variables
@@ -252,12 +263,12 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
     
     particle_pos = np.zeros((N_particles,steps,3))
     photon_pos = np.zeros((photon_steps,3))
+
+    # [x,y,z,px,py,pz,charge,tracked,steps,pair-produced]
     particle_proc = np.zeros((N_particles,10))
-    particle_proc_old = np.zeros((N_particles,10))
     particle_proc[0] = np.array([x[0,0],x[0,1],x[0,2],
                                 p[0],p[1],p[2],1,0,0,0])
     photon_proc = np.zeros((N_photons,11))
-    photon_proc_old = np.zeros((N_photons,11))
     
     # [0] Counter for photons released by Bremsstrahlung
     # [1] Counter for detectable photons released by Bremsstrahlung 
@@ -296,7 +307,8 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
                     pt.track(particle_pos,particle_matrix,particle_proc,
                              photon_pos,photon_proc,dt,steps,m,B,k_min,
                              k_max,geo_pack,particle_count,photon_count,
-                             particle_row_index,muon_number,min_tracking)
+                             particle_row_index,muon_number,min_tracking,
+                             m_x,m_p_local)
                              
             particle_row_index = particle_row_index + 1
         

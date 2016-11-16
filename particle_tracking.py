@@ -15,7 +15,7 @@ import callable_functions as cf
 def track(particle_pos,particle_matrix,particle_proc,photon_pos,
                  photon_proc,dt,steps,m,B,k_min,energy,geo_pack,
                  particle_count,photon_count,particle_row_index,muon_number,
-                 min_tracking):
+                 min_tracking,m_x,m_p_local):
 
     c = 2.99792458*10**8                    # (m/s) Speed of light
     
@@ -140,7 +140,7 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
         
         x[i+1] = x[i] + ((p[i+1]) / energy)*c*dt
         
-        i = i + 1        
+        i = i + 1
         energy = cf.momentum2Energy(p[i],m)        
         step_counter = step_counter + 1
         
@@ -368,10 +368,10 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
             kill_event_text = "Into the Iron"
             break
         
-        # Trolly rail contact
+        # Trolley rail contact
         
         if cf.railContact(x[i],R,rail_height,rail_rad):
-            kill_event_text = "Trolly Rail Contact"
+            kill_event_text = "Trolley Rail Contact"
             break
         
     # Prepare the data to be saved into the particle matrix for later saving
@@ -422,6 +422,12 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
             
             k = k + 1
         
+    if particle_proc[particle_row_index,9] == 1:
+        m_x[0] = 0
+        m_x[1] = 0
+        m_p_local[0] = 0
+        m_p_local[1] = 0
+        
     # Add the new line to the particle matrix array that will be saved to file
     particle_matrix[particle_row_index + 1] = np.array(
                          [particle_row_index,                       # 0
@@ -461,7 +467,11 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
                           '%5e'%(step_counter*dt),                  # 34
                           ang_x,                                    # 35
                           ang_y,                                    # 36
-                          ang_tot])                                 # 37
+                          ang_tot,                                  # 37
+                          m_x[0],                                   # 38
+                          m_x[1],                                   # 39
+                          m_p_local[0],                             # 40
+                          m_p_local[1]])                            # 41
                           
     # Update the particle tracking array to account for having fully tracked
     # this particle
