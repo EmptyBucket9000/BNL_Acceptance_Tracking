@@ -479,17 +479,19 @@ def main():
         # Get Poisson uncertainties
         yerr_qel_contact[i] = np.sqrt(through_quad_contact[0,i] + 
                                     through_quad_edge_contact[0,i]) / \
-                                starting_pos[0,i]
+                                    starting_pos[0,i]
         
         # Get the fraction that did not pass through a quad and hit a
         # calorimeter to the total # in that starting x-position range
-        data_no_qel_contact[i] = (no_through_quad_contact[0,i]) / starting_pos[0,i]
+        data_no_qel_contact[i] = (no_through_quad_contact[0,i]) / \
+                                    starting_pos[0,i]
         
         # Poisson uncertainties
         yerr_no_qel_contact[i] = np.sqrt(no_through_quad_contact[0,i]) / \
                                     starting_pos[0,i]
         print('%d-Through, front contact: %d'%(i,through_quad_contact[0,i]))
-        print('%d-Through, edge contact: %d'%(i,through_quad_edge_contact[0,i]))
+        print('%d-Through, edge contact: %d'%(
+            i,through_quad_edge_contact[0,i]))
         print('%d-No through, contact: %d'%(i,no_through_quad_contact[0,i]))
         print('%d-Total in starting range: %d'%(i,starting_pos[0,i]))
         i = i + 1

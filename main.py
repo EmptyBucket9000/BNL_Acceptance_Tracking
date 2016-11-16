@@ -60,7 +60,7 @@ def main():
     containing this scripts) "../Output/Single_Files/temp/13".
     '''
 #    extra = "angle/"  # Note the forward slash that must be added
-    extra = "test/"
+    extra = ""
     
     ''' Permanent constants '''
 #    rmax_max = 0
@@ -144,15 +144,17 @@ def main():
     N_particles = 25
     N_photons = 25
     
-    ## Delete all the current single files
+    if save_output == 1:    
     
-    if detele_old_single_files == 1:
-    
-        single_files = glob.glob("%s/../Output/Single_Files/%s%d/*.csv"%(
-                        os.getcwd(),extra,ts))
-        if len(single_files) > 0:
-            for f in single_files:
-                os.remove(f)
+        ## Delete all the current single files
+        
+        if detele_old_single_files == 1:
+        
+            single_files = glob.glob("%s/../Output/Single_Files/%s%d/*.csv"%(
+                            os.getcwd(),extra,ts))
+            if len(single_files) > 0:
+                for f in single_files:
+                    os.remove(f)
 #==============================================================================
 #   Run the code!!
 #==============================================================================
@@ -175,8 +177,8 @@ def main():
         m_p[1] = m_p[1]*m_p[2]
     
         if m_theta_set == 0:
-            m_theta = (m_theta_array[1] - m_theta_array[0])*np.random.random() + \
-                    m_theta_array[0]
+            m_theta = (m_theta_array[1] - m_theta_array[0]) * \
+                np.random.random() + m_theta_array[0]
 
         # Initialize the particle and photon arrays that will contain all the
         # data that will be saved to a file for later processing
@@ -268,6 +270,8 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
     particle_proc = np.zeros((N_particles,10))
     particle_proc[0] = np.array([x[0,0],x[0,1],x[0,2],
                                 p[0],p[1],p[2],1,0,0,0])
+                                
+    # [x,y,z,vx,vy,vz,energy,particle row index,steps,tracked,particle step]
     photon_proc = np.zeros((N_photons,11))
     
     # [0] Counter for photons released by Bremsstrahlung

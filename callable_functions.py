@@ -555,10 +555,19 @@ def getParticleMomentumAtDecay(m_p,m_theta,m_m):
         
         if p_ss < 52.8*10**6: # 52.8 MeV/c: 1/2 the rest mass of the muon
             break
+
+    decay_dir_set = 0
+
+    if decay_dir_set == 0:        
     
-    phs = 2*np.pi * np.random.random()
-    p_x = p_ss * np.sin(ths) * np.cos(phs)
-    p_y = p_ss * np.sin(ths) * np.sin(phs)
+        phs = 2*np.pi * np.random.random()
+        p_x = p_ss * np.sin(ths) * np.cos(phs)
+        p_y = p_ss * np.sin(ths) * np.sin(phs)
+    
+    elif decay_dir_set == 1:
+    
+        p_x = np.copy(p_ss)
+        p_y = 0
     
     p[0] = p[0] + p_x
     p[1] = p[1] + p_y
