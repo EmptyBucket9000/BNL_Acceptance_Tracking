@@ -524,7 +524,7 @@ def mag(v):
     
 ## Return the particle momentum at decay in the local coordinate system
     
-def getParticleMomentumAtDecay(m_p,m_theta,m_m):
+def getParticleMomentumAtDecay(m_p,m_theta,m_m,decay_dir_set):
     
     # Magnitude of the particle momentum
     rn = np.random.random()
@@ -555,8 +555,6 @@ def getParticleMomentumAtDecay(m_p,m_theta,m_m):
         
         if p_ss < 52.8*10**6: # 52.8 MeV/c: 1/2 the rest mass of the muon
             break
-
-    decay_dir_set = 0
 
     if decay_dir_set == 0:        
     

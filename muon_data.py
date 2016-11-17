@@ -13,14 +13,15 @@ import numpy as np
 import csv
 import random
             
-def muon(N,file_name,p_magic):
+def muon(N,file_name,p_magic,x_pos_range):
     
-    m,length = readFile(file_name)
+    m,length = readFile(file_name,x_pos_range)
     lines = random.sample(range(length), N)
     m_x = np.zeros((N,2))
     m_p = np.zeros((N,3))
     i = 0
     for line in lines:
+            
         m_p[i,2] = p_magic + (m[line,4]*p_magic)
         m_x[i,0] = m[line,0]
         m_p[i,0] = m[line,1]
@@ -30,7 +31,7 @@ def muon(N,file_name,p_magic):
         
     return m_x,m_p
 
-def readFile(file_name):
+def readFile(file_name,x_pos_range):
     
     # csv: [x,xprime,y,yprime,p_z]
     i = 0
@@ -44,12 +45,19 @@ def readFile(file_name):
         m = np.zeros((length,5))
         
         for row in stuff:
-            m[i,0] = row[0]           
-            m[i,1] = row[1]
-            m[i,2] = row[2]
-            m[i,3] = row[3]
-            m[i,4] = row[4]
+        
+            if float(row[0]) >= x_pos_range[0] and float(row[0]) <= x_pos_range[1]:
+
+                m[i,0] = row[0]           
+                m[i,1] = row[1]
+                m[i,2] = row[2]
+                m[i,3] = row[3]
+                m[i,4] = row[4]
+                    
+                i = i + 1
                 
-            i = i + 1
+        m = m[np.any(m != 0,axis=1)]
+        length = len(m)
+        print('# of muons in range: %d'%length)
             
         return m,length

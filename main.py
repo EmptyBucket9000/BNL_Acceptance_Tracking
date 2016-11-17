@@ -33,13 +33,22 @@ def main():
 
     ''' Begin editable variables '''
     
-    make_plots = 1                      # Set to 1 to display plots
+    make_plots = 0                      # Set to 1 to display plots
     save_plots = 0                      # Set to 1 to save plots as images
-    save_output = 0                     # Set to 1 to save data output to csv
+    save_output = 1                     # Set to 1 to save data output to csv
     detele_old_single_files = 1         # Delete single files first
 
     # Name of csv containing muon data    
     file_name = "EndOfTracking_phase_space.csv"
+    
+    # Ranges, set all elements to zero for full range or set specific limits
+    # to allow limited variability (this may take longer to run each muon)
+    
+    x_pos_range = np.array([-5,-4])/100
+    
+    # Set to 1 if decay direction shoould be set, the direction must be set in
+    # callable_functions.getParticleMomentumAtDecay()
+    decay_dir_set = 0
     
     m_theta_set = 0                     # 1, use m_theta below, 0 random
     
@@ -60,7 +69,7 @@ def main():
     containing this scripts) "../Output/Single_Files/temp/13".
     '''
 #    extra = "angle/"  # Note the forward slash that must be added
-    extra = ""
+    extra = "test/"
     
     ''' Permanent constants '''
 #    rmax_max = 0
@@ -138,6 +147,9 @@ def main():
     
     muon_number = 0         # Used as a counter for multiple particles
     
+    if np.all(x_pos_range == 0):
+        x_pos_range = np.array([-10,10])/100
+    
     # Estimated maximum # of particles and photons that could be created from
     # each muon decay (smaller -> less memory usage but too small and an
     # error could be thrown)
@@ -163,10 +175,23 @@ def main():
     
     while muon_number < N:
 
-        # Get a list of 'N' muons' position/momentum in random order
         if muon_number == 0:
+            # Get a list of 'N' muons' position/momentum in random order
             m_x_list,m_p_list = \
-                md.muon(N,file_name,p_magic)
+                md.muon(N,file_name,p_magic,x_pos_range)
+
+#            if np.all(x_pos_range == 0):
+#    
+#            else:
+#                while True:
+#                    m_x_list,m_p_list = \
+#                        md.muon(N,file_name,p_magic)
+#                        
+#                    if m_x_list[0][0] >= x_pos_range[0] and \
+#                        m_x_list[0][0] <= x_pos_range[1]:
+#                        print(m_x_list[0])
+#                        break
+                    
         
         # Get the current muon's position/momentum in local and theta in global
         # where theta is random between 0 and 2pi
@@ -196,7 +221,7 @@ def main():
             run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
                 particle_matrix,make_plots,save_plots,save_output,
                 N,steps,dt,q,B,muon_number,N_particles,N_photons,ts,photon_ts,
-                extra,m_p_list[muon_number])
+                extra,m_p_list[muon_number],decay_dir_set)
                 
         # Move to the next muon
         muon_number = muon_number + 1
@@ -219,7 +244,7 @@ def main():
 def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
         particle_matrix,make_plots,save_plots,save_output,
         N,steps,dt,q,B,muon_number,N_particles,N_photons,ts,photon_ts,extra,
-        m_p_local):
+        m_p_local,decay_dir_set):
 
 #==============================================================================
 #   Initialization and setting variables
@@ -251,7 +276,7 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
     
     # Determine the positron momentum in local with the addition of the z-axis
     # being the direction of travel of the optimal muon
-    p_s = cf.getParticleMomentumAtDecay(m_p,m_theta,m_m)
+    p_s = cf.getParticleMomentumAtDecay(m_p,m_theta,m_m,decay_dir_set)
     
     # Set the positron momentum vector in global
     p = np.zeros((3))

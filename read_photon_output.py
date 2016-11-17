@@ -30,13 +30,13 @@ def main():
 # Particles
 #==============================================================================
     
-    particle_file = glob.glob("%s/../Output/photon_matrix%s_%d.csv"%(
-                                os.getcwd(),extra,ts))
-#    particle_file = glob.glob("%s/photon_matrix%s_%d.csv"%(
+#    photon_file = glob.glob("%s/../Output/photon_matrix%s_%d.csv"%(
 #                                os.getcwd(),extra,ts))
-    particle_file = particle_file[0]
+    photon_file = glob.glob("%s/../Output/combined_photon_matrix.csv"%(
+                                os.getcwd()))
+    photon_file = photon_file[0]
     
-    with open(particle_file, "rt") as inf:
+    with open(photon_file, "rt") as inf:
         reader = csv.reader(inf, delimiter=',')
         next(reader, None)  # skip the headers
         stuff = list(reader)
@@ -208,8 +208,8 @@ def main():
     ax.plot([-11.25,11.25],[-7,-7],'b-')
     ax.plot([-11.25,-11.25],[-7,7],'b-')
     ax.plot([11.25,11.25],[-7,7],'b-')
-    plt.xlim(-24,24)
-    plt.ylim(-15.5,15.5)
+    plt.xlim(-12,12)
+    plt.ylim(-8,8)
     ax.grid(True)
     ax.legend(bbox_to_anchor=(1.33,1.11))
     ax.set_title("Calorimeter Contact Position (Photons)")
