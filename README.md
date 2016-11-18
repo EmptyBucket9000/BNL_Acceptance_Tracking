@@ -97,29 +97,29 @@ Finally, after all the particles and photons are finished being tracked, all the
 
 The files used are the following:
 
-main.py - The primary file that is run and where the editable variables live.
+-	main.py - The primary file that is run and where the editable variables live.
 
-callable_functions.py - A file of functions used by the other files.
+-	callable_functions.py - A file of functions used by the other files.
 
-geometry.py - Builds the geometry of the ring to be used in determining if a particle/x-ray is inside it, and used for plotting.
+-	geometry.py - Builds the geometry of the ring to be used in determining if a 		particle/x-ray is inside it, and used for plotting.
 
-muon_data.py - Returns the muon position and momentum vectors in the local coordinate system.
+-	muon_data.py - Returns the muon position and momentum vectors in the local 		coordinate system.
 
-just_process.py - Used only for checking the single output files of completed muons while the code is running.
+-	just_process.py - Used only for checking the single output files of completed 		muons while the code is running.
 
-particle_tracking.py - Tracks the movement of the positrons and electrons.
+-	particle_tracking.py - Tracks the movement of the positrons and electrons.
 
-photon_tracking.py - Tracks the movement of the x-rays.
+-	photon_tracking.py - Tracks the movement of the x-rays.
 
-plot_geometries.py - Plots the geometries if make_plots == 1.
+-	plot_geometries.py - Plots the geometries if make_plots == 1.
 
-process_single_files.py - Converts all the single output files (one for each muon) to a single files for particles (particle_matrix_ts.csv) and a single file for x-rays (photon_matrix_ts.csv) where 'ts' in both files is the timestamp set in the variables section.
+-	process_single_files.py - Converts all the single output files (one for each 		muon) to a single files for particles (particle_matrix_ts.csv) and a single 	file for x-rays (photon_matrix_ts.csv) where 'ts' in both files is the 	timestamp set in the variables section. 
 
-read_particle_output.py - Reads the particle file created by 'process_single_files.py.
+-	read_particle_output.py - Reads the particle file created by 		'process_single_files.py.
 
-read_photon_output.py - Reads the photon file created by 'process_single_files.py.
+-	read_photon_output.py - Reads the photon file created by 		'process_single_files.py.
 
-combine.py - If using mulitple runs of the same set of muons, combine.py will takke all the files created by process_single_files.py and combine them into one final output to be read as normal.
+-	combine.py - If using mulitple runs of the same set of muons, combine.py will 		take all the files created by process_single_files.py and combine them into 	one final output to be read as normal.
 
 README.md - This file.
 
@@ -205,6 +205,10 @@ The output variable that is saved to a file contains:
 |x Calorimeter Angle					|35		|
 |y Calorimeter Angle					|36		|
 |Total Calorimeter Angle				|37		|
+|Starting Local x (mm)               	|38		|
+|Startine Local y (mm)               	|39		|
+|Starting Local x-prime (mrad)       	|40		|
+|Starting Local y-prime (mrad)       	|41		|
 
 ## For photons
 
@@ -233,10 +237,14 @@ The output variable that is saved to a file contains:
 
 These updates are not set in stone and may or may not happen depending on need and time.
 
-### Calorimeters (Likelihood: Medium) - Differentiate between contact with different calorimeters from the same decay. It's rare that contact is made with more than one calorimeter from the same muon decay.
+### Calorimeters (Likelihood: Medium)
+Differentiate between contact with different calorimeters from the same decay. It's rare that contact is made with more than one calorimeter from the same muon decay.
 
-### x-prime (Likelihood: High) - Determine acceptance as a function of x-prime (transverse momentum / longitudinal momentum).
+### x-prime (Likelihood: High)
+Determine acceptance as a function of x-prime (transverse momentum / longitudinal momentum).
 
-### Spin (S_x) (Likelihood: Medium) - Determine acceptace as a function of muon spin.
+### Spin (S_x) (Likelihood: Medium)
+Determine acceptace as a function of muon spin.
 
-### y, y-prime, S_y (Likelihood: Medium) - Repeat the above but in the y phase-space and with the y-component of spin.
+### y, y-prime, S_y (Likelihood: Medium)
+Repeat the above but in the y phase-space and with the y-component of spin.
