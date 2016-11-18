@@ -22,18 +22,18 @@ def main():
     save_dir = "../Output/Images"       # Set save directory
     image_dpi = 300                     # Set saved image dpi
     
-    ts = 12
+    ts = 13
 #    extra = "_angle" # Note the underscore that should be added
-    extra = "_group_2"
+    extra = "_group_1"
     
 #==============================================================================
 # Particles
 #==============================================================================
     
-#    photon_file = glob.glob("%s/../Output/photon_matrix%s_%d.csv"%(
-#                                os.getcwd(),extra,ts))
-    photon_file = glob.glob("%s/../Output/combined_photon_matrix.csv"%(
-                                os.getcwd()))
+    photon_file = glob.glob("%s/../Output/photon_matrix%s_%d.csv"%(
+                                os.getcwd(),extra,ts))
+#    photon_file = glob.glob("%s/../Output/combined_photon_matrix.csv"%(
+#                                os.getcwd()))
     photon_file = photon_file[0]
     
     with open(photon_file, "rt") as inf:
@@ -66,6 +66,7 @@ def main():
         N_photons = len(stuff)
         
         photon_number_after_0 = 0
+        photon_number_after_1 = 0
         
         # [Kill Event, Energy, dt, Kill Timestamp]
         # Possible kill events:
@@ -100,8 +101,8 @@ def main():
         
         for row in stuff:
         
-#            if int(row[0]) > 0:
-#                photon_number_after_0 = photon_number_after_0 + 1
+            if int(row[0]) > 2:
+                photon_number_after_1 = photon_number_after_1 + 1
             
             photon[i,0] = row[2]
             photon[i,1] = row[8]
@@ -157,6 +158,8 @@ def main():
             angles[i,0] = float(row[13])*180/np.pi
             angles[i,1] = float(row[14])*180/np.pi
             angles[i,2] = float(row[15])*180/np.pi
+            if angles[i,2] > 90:
+                angles[i,2] = 180 - angles[i,2]
             
             i = i + 1
             
@@ -174,7 +177,7 @@ def main():
     d_tot = sum(in_matter[:,1])
             
     print('Total # of photons created: %d'%N_photons)
-    print('Total # of photons created beyond 1: %d'%photon_number_after_0)    
+    print('Total # of photons created beyond 1: %d'%photon_number_after_1)    
     print('Total distance inside matter: %0.2f cm'%(d_tot*100))
     print('Total # of pair-production events: %d'%pp_tot)
     print('# of pair-production events in sqel: %d'%pp_sqel_counter)

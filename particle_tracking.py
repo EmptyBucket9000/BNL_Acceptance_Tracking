@@ -14,8 +14,8 @@ import callable_functions as cf
 
 def track(particle_pos,particle_matrix,particle_proc,photon_pos,
                  photon_proc,dt,steps,m,B,k_min,energy,geo_pack,
-                 particle_count,photon_count,particle_row_index,muon_number,
-                 min_tracking,m_x,m_p_local):
+                 particle_count,total_photon_count,particle_row_index,
+                 muon_number,min_tracking,m_x,m_p_local):
 
     c = 2.99792458*10**8                    # (m/s) Speed of light
     
@@ -108,7 +108,6 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
     sp_photon_count = np.zeros([2], dtype=int)
     so_photon_count = np.zeros([2], dtype=int)
     sos_photon_count = np.zeros([2], dtype=int)     # HV standoff screws
-    total_photon_count = 0
         
     # Initialize the calorimeter contact position array
     cal_con_x = np.zeros((2))
@@ -189,6 +188,9 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
                                           p_norm[0],p_norm[1],p_norm[2],
                                           photon_energy,particle_row_index,
                                           0,0,step_counter])
+                                          
+                        else:
+                            print('k_min')
                         k = k + 1
             
             # Double-quad electrode
@@ -220,6 +222,9 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
                                           p_norm[0],p_norm[1],p_norm[2],
                                           photon_energy,particle_row_index,
                                           0,0,step_counter])
+                                          
+                        else:
+                            print('k_min')
                         k = k + 1
         
         # Side support plate
@@ -251,6 +256,9 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
                                           p_norm[0],p_norm[1],p_norm[2],
                                           photon_energy,particle_row_index,
                                           0,0,step_counter])
+                                          
+                        else:
+                            print('k_min')
                         k = k + 1
         
         # High-voltage standoff
@@ -283,6 +291,9 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
                                           p_norm[0],p_norm[1],p_norm[2],
                                           photon_energy,particle_row_index,
                                           0,0,step_counter])
+                                          
+                        else:
+                            print('k_min')
                         k = k + 1
         
             # High-voltage standoff screws
@@ -304,7 +315,7 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
                         if energy > k_min: # Nonsense if k_min > energy
                             p_norm = p[i]/cf.mag(p[i])
                             p[i], sos_photon_count, \
-                             photon_energy,total_photon_count = \
+                            photon_energy,total_photon_count = \
                                 cf.bremsstrahlung(p[i],m,k_min,energy,
                                                   i,sos_photon_count,
                                                   min_detectable_energy,
@@ -314,7 +325,12 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
                                           p_norm[0],p_norm[1],p_norm[2],
                                           photon_energy,particle_row_index,
                                           0,0,step_counter])
+                                          
+                        else:
+                            print('k_min')
                         k = k + 1
+                
+        photons_released = 0 # Reset for next step in particle motion
             
         # Break if particle energy below detectability/10
         
@@ -323,8 +339,6 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
         if energy <= min_tracking:
             kill_event_text = "Energy Below Minimum"
             break
-                
-        photons_released = 0 # Reset for next step in particle motion
         
         if cf.isInSQuad(x[i],sqel_theta,R) or \
             cf.isInDQuad(x[i],dqel_theta,R):
@@ -478,5 +492,5 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
     particle_count = particle_count + 1
     particle_proc[particle_row_index,7] = 1
                             
-    return particle_pos,particle_matrix,particle_proc,photon_count, \
+    return particle_pos,particle_matrix,particle_proc,total_photon_count, \
             photon_proc

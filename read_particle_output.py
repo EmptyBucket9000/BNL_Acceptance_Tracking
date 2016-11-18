@@ -18,13 +18,18 @@ import glob
     
 def main():
     
-    save_plots = 1                      # Set to 1 to save plots, 0 otherwise
+    save_plots = 0                      # Set to 1 to save plots, 0 otherwise
     save_dir = "../Output/Images"       # Set save directory
     image_dpi = 300                     # Set saved image dpi
     
-    ts = 12
+    ts = 13
 #    extra = "_angle" # Note the underscore that should be added
-    extra = "_test"
+    extra = "_group_6"
+    
+    show_histograms = 0    
+    
+    # Number of bins in the calorimeter contact angle histogram
+    calorimeter_angle_hist = 40
     
     R = 7.112*100
     
@@ -32,10 +37,10 @@ def main():
 # Particles
 #==============================================================================
     
-#    particle_file = glob.glob("%s/../Output/particle_matrix%s_%d.csv"%(
-#                                os.getcwd(),extra,ts))
-    particle_file = glob.glob("%s/../Output/combined_particle_matrix.csv"%(
-                                os.getcwd()))
+    particle_file = glob.glob("%s/../Output/particle_matrix%s_%d.csv"%(
+                                os.getcwd(),extra,ts))
+#    particle_file = glob.glob("%s/../Output/combined_particle_matrix.csv"%(
+#                                os.getcwd()))
     particle_file = particle_file[0]
     
     with open(particle_file, "rt") as inf:
@@ -475,10 +480,12 @@ def main():
     angles_mean = np.mean(angles[:,2])
     
     total_particles = len(x)
+    total_photons = sum(in_sqel[:,2]) + sum(in_dqel[:,2]) + \
+                    sum(in_sp[:,2]) + sum(in_so[:,2]) + sum(in_sos[:,2])
                       
     print('Total particles: %d'%total_particles)
 #    print('Total distance in matter: %0.3f cm'%(total_in_matter))
-#    print('Total photons: %d'%total_photons)
+    print('Total photons: %d'%total_photons)
     print('Total single quad contacts: %d'%sqel_contact)
     print('Total # of sqel photons released: %d'%sum(in_sqel[:,2]))
     print('Total double quad contacts: %d'%dqel_contact)
@@ -531,9 +538,8 @@ def main():
         print('%d-No through, contact: %d'%(i,no_through_quad_contact[0,i]))
         print('%d-Total in starting range: %d'%(i,starting_pos[0,i]))
         i = i + 1
-            
-    # Number of bins in the calorimeter contact angle histogram
-    calorimeter_angle_hist = 40
+    print(yerr_qel_contact)
+    print(yerr_no_qel_contact)
     
     # Convert string to float
     x_cal = np.array(x_cal, dtype = float)
@@ -546,39 +552,57 @@ def main():
     # Create a scatter plot of the fraction of particles that passed through
     # a quad and hit a calorimeter to the total # in that starting x-position
     # range, and create a scatter plot of the fraction that did not pass
-    # through a quad to the total # in that starting x-position range
+    # through a quad to the total # in that starting x-position range.
+    # The fit parameters were found using least-squares fitting.
+    
+    # Independent axis values for the fit functions
+    xxfit = np.linspace(-4.2,4.2,500)
     
     plt.figure(n)
     n = n + 1
+    
+    # Quadratic fit parameters [a,b,c] in a + b*x + c*x**2
+    qfit = np.array([0.2559,-0.00543762,0.000746657])
+    
+    # Linear fit parameters [a,b] in a + b*x
+    lfit = np.array([0.257578,-0.00507128])
     
     xx = np.arange(-4.5,5)
     ax = plt.subplot(1,1,1)
     ax.errorbar(xx,data_qel_contact,yerr=yerr_qel_contact,fmt='.',
-                color='b',
-                label='Through-quad')
-    ax.legend(bbox_to_anchor=(0.88,0.16))
-    ax.set_title("Admittance as a function of muon position")
+                color='b')
+#    ax.plot(xxfit,qfit[0] + qfit[1]*xxfit + qfit[2] * xxfit**2,
+#            label='Quadratic fit')
+    ax.plot(xxfit,lfit[0] + lfit[1]*xxfit,
+            label='Linear fit\n $\chi^2_R$ = 0.50')
+    ax.legend(bbox_to_anchor=(0.9,0.96))
+    ax.set_title("Through-quad acceptance vs. position")
     ax.set_xlabel("x-Position (cm)")
     ax.set_ylabel("Particles Detected / Total")
     
     if save_plots == 1:
-            plt.savefig('%s/admittance_through.png'%save_dir,
+            plt.savefig('%s/acceptance_through.png'%save_dir,
                         bbox_inches='tight',dpi=image_dpi)
     
     plt.figure(n)
     n = n + 1
+#    qfit = np.array([0.508965,-0.00339719,-0.00186841])
+    lfit = np.array([0.504606,-0.00414924])
     
     ax = plt.subplot(1,1,1)
     ax.errorbar(xx,data_no_qel_contact,yerr=yerr_no_qel_contact,fmt='.',
-                color='g',
-                label='No through-quad')
-    ax.legend(bbox_to_anchor=(0.88,0.16))
-    ax.set_title("Admittance as a function of muon position")
+                color='g')
+#    ax.plot(xxfit,qfit[0] + qfit[1]*xxfit + qfit[2] * xxfit**2,
+#            label='Quadratic fit')
+    ax.plot(xxfit,lfit[0] + lfit[1]*xxfit,
+            label='Linear fit\n $\chi^2_R$ = 0.39')
+    ax.legend(bbox_to_anchor=(0.7,0.31))
+    ax.set_title("No through-quad acceptance vs. position")
     ax.set_xlabel("x-Position (cm)")
     ax.set_ylabel("Particles Detected / Total")
     
     if save_plots == 1:
-            plt.savefig('%s/admittance_no_through.png'%save_dir,
+            plt.savefig('%s/acceptance_no_through.png'%save_dir,
                         bbox_inches='tight',dpi=image_dpi)
     
     # Plot the contact points on the calorimeter in the calorimeter local
@@ -611,52 +635,55 @@ def main():
                         
     # Plot a histogram of calorimeter contact angles where the angle is from
     # the positive x-axis
+                        
+    if show_histograms == 1:
     
-    plt.figure(n)
-    n = n + 1
+        plt.figure(n)
+        n = n + 1
+        
+        ax = plt.subplot(1,1,1)
+        ax.hist(angles[:,0],calorimeter_angle_hist)
+        ax.set_title("x Calorimter Contact Angles (Particles)")
+        ax.set_xlabel('Angle (deg)')
+        ax.set_ylabel('Count')
+        
+        if save_plots == 1:
+                plt.savefig('%s/particle_calorimeter_contact_x_angle.png'%
+                            save_dir,bbox_inches='tight',dpi=image_dpi)
     
-    ax = plt.subplot(1,1,1)
-    ax.hist(angles[:,0],calorimeter_angle_hist)
-    ax.set_title("x Calorimter Contact Angles (Particles)")
-    ax.set_xlabel('Angle (deg)')
-    ax.set_ylabel('Count')
+        # Plot a histogram of calorimeter contact angles where the angle is
+        # from the positive y-axis
+        
+        plt.figure(n)
+        n = n + 1
+        
+        ax = plt.subplot(1,1,1)
+        ax.hist(angles[:,1],calorimeter_angle_hist)
+        ax.set_title("y Calorimter Contact Angles (Particles)")
+        ax.set_xlabel('Angle (deg)')
+        ax.set_ylabel('Count')
+        
+        if save_plots == 1:
+                plt.savefig('%s/particle_calorimeter_contact_y_angle.png'%
+                            save_dir,bbox_inches='tight',dpi=image_dpi)
     
-    if save_plots == 1:
-            plt.savefig('%s/particle_calorimeter_contact_x_angle.png'%save_dir,
-                        bbox_inches='tight',dpi=image_dpi)
-
-    # Plot a histogram of calorimeter contact angles where the angle is from
-    # the positive y-axis
-    
-    plt.figure(n)
-    n = n + 1
-    
-    ax = plt.subplot(1,1,1)
-    ax.hist(angles[:,1],calorimeter_angle_hist)
-    ax.set_title("y Calorimter Contact Angles (Particles)")
-    ax.set_xlabel('Angle (deg)')
-    ax.set_ylabel('Count')
-    
-    if save_plots == 1:
-            plt.savefig('%s/particle_calorimeter_contact_y_angle.png'%save_dir,
-                        bbox_inches='tight',dpi=image_dpi)
-
-    # Plot a histogram of calorimeter contact angles where the angle is from
-    # the projection of the final momentum vector onto the calorimeter plane to
-    # the the final momentum vector (in local calorimeter coordinates)
-    
-    plt.figure(n)
-    n = n + 1
-    
-    ax = plt.subplot(1,1,1)
-    ax.hist(angles[:,2],calorimeter_angle_hist)
-    ax.set_title("Total Calorimter Contact Angles (Particles)")
-    ax.set_xlabel('Angle (deg)')
-    ax.set_ylabel('Count')
-    
-    if save_plots == 1:
-            plt.savefig('%s/particle_calorimeter_contact_angle.png'%save_dir,
-                        bbox_inches='tight',dpi=image_dpi)
+        # Plot a histogram of calorimeter contact angles where the angle is
+        # from the projection of the final momentum vector onto the calorimeter
+        # plane to the the final momentum vector (in local calorimeter
+        # coordinates)
+        
+        plt.figure(n)
+        n = n + 1
+        
+        ax = plt.subplot(1,1,1)
+        ax.hist(angles[:,2],calorimeter_angle_hist)
+        ax.set_title("Total Calorimter Contact Angles (Particles)")
+        ax.set_xlabel('Angle (deg)')
+        ax.set_ylabel('Count')
+        
+        if save_plots == 1:
+                plt.savefig('%s/particle_calorimeter_contact_angle.png'%
+                            save_dir,bbox_inches='tight',dpi=image_dpi)
     
     
 if __name__ == '__main__':

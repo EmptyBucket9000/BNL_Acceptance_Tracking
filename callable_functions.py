@@ -177,11 +177,8 @@ def isPhotonReleased(k_min,energy,X0,p,dt,m):
         
 def adjustParticleMomentumFromBremsstrahlung(p,k_min,energy,m):
     
-    # Get the magnitude of the velocity vector
-    p_mag = mag(p)
-    
     # Normalize the velocity vector
-    p_vec_norm = p/p_mag
+    p_vec_norm = p/mag(p)
     
     ## Randomly get the energy of the released photon between k_min and the
     ## current energy based on the Bremsstrahlung intensity plot
@@ -261,7 +258,7 @@ def isInSQuad(x,el_theta,R):
             row[1] < theta and \
             r < R + 0.05 and \
             r > R - 0.05:
-                
+            
             return True
 
 ## Checks if is inside quad for E-field generation

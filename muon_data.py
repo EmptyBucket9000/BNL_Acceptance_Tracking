@@ -58,6 +58,6 @@ def readFile(file_name,x_pos_range):
                 
         m = m[np.any(m != 0,axis=1)]
         length = len(m)
-        print('# of muons in range: %d'%length)
+#        print('# of muons in range: %d'%length)
             
         return m,length
