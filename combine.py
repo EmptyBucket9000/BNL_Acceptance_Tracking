@@ -6,7 +6,11 @@ Created on Thu Nov 17 07:12:50 2016
 """
 
 """
-See README.md for information.
+This script is used if the same muon data set is used for multiple runs in
+order to reduce statistical uncertainties.
+
+Combines all the files created by the process_single_files.py script to be
+read as usual.
 
 """
 
@@ -15,6 +19,8 @@ import csv
 import os
 import glob
 
+ts = 13
+extra = ""  # E.g. "_group_2", be sure to begin with "_"
 output_dir = "../Output/"
 
 # Output for each particle
@@ -77,13 +83,14 @@ photon_matrix_header = np.array(["Photon #","Steps","Kill Event",
                            
 N_part_mat = len(particle_matrix_header)                               
 N_phot_mat = len(photon_matrix_header)
+
 #==============================================================================
 # Particle Files
 #==============================================================================
                                                                
 particle_files = \
-    glob.glob("%s/../Output/13/particle_*.csv"%(os.getcwd()))
-path = output_dir + "combined_particle_matrix.csv"
+    glob.glob("%s/../Output/%d/particle_*.csv"%(os.getcwd(),ts))
+path = output_dir + "combined_particle_matrix%s.csv"%extra
 i = 1
 
 particle_matrix_full = np.zeros((50000,N_part_mat),dtype=object)
@@ -102,9 +109,6 @@ for file in particle_files:
             i = i + 1
             
 particle_matrix_full = particle_matrix_full[0:i:1]
-        
-#particle_matrix_full = particle_matrix_full[np.any(
-#                        particle_matrix_full != 0,axis=1)]
 
 with open(path, "w", newline='') as csv_file:
     writer = csv.writer(csv_file, delimiter=',')
@@ -136,9 +140,6 @@ for file in photon_files:
             i = i + 1
             
 photon_matrix_full = photon_matrix_full[0:i:1]
-        
-#photon_matrix_full = photon_matrix_full[np.any(
-#                        photon_matrix_full != 0,axis=1)]
 
 with open(path, "w", newline='') as csv_file:
     writer = csv.writer(csv_file, delimiter=',')

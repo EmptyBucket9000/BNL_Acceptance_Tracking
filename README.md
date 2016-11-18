@@ -7,6 +7,19 @@
 
 First, I should say that if I were to do this code again, I would make it more object-oriented and less procedural. When creating this code, I had only just learned about classes and therefore did not use them. In particular, a variable called 'geo_pack' is passed around between multiple functions. This file contains all the permanent geometry information about the ring. A geometry class would have been much more user-friendly.
 
+If any changes are made to the data stored that require the editing of either 'particle_matrix_header' or 'photon_matrix_header' variables, they must be updated is all of the following files:
+
+- combine.py
+- just_process.py
+- main.py
+
+In addition, the following files must be updated to read the new changes:
+
+- read_particle_output.py
+- read_photon_output.py
+
+If you do make these changes, it's advised to add the new entries to the end of the variables to make updating the 'read' files much easier.
+
 ######################################
 # Known Bugs/Issues
 ######################################
