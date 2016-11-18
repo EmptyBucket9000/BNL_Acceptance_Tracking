@@ -91,6 +91,10 @@ The output from each particle and photon is saved to its own file in the directo
 
 Finally, after all the particles and photons are finished being tracked, all the single files are then read and two final files are created, 'particle_matrix_ts.csv' and 'photon_matrix_ts.csv'. These two files can then be read by using the 'read_particle_output.py' and 'read_photon_output.py' files (or your own).
 
+### Combining multiple runs into one readable file
+
+If you have multiple runs complete and you want to combine them into a single particle matrix file and a single photon matrix file, use combine.py. To use this script, a copy of all the 'particle_matrix_*.csv' and 'photon_matrix_*.csv' files that you want combined must be added to a single directory, by default this is located (relative to main.py) at '../Output/Combined/ts' where 'ts' is the timestep set and can be changed inside combine.py. You should not combine different sets of files with different timesteps. If the directory does not exist, be sure to create it. The new files will be in the Output directory and will be called 'combined_particle_matrix*.csv' and 'combined_photon_matrix*.csv' where * represents a string you can set in the combine.py file.
+
 ######################################
 # Files Used in the Project
 ######################################

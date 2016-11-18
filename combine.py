@@ -13,7 +13,7 @@ Combines all the files created by the process_single_files.py script to be
 read as usual.
 
 All files to be combined must be copied to a single location, by default, it's:
-' ../Output/ts/' where 'ts' is set below.
+' ../Output/Combined/ts/' where 'ts' is set below.
 
 """
 
@@ -93,7 +93,8 @@ N_phot_mat = len(photon_matrix_header)
 #==============================================================================
 
 # Get list of files to be combined                                                               
-particle_files = glob.glob("%s/../Output/%d/particle_*.csv"%(os.getcwd(),ts))
+particle_files = glob.glob("%s/../Output/Combined/%d/particle_*.csv"%(
+                            os.getcwd(),ts))
 
 # Set output file name and location
 path = output_dir + "combined_particle_matrix%s.csv"%extra
@@ -134,7 +135,8 @@ with open(path, "w", newline='') as csv_file:
 
 # See the above particle section for comments
 
-photon_files = glob.glob("%s/../Output/%d/photon_*.csv"%(os.getcwd(),ts))
+photon_files = glob.glob("%s/../Output/Combined/%d/photon_*.csv"%(
+                        os.getcwd(),ts))
 path = output_dir + "combined_photon_matrix%s.csv"%extra
 i = 1
 photon_matrix_full = np.zeros((N_max,N_phot_mat),dtype=object)
