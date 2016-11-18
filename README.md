@@ -121,7 +121,7 @@ The files used are the following:
 
 -	combine.py - If using mulitple runs of the same set of muons, combine.py will 		take all the files created by process_single_files.py and combine them into 	one final output to be read as normal.
 
-README.md - This file.
+-	README.md - This file.
 
 ######################################
 # Coordinate Systems
