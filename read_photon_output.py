@@ -27,7 +27,7 @@ def main():
     extra = "_group_1"
     
 #==============================================================================
-# Particles
+# Photons
 #==============================================================================
     
     photon_file = glob.glob("%s/../Output/photon_matrix%s_%d.csv"%(
@@ -139,7 +139,8 @@ def main():
                 if int(row[0]) == 1:
                     photon_number_after_0 = photon_number_after_0 + 1
             
-            if photon[i,0] == "Calorimeter Contact":
+            if photon[i,0] == "Calorimeter Contact" or \
+                photon[i,0] == "Calorimeter Edge Contact":
                 cal_counter = cal_counter + 1
             
             if photon[i,0] == "Trolly Rail Contact":

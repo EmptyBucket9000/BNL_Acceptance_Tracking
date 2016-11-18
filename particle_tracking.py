@@ -485,7 +485,8 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
                           m_x[0],                                   # 38
                           m_x[1],                                   # 39
                           m_p_local[0],                             # 40
-                          m_p_local[1]])                            # 41
+                          m_p_local[1],                             # 41
+                          muon_number])                             # 42
                           
     # Update the particle tracking array to account for having fully tracked
     # this particle

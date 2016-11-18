@@ -56,9 +56,9 @@ def main():
     if m_theta_set == 1:
         m_theta = 2.3*np.pi / 8
     
-    N = 5171                            # Number of muons in beam
-#    N = 1
-    ts = 13
+#    N = 5171                            # Number of muons in beam
+    N = 10
+    ts = 12
     photon_ts = 13
 
     '''
@@ -70,7 +70,7 @@ def main():
     containing this scripts) "../Output/Single_Files/temp/13".
     '''
 #    extra = "angle/"  # Note the forward slash that must be added
-    extra = "group_6/"
+    extra = "group_1/"
     
     ''' Permanent constants '''
 #    rmax_max = 0
@@ -126,7 +126,8 @@ def main():
                                  "Starting Local x (m)",
                                  "Starting Local y (m)",
                                  "Starting Local x-prime (rad)",
-                                 "Starting Local y-prime (rad)"])
+                                 "Starting Local y-prime (rad)",
+                                 "Muon #"])
           
     # Output for each photon
     photon_matrix_header = np.array(["Photon #","Steps","Kill Event",
@@ -141,7 +142,8 @@ def main():
                                "Kill Timestamp",
                                "x Calorimeter Angle",
                                "y Calorimeter Angle",
-                               "Total Calorimeter Angle"])
+                               "Total Calorimeter Angle",
+                               "Muon #"])
                                
     N_part_mat = len(particle_matrix_header)                               
     N_phot_mat = len(photon_matrix_header)
@@ -343,7 +345,7 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
                               photon_pos,photon_proc,photon_matrix,dt,steps,
                               m,B,k_min,k_max,geo_pack,particle_count,
                               photon_steps,photon_dt,photon_row_index,
-                              min_tracking)
+                              min_tracking,muon_number)
                              
             photon_row_index = photon_row_index + 1
             

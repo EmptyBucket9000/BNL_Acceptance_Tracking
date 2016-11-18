@@ -14,7 +14,7 @@ import callable_functions as cf
 
 def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
           photon_matrix,dt,steps,m,B,k_min,k_max,geo_pack,particle_count,
-          photon_steps,photon_dt,photon_row_index,min_tracking):
+          photon_steps,photon_dt,photon_row_index,min_tracking,muon_number):
     
     c = 2.99792458*10**8                    # (m/s) Speed of light
     photon_kill_event_text = "Unknown Failure"
@@ -237,7 +237,8 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
                           step_counter*photon_dt,
                           ang_x,
                           ang_y,
-                          ang_tot])
+                          ang_tot,
+                          muon_number])
     
     return particle_pos,particle_matrix,particle_proc,photon_proc, \
            particle_count,photon_matrix

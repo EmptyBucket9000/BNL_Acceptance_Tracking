@@ -29,6 +29,9 @@ For future updates, see the 'Future Updates' section at the bottom of this readm
 ### Unique Output Files (Priority: low)
 Adding a clarifying string to the output files by making 'extra' non-empty allows the code to be run multiple times without overwriting previous output. Improve this process by having the required folders automatically created.
 
+### Pair-Produced Particle Contact (Priority: medium)
+Pair-produced positrons are tracked but they are not counted if they contact the calorimeter.
+
 ######################################
 # Assumptions
 ######################################
