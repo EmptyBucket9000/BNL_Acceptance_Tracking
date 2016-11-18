@@ -107,6 +107,8 @@ read_particle_output.py - Reads the particle file created by 'process_single_fil
 
 read_photon_output.py - Reads the photon file created by 'process_single_files.py.
 
+combine.py - If using mulitple runs of the same set of muons, combine.py will takke all the files created by process_single_files.py and combine them into one final output to be read as normal.
+
 README.md - This file.
 
 ######################################
