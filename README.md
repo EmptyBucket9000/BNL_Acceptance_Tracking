@@ -1,5 +1,5 @@
 # BNL_Admittance_Tracking
-# Eric Schmidt
+## Eric Schmidt
 
 ######################################
 # Initial Notes
@@ -19,6 +19,8 @@ In addition, the following files must be updated to read the new changes:
 - read_photon_output.py
 
 If you do make these changes, it's advised to add the new entries to the end of the variables to make updating the 'read' files much easier.
+
+For future updates, see the 'Future Updates' section at the bottom of this readme.
 
 ######################################
 # Known Bugs/Issues
@@ -72,10 +74,10 @@ The variables that need editing are at the top of the 'main.py' file and are com
 
 ### IMPORTANT: if you have 'extra' set to non-empty or you change 'ts', the following files must be edited:
 
-	process_single_files.py
-	just_process.py
-	read_particle_output.py
-	read_photon_output.py
+- just_process.py
+- read_particle_output.py
+- read_photon_output.py
+- combine.py (optional, only if you will use)
 
 The edits are very obvious at the top of the files. This will hopefully get updated at some later time to be more automated.
 
@@ -133,8 +135,8 @@ Global is the entire ring in 3-dimensions cartesian coordinates where the origin
 ## Local  
 Local is a 2-dimensional x,y cartesian coordinate where the origin is the beam centroid (assume point of view of the muons), the positive x-direction points towards the center of the ring and the y-direction is parallel to the z-direction in the global system. Local is used in determining particle initial conditions, i.e. the conditions describing the muon at decay
 
-## Other
-In addition, a different type of local coordinate system is used when determining if a particle is inside matter. In some cases, a useful local coordinate system is used for the comparison, which is some x,y cartesian system used only for that particular matter, such as the high-voltage standoff.
+## Other Local
+In addition, a different type of local coordinate system is used when determining if a particle is inside matter. In some cases, a useful local coordinate system is used for the comparison, which is some x,y cartesian system used only for that particular matter, such as the high-voltage standoff. Another is used when determining contact information with the front face of the calorimeters.
 
 ######################################
 # Muons
@@ -225,3 +227,16 @@ The output variable that is saved to a file contains:
 |y Calorimeter Angle					|14		|
 |Total Calorimeter Angle				|15		|
 
+######################################
+# Future Updates
+######################################
+
+These updates are not set in stone and may or may not happen depending on need and time.
+
+### Calorimeters (Likelihood: Medium) - Differentiate between contact with different calorimeters from the same decay. It's rare that contact is made with more than one calorimeter from the same muon decay.
+
+### x-prime (Likelihood: High) - Determine acceptance as a function of x-prime (transverse momentum / longitudinal momentum).
+
+### Spin (S_x) (Likelihood: Medium) - Determine acceptace as a function of muon spin.
+
+### y, y-prime, S_y (Likelihood: Medium) - Repeat the above but in the y phase-space and with the y-component of spin.
