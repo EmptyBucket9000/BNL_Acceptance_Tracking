@@ -23,9 +23,9 @@ import os
 import glob
 
 ts = 13
-extra = ""          # E.g. "_group_2", be sure to begin with "_"
+extra = ""          # E.g. "_group_2", be sure to begin with "_" (for output)
 output_dir = "../Output/"
-N_max = 150000      # Maximum # of tracked particles for pre-allocation
+N_max = 60000      # Maximum # of tracked particles for pre-allocation
 
 # Output for each particle
 particle_matrix_header = np.array(["Particle #","Steps","Kill Event",
@@ -66,7 +66,9 @@ particle_matrix_header = np.array(["Particle #","Steps","Kill Event",
                                  "Starting Local x (m)",
                                  "Starting Local y (m)",
                                  "Starting Local x-prime (rad)",
-                                 "Starting Local y-prime (rad)"])
+                                 "Starting Local y-prime (rad)",
+                                 "Muon #",
+                                 "Muon Set #"])
                              
                              
       
@@ -83,7 +85,9 @@ photon_matrix_header = np.array(["Photon #","Steps","Kill Event",
                                "Kill Timestamp",
                                "x Calorimeter Angle",
                                "y Calorimeter Angle",
-                               "Total Calorimeter Angle"])
+                               "Total Calorimeter Angle",
+                               "Muon #",
+                               "Muon Set #"])
                            
 N_part_mat = len(particle_matrix_header)                               
 N_phot_mat = len(photon_matrix_header)
@@ -93,14 +97,15 @@ N_phot_mat = len(photon_matrix_header)
 #==============================================================================
 
 # Get list of files to be combined                                                               
-particle_files = glob.glob("%s/../Output/Combined/%d/particle_*.csv"%(
-                            os.getcwd(),ts))
+particle_files = sorted(glob.glob("%s/../Output/Combined/%d/particle_*.csv"%(
+                            os.getcwd(),ts)), key=os.path.getmtime)
 
 # Set output file name and location
-path = output_dir + "combined_particle_matrix%s.csv"%extra
+path = output_dir + "combined_particle_matrix%s_%d.csv"%(extra,ts)
 
 # Row counter, starts at 1 as the output file has a header
 i = 1
+setNum = 0
 
 # Array to be written to file
 
@@ -114,12 +119,15 @@ for file in particle_files:
         reader = csv.reader(inf, delimiter=',')
         next(reader, None)  # skip the headers
         stuff = list(reader)
+        N = len(stuff)
         for row in stuff:
-            
+            row = np.append(row,setNum)
             # Write each row in file to the new output file
             particle_matrix_full[i] = row
             i = i + 1
 
+    setNum = setNum + 1
+    
 # Remove unused rows
 particle_matrix_full = particle_matrix_full[0:i:1]
 
@@ -135,10 +143,11 @@ with open(path, "w", newline='') as csv_file:
 
 # See the above particle section for comments
 
-photon_files = glob.glob("%s/../Output/Combined/%d/photon_*.csv"%(
-                        os.getcwd(),ts))
-path = output_dir + "combined_photon_matrix%s.csv"%extra
+photon_files = sorted(glob.glob("%s/../Output/Combined/%d/photon_*.csv"%(
+                        os.getcwd(),ts)), key=os.path.getmtime)
+path = output_dir + "combined_photon_matrix%s_%d.csv"%(extra,ts)
 i = 1
+setNum = 0
 photon_matrix_full = np.zeros((N_max,N_phot_mat),dtype=object)
 photon_matrix_full[0] = photon_matrix_header
 
@@ -148,8 +157,11 @@ for file in photon_files:
         next(reader, None)  # skip the headers
         stuff = list(reader)
         for row in stuff:
+            row = np.append(row,setNum)
             photon_matrix_full[i] = row
             i = i + 1
+
+    setNum = setNum + 1
             
 photon_matrix_full = photon_matrix_full[0:i:1]
 

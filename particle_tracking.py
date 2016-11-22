@@ -59,7 +59,7 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,
     X0_sibr = 0.01468                # (m) Radiation length of silicon bronze
 #    X0_al = 10
 #    X0_ma = 10
-#    X0_sibr = 10  
+#    X0_sibr = 10
 
     # Unpack 'geo_pack'
     

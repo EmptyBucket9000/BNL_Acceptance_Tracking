@@ -30,8 +30,8 @@ def process(particle_matrix_header,photon_matrix_header,N_part_mat,N_phot_mat,
 #==============================================================================
         
     particle_files = \
-        glob.glob("%s/../Output/Single_Files/%s%d/particle_*.csv"%(
-                os.getcwd(),extra,ts))
+        sorted(glob.glob("%s/../Output/Single_Files/%s%d/particle_*.csv"%(
+                os.getcwd(),extra,ts)), key=os.path.getmtime)
     path = output_dir + "particle_matrix%s_%d.csv"%(extra_out,ts)
                                                                    
     total_muons = len(particle_files)
@@ -65,8 +65,8 @@ def process(particle_matrix_header,photon_matrix_header,N_part_mat,N_phot_mat,
 #==============================================================================
     
     photon_files = \
-        glob.glob("%s/../Output/Single_Files/%s%d/photon_*.csv"%(
-                    os.getcwd(),extra,ts))
+        sorted(glob.glob("%s/../Output/Single_Files/%s%d/photon_*.csv"%(
+                    os.getcwd(),extra,ts)), key=os.path.getmtime)
     path = output_dir + "photon_matrix%s_%d.csv"%(extra_out,ts)
             
     total_files = len(photon_files)

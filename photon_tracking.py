@@ -115,7 +115,7 @@ def track(particle_pos,particle_matrix,particle_proc,photon_pos,photon_proc,
         # Trolly rail contact
         
         if cf.railContact(x[i],R,rail_height,rail_rad):
-            photon_kill_event_text = "Trolly Rail Contact"
+            photon_kill_event_text = "Trolley Rail Contact"
             break
         
         ## Check for and create pair-production events

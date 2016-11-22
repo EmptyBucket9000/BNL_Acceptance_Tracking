@@ -17,7 +17,7 @@ import process_single_files as psf
 
 ts = 13
 #extra = "angle/" # Note the forward slash that must be added
-extra = "group_6/"
+extra = "group_12/"
                          
 # Output for each particle
 particle_matrix_header = np.array(["Particle #","Steps","Kill Event",
@@ -58,7 +58,8 @@ particle_matrix_header = np.array(["Particle #","Steps","Kill Event",
                              "Starting Local x (m)",
                              "Starting Local y (m)",
                              "Starting Local x-prime (rad)",
-                             "Starting Local y-prime (rad)"])
+                             "Starting Local y-prime (rad)",
+                             "Muon #"])
       
 # Output for each photon
 photon_matrix_header = np.array(["Photon #","Steps","Kill Event",
@@ -73,7 +74,8 @@ photon_matrix_header = np.array(["Photon #","Steps","Kill Event",
                            "Kill Timestamp",
                            "x Calorimeter Angle",
                            "y Calorimeter Angle",
-                           "Total Calorimeter Angle"])
+                           "Total Calorimeter Angle",
+                           "Muon #"])
                            
 N_part_mat = len(particle_matrix_header)                               
 N_phot_mat = len(photon_matrix_header)

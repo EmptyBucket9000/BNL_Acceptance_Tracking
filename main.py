@@ -56,9 +56,9 @@ def main():
     if m_theta_set == 1:
         m_theta = 2.3*np.pi / 8
     
-#    N = 5171                            # Number of muons in beam
-    N = 10
-    ts = 12
+    N = 5171                            # Number of muons in beam
+#    N = 10
+    ts = 13
     photon_ts = 13
 
     '''
@@ -70,7 +70,7 @@ def main():
     containing this scripts) "../Output/Single_Files/temp/13".
     '''
 #    extra = "angle/"  # Note the forward slash that must be added
-    extra = "group_1/"
+    extra = "group_9/"
     
     ''' Permanent constants '''
 #    rmax_max = 0

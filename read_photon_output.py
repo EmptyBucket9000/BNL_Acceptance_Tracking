@@ -18,7 +18,7 @@ import glob
     
 def main():
     
-    save_plots = 0                      # Set to 1 to save plots, 0 otherwise
+    save_plots = 1                      # Set to 1 to save plots, 0 otherwise
     save_dir = "../Output/Images"       # Set save directory
     image_dpi = 300                     # Set saved image dpi
     
@@ -26,14 +26,16 @@ def main():
 #    extra = "_angle" # Note the underscore that should be added
     extra = "_group_1"
     
+#    photon_file = glob.glob("%s/../Output/photon_matrix%s_%d.csv"%(
+#                                os.getcwd(),extra,ts))
+    photon_file = glob.glob("%s/../Output/combined_photon_matrix_%d.csv"%(
+                                os.getcwd(),ts))
+            
+    calorimeter_angle_hist = 40
+    
 #==============================================================================
 # Photons
 #==============================================================================
-    
-    photon_file = glob.glob("%s/../Output/photon_matrix%s_%d.csv"%(
-                                os.getcwd(),extra,ts))
-#    photon_file = glob.glob("%s/../Output/combined_photon_matrix.csv"%(
-#                                os.getcwd()))
     photon_file = photon_file[0]
     
     with open(photon_file, "rt") as inf:
@@ -48,8 +50,8 @@ def main():
         Starting Global x-Position      3
         Starting Global y-Position      4
         Starting Global z-Position      5
-        Ending Calorimeter x (mm)       6
-        Ending Calorimeter y (mm)       7
+        Ending Calorimeter x (m)        6
+        Ending Calorimeter y (m)        7
         Energy (GeV)                    8
         Steps Inside Matter             9
         Distance Inside Matter (cm)     10
@@ -58,6 +60,8 @@ def main():
         x Calorimeter Angle             13
         y Calorimeter Angle             14
         Total Calorimeter Angle         15
+        Muon #                          16
+        Muon set #                      17
         '''
         
         i = 0
@@ -143,7 +147,8 @@ def main():
                 photon[i,0] == "Calorimeter Edge Contact":
                 cal_counter = cal_counter + 1
             
-            if photon[i,0] == "Trolly Rail Contact":
+            if (photon[i,0] == "Trolly Rail Contact" or 
+                photon[i,0] == "Trolley Rail Contact"):
                 rail_contact_counter = rail_contact_counter + 1
             
             x[i,0] = row[3]
@@ -193,8 +198,6 @@ def main():
 #==============================================================================
 #     Plotting
 #==============================================================================
-            
-    calorimeter_angle_hist = 20
         
     n = 0
     
