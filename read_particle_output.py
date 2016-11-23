@@ -22,7 +22,7 @@ def main():
     
     startTime = datetime.now()
     
-    save_plots = 1                      # Set to 1 to save plots, 0 otherwise
+    save_plots = 0                      # Set to 1 to save plots, 0 otherwise
     save_dir = "../Output/Images"       # Set save directory
     image_dpi = 300                     # Set saved image dpi
     
@@ -51,13 +51,11 @@ def main():
 
     # Unpack 'geo_pack'
     
-    cal_rad = geo_pack[2]
     so_rad = geo_pack[6]
     sp_rad = geo_pack[10]
     sqel_rad = geo_pack[15]
     dqel_rad = geo_pack[17]
     R = geo_pack[19]*100
-    rail_rad = geo_pack[25]
     
 #==============================================================================
 # Photons
