@@ -726,8 +726,8 @@ def main():
                     through_quad_edge_contact[0,i]) / through_quad[0,i]
         
         # Get Poisson uncertainties
-        yerr_qel_contact[i] = np.sqrt(through_quad_contact[0,i] + 
-                                    through_quad_edge_contact[0,i]) / \
+        yerr_qel_contact[i] = np.sqrt(through_quad[0,i] - (through_quad_contact[0,i] + 
+                                    through_quad_edge_contact[0,i])) / \
                                     through_quad[0,i]
         
         # Get the fraction that did not pass through a quad and hit a
@@ -736,7 +736,7 @@ def main():
                                     no_through_quad[0,i]
         
         # Poisson uncertainties
-        yerr_no_qel_contact[i] = np.sqrt(no_through_quad_contact[0,i]) / \
+        yerr_no_qel_contact[i] = np.sqrt(no_through_quad[0,i] - no_through_quad_contact[0,i]) / \
                                     no_through_quad[0,i]
         print('%d-Through, front contact: %d'%(i,through_quad_contact[0,i]))
         print('%d-Through, edge contact: %d'%(
@@ -772,9 +772,9 @@ def main():
 #    qfit_no_through = np.array([0.508965,-0.00339719,-0.00186841])
     
     # Linear fit parameters [a,b] in a + b*x
-    lfit_through = np.array([0.761623,-0.00577427])
+    lfit_through = np.array([0.76217,-0.00597505])
     
-    lfit_no_through = np.array([0.793202,-0.0123672])
+    lfit_no_through = np.array([0.793768,-0.0128643])
     
     plt.figure(n)
     n = n + 1
