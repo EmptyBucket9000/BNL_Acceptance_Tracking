@@ -70,7 +70,7 @@ def main():
     containing this scripts) "../Output/Single_Files/temp/13".
     '''
 #    extra = "angle/"  # Note the forward slash that must be added
-    extra = "group_9/"
+    extra = "group_10/"
     
     ''' Permanent constants '''
 #    rmax_max = 0

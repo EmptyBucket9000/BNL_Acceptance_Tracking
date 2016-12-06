@@ -724,20 +724,37 @@ def main():
         # the total # in that starting x-position range
         data_qel_contact[i] = (through_quad_contact[0,i] + 
                     through_quad_edge_contact[0,i]) / through_quad[0,i]
+        a = (through_quad_contact[0,i] + 
+            through_quad_edge_contact[0,i])
+        delta_a = np.sqrt(a)
+        b = np.copy(through_quad[0,i])
+        delta_b = np.sqrt(b)
         
         # Get Poisson uncertainties
-        yerr_qel_contact[i] = np.sqrt(through_quad[0,i] - (through_quad_contact[0,i] + 
-                                    through_quad_edge_contact[0,i])) / \
-                                    through_quad[0,i]
+#        yerr_qel_contact[i] = np.sqrt(through_quad[0,i] - (through_quad_contact[0,i] + 
+#                                    through_quad_edge_contact[0,i])) / \
+#                                    through_quad[0,i]
+                                    
+        yerr_qel_contact[i] = np.sqrt(
+            ((1/b)*delta_a)**2 + ((a/b**2)*delta_b)**2 + 2*(1/b)*(-a/b**2)*delta_a**2)
         
         # Get the fraction that did not pass through a quad and hit a
         # calorimeter to the total # in that starting x-position range
         data_no_qel_contact[i] = (no_through_quad_contact[0,i]) / \
                                     no_through_quad[0,i]
+                                    
+        a = (no_through_quad_contact[0,i])
+        delta_a = np.sqrt(a)
+        b = np.copy(no_through_quad[0,i])
+        delta_b = np.sqrt(b)
         
         # Poisson uncertainties
-        yerr_no_qel_contact[i] = np.sqrt(no_through_quad[0,i] - no_through_quad_contact[0,i]) / \
-                                    no_through_quad[0,i]
+#        yerr_no_qel_contact[i] = np.sqrt(no_through_quad[0,i] - no_through_quad_contact[0,i]) / \
+#                                    no_through_quad[0,i]
+                                    
+        yerr_no_qel_contact[i] = np.sqrt(
+            ((1/b)*delta_a)**2 + ((a/b**2)*delta_b)**2 + 2*(1/b)*(-a/b**2)*delta_a**2)
+            
         print('%d-Through, front contact: %d'%(i,through_quad_contact[0,i]))
         print('%d-Through, edge contact: %d'%(
             i,through_quad_edge_contact[0,i]))
