@@ -12,6 +12,7 @@ See README.md for information.
 
 import numpy as np
 import matplotlib.pyplot as plt
+from find_fit_chisquare import fit as ffch
 import csv
 import os
 import glob
@@ -25,8 +26,9 @@ def main():
     save_plots = 0                      # Set to 1 to save plots, 0 otherwise
     save_dir = "../Output/Images"       # Set save directory
     image_dpi = 300                     # Set saved image dpi
-        
-    num_slots = 6                      # Number of points for acceptance plots
+    num_slots = 10                      # Number of points for acceptance plots
+    show_angle_histograms = 0
+    show_old_plots = 0
     
     ts = 13
     extra = "_group_1" # E.g. "_group_2" Note the beginning underscore
@@ -43,9 +45,6 @@ def main():
     
     # Bin width in GeV for the energy histogram
     binwidth = 0.1
-    
-    show_angle_histograms = 0
-    show_old_plots = 1
     
     # Number of bins in the calorimeter contact angle histogram
     calorimeter_angle_hist = 60
@@ -98,7 +97,7 @@ def main():
             i = i + 1
     
     photon_dist = np.copy(photon[photon[:,2] != 0,:])
-#    photon_dist = np.copy(photon[0:i:1])
+    photon_edge = np.copy(photon[photon[:,0] == "Calorimeter Edge Contact"])
     photon = photon[0:i:1]
 #==============================================================================
 # Particles
@@ -221,28 +220,46 @@ def main():
         pp_con = 0                  # Cal contact and pair-produced
         connectedCount = 0          # Counter for connecting particles and phot
         
+        # Counters for specific circumstances
+        
+        total_t = 0
+        total_no_rail_t = 0
+        rail_contact_t = 0            # Trolly rail contact
+        cal_con_t = 0                 # Calorimeter contact
+        cal_edge_con_t = 0
+        so_contact_t = 0              # HV standoff contact
+        sqel_contact_t = 0            # Single quad contact
+        dqel_contact_t = 0            # Double quad contact
+        sos_contact_t = 0             # HV standoff screw contact
+        sp_contact_t = 0              # Standoff plate contact
+        rail_contact_t = 0
+        starting_energy_t = 0
+        ending_energy_t = 0
+        
         max_pos = 4.183048
-        min_pos = -4.101644
+#        min_pos = -4.101644
+        min_pos = -max_pos
 
         pos_step = (max_pos - min_pos) / num_slots
         starting_pos = np.zeros((1,num_slots),dtype=int)
-        data_qel_contact = np.zeros((num_slots))
-        data_no_qel_contact = np.zeros((num_slots))
-        yerr_qel_contact = np.zeros((num_slots))
-        yerr_no_qel_contact = np.zeros((num_slots))
         
         # sqel or dqel contact
         through_quad = np.zeros((1,num_slots),dtype=int)
+        through_matter = np.zeros((1,num_slots),dtype=int)
         no_through_quad = np.zeros((1,num_slots),dtype=int)
+        no_through_matter = np.zeros((1,num_slots),dtype=int)
         
         # sqel or dqel contact then cal contact
         through_quad_contact = np.zeros((1,num_slots),dtype=int)
+        through_matter_contact = np.zeros((1,num_slots),dtype=int)
         
         # sqel or dqel contact then cal edge contact
         through_quad_edge_contact = np.zeros((1,num_slots),dtype=int)
+        through_matter_edge_contact = np.zeros((1,num_slots),dtype=int)
         
         # No sqel or dqel contact then cal contact
         no_through_quad_contact = np.zeros((1,num_slots),dtype=int)
+        no_through_matter_contact = np.zeros((1,num_slots),dtype=int)
         
         # Color array for gammas vs. distance plot
         phot_color = np.zeros((len(part_phot)),dtype=object)
@@ -250,30 +267,24 @@ def main():
         # Color array for positron vs. distance plot
         pos_color = np.zeros((len(part_phot)),dtype=object)
         
-#        starting_pos_prime = np.zeros((1,num_slots),dtype=int)
-#        data_qel_contact_prime = np.zeros((num_slots))
-#        data_no_qel_contact_prime = np.zeros((num_slots))
-#        yerr_qel_contact_prime = np.zeros((num_slots))
-#        yerr_no_qel_contact_prime = np.zeros((num_slots))
-#        
-#        # sqel or dqel contact
-#        through_quad_prime = np.zeros((1,num_slots),dtype=int)
-#        no_through_quad_prime = np.zeros((1,num_slots),dtype=int)
-#        
-#        # sqel or dqel contact then cal contact
-#        through_quad_contact_prime = np.zeros((1,num_slots),dtype=int)
-#        
-#        # sqel or dqel contact then cal edge contact
-#        through_quad_edge_contact_prime = np.zeros((1,num_slots),dtype=int)
-#        
-#        # No sqel or dqel contact then cal contact
-#        no_through_quad_contact_prime = np.zeros((1,num_slots),dtype=int)
-#        
-#        # Color array for gammas vs. distance plot
-#        phot_color_prime = np.zeros((len(part_phot)),dtype=object)
-#        
-#        # Color array for positron vs. distance plot
-#        pos_color_prime = np.zeros((len(part_phot)),dtype=object)
+        starting_pos_prime = np.zeros((1,num_slots),dtype=int)
+        data_qel_contact_prime = np.zeros((num_slots))
+        data_no_qel_contact_prime = np.zeros((num_slots))
+        yerr_qel_contact_prime = np.zeros((num_slots))
+        yerr_no_qel_contact_prime = np.zeros((num_slots))
+        
+        # sqel or dqel contact
+        through_quad_prime = np.zeros((1,num_slots),dtype=int)
+        no_through_quad_prime = np.zeros((1,num_slots),dtype=int)
+        
+        # sqel or dqel contact then cal contact
+        through_quad_contact_prime = np.zeros((1,num_slots),dtype=int)
+        
+        # sqel or dqel contact then cal edge contact
+        through_quad_edge_contact_prime = np.zeros((1,num_slots),dtype=int)
+        
+        # No sqel or dqel contact then cal contact
+        no_through_quad_contact_prime = np.zeros((1,num_slots),dtype=int)
         
         pos_energy_distance_alternate = 0
         
@@ -284,13 +295,13 @@ def main():
             particle[i,2] = row[3]
             particle[i,3] = row[33]
             
-            if (row[2] == "Calorimeter Contact" or \
-                row[2] == "Calorimeter Edge Contact"):
+            if (particle[i,0] == "Calorimeter Contact" or \
+                particle[i,0] == "Calorimeter Edge Contact"):
                 p_cal_con[i] = float(row[10])
                 
             ## Section for plotting calorimeter position-related data
             
-            if (row[2] == "Calorimeter Contact"):
+            if (particle[i,0] == "Calorimeter Contact"):
                     
                 temp = [k for k, x in enumerate(photon_dist[:,4])
                         if x == int(row[42])]
@@ -460,13 +471,41 @@ def main():
             prime_cal_con[i,0] = float(row[40])
             prime_cal_con[i,1] = float(row[42])
             
-            if float(particle[i,3]) == 0:
+            if d > 3.9 and d < 4.5:
+                
+                total_t = total_t + 1
             
-#                if d > d_old_max:
-#                    d_old_max = np.copy(d)
-#                    
-#                if d < d_old_min:
-#                    d_old_min = np.copy(d)
+                if float(row[12]) > 0:
+                    sqel_contact_t = sqel_contact_t + 1
+                
+                if float(row[16]) > 0:
+                    dqel_contact_t = dqel_contact_t + 1
+                
+                if float(row[20]) > 0:
+                    sp_contact_t = sp_contact_t + 1
+                
+                if float(row[24]) > 0:
+                    so_contact_t = so_contact_t + 1
+                
+                if float(row[28]) > 0:
+                    sos_contact_t = sos_contact_t + 1
+            
+                if particle[i,0] == "Trolley Rail Contact":
+                    rail_contact_t = rail_contact_t + 1
+                    
+                if particle[i,0] != "Trolley Rail Contact":
+                    starting_energy_t = starting_energy_t + float(row[9])
+                    ending_energy_t = ending_energy_t + float(row[10])
+                    total_no_rail_t = total_no_rail_t + 1
+                
+                if particle[i,0] == "Calorimeter Contact":
+                    cal_con_t = cal_con_t + 1
+                    
+                if particle[i,0] == "Calorimeter Edge Contact":
+                    cal_edge_con_t = cal_edge_con_t + 1
+                
+            
+            if float(particle[i,3]) == 0:
                 
                 k = 0
                 while k < num_slots :
@@ -476,37 +515,52 @@ def main():
                     ## passed through any quads on the way
                 
 #                    if ((np.abs(prime_cal_con[i,0]) >= \
-#                            max_primes[0] - (k+1)*prime_step) and \
+#                            max_primes - (k+1)*prime_step) and \
 #                        (np.abs(prime_cal_con[i,0]) < \
-#                            max_primes[0] - k*prime_step)):
+#                            max_primes - k*prime_step)):
 #                    
 #                        # Add 1 to the counter for the total # of particles
 #                        starting_pos_prime[0,k] = starting_pos_prime[0,k] + 1
 #                        
-#                        # Check if the particle hit the calorimeter and a quad
+#                        # Check if the particle hit the calorimeter and matter
 #                        
-#                        if (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
-#                            through_quad_prime[0,k] = through_quad_prime[0,k] + 1
+#                        if (float(in_sqel[i,0]) > 0 or \
+#                            float(in_dqel[i,0]) > 0) or \
+#                            float(in_sp[i,0]) > 0 or \
+#                            float(in_so[i,0]) > 0 or \
+#                            float(in_sos[i,0]) > 0:
+#                                
+#                            through_matter_prime[0,k] = through_matter_prime[0,k] + 1
 #                            
 #                            if particle[i,0] == "Calorimeter Contact":
-#                                through_quad_contact_prime[0,k] = \
-#                                    through_quad_contact_prime[0,k] + 1
+#                
+#                                if distancePartPhot(photon_dist,photon_edge,row):
+#                                    through_matter_contact_prime[0,k] = \
+#                                        through_matter_contact_prime[0,k] + 1
 #                            
 #                            if particle[i,0] == "Calorimeter Edge Contact":
-#                                through_quad_edge_contact_prime[0,k] = \
-#                                    through_quad_edge_contact_prime[0,k] + 1
+#                
+#                                if edgePartPhot(photon_edge,row):
+#                                    through_matter_edge_contact_prime[0,k] = \
+#                                        through_matter_edge_contact_prime[0,k] + 1
 #                        
-#                        # Check if the particle hit the calorimter and missed quads
+#                        # Check if the particle hit the calorimter and missed
+#                        # all matter
 #                        
-#                        if (float(in_sqel[i,0]) == 0 and float(in_dqel[i,0]) == 0):
-#                            no_through_quad_prime[0,k] = no_through_quad_prime[0,k] + 1
+#                        if (float(in_sqel[i,0]) == 0 and \
+#                            float(in_dqel[i,0]) == 0 and \
+#                            float(in_sp[i,0]) == 0 and \
+#                            float(in_so[i,0]) == 0 and \
+#                            float(in_sos[i,0]) == 0):
+#                                
+#                            no_through_matter_prime[0,k] = no_through_matter_prime[0,k] + 1
 #                            
 #                            if (particle[i,0] == "Calorimeter Contact" or 
 #                                particle[i,0] == "Calorimeter Edge Contact"):
 #                                    
 #                                # Count the particle
-#                                no_through_quad_contact_prime[0,k] = \
-#                                    no_through_quad_contact_prime[0,k] + 1
+#                                no_through_matter_contact_prime[0,k] = \
+#                                    no_through_matter_contact_prime[0,k] + 1
             
                     ## For different starting x-position limits
 
@@ -522,12 +576,39 @@ def main():
                             through_quad[0,k] = through_quad[0,k] + 1
                             
                             if particle[i,0] == "Calorimeter Contact":
-                                through_quad_contact[0,k] = \
-                                    through_quad_contact[0,k] + 1
+                
+                                if distancePartPhot(photon_dist,photon_edge,row):
+                                    through_quad_contact[0,k] = \
+                                        through_quad_contact[0,k] + 1
                             
                             if particle[i,0] == "Calorimeter Edge Contact":
-                                through_quad_edge_contact[0,k] = \
-                                    through_quad_edge_contact[0,k] + 1
+                
+                                if edgePartPhot(photon_edge,row):
+                                    through_quad_edge_contact[0,k] = \
+                                        through_quad_edge_contact[0,k] + 1
+                        
+                        # Check if the particle hit the calorimeter and matter
+                        
+                        if (float(in_sqel[i,0]) > 0 or \
+                            float(in_dqel[i,0]) > 0) or \
+                            float(in_sp[i,0]) > 0 or \
+                            float(in_so[i,0]) > 0 or \
+                            float(in_sos[i,0]) > 0 or \
+                            particle[i,0] == "Trolley Rail Contact":
+                                
+                            through_matter[0,k] = through_matter[0,k] + 1
+                            
+                            if particle[i,0] == "Calorimeter Contact":
+                
+                                if distancePartPhot(photon_dist,photon_edge,row):
+                                    through_matter_contact[0,k] = \
+                                        through_matter_contact[0,k] + 1
+                            
+                            if particle[i,0] == "Calorimeter Edge Contact":
+                
+                                if edgePartPhot(photon_edge,row):
+                                    through_matter_edge_contact[0,k] = \
+                                        through_matter_edge_contact[0,k] + 1
                         
                         # Check if the particle hit the calorimter and missed quads
                         
@@ -540,243 +621,27 @@ def main():
                                 # Count the particle
                                 no_through_quad_contact[0,k] = \
                                     no_through_quad_contact[0,k] + 1
+                        
+                        # Check if the particle hit the calorimter and missed
+                        # all matter
+                        
+                        if (float(in_sqel[i,0]) == 0 and \
+                            float(in_dqel[i,0]) == 0 and \
+                            float(in_sp[i,0]) == 0 and \
+                            float(in_so[i,0]) == 0 and \
+                            float(in_sos[i,0]) == 0) and \
+                            particle[i,0] != "Trolley Rail Contact":
+                                
+                            no_through_matter[0,k] = no_through_matter[0,k] + 1
+                            
+                            if (particle[i,0] == "Calorimeter Contact" or 
+                                particle[i,0] == "Calorimeter Edge Contact"):
+                                    
+                                # Count the particle
+                                no_through_matter_contact[0,k] = \
+                                    no_through_matter_contact[0,k] + 1
                                     
                     k = k + 1
-                
-#                # If starting x-position (cm) is greater 3
-#                if d >= 3:
-#                    
-#                    # Add 1 to the counter for the total # of particles
-#                    starting_pos[0,8] = starting_pos[0,8] + 1
-#                    
-#                    # Check if the particle hit the calorimeter and a quad
-#                    
-#                    if (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
-#                        through_quad[0,8] = through_quad[0,8] + 1
-#                        
-#                        if particle[i,0] == "Calorimeter Contact":
-#                            through_quad_contact[0,8] = \
-#                                through_quad_contact[0,8] + 1
-#                        
-#                        if particle[i,0] == "Calorimeter Edge Contact":
-#                            through_quad_edge_contact[0,8] = \
-#                                through_quad_edge_contact[0,8] + 1
-#                    
-#                    # Check if the particle hit the calorimter and missed quads
-#                    
-#                    if (float(in_sqel[i,0]) == 0 and float(in_dqel[i,0]) == 0):
-#                        no_through_quad[0,8] = no_through_quad[0,8] + 1
-#                        
-#                        if (particle[i,0] == "Calorimeter Contact" or 
-#                            particle[i,0] == "Calorimeter Edge Contact"):
-#                                
-#                            # Count the particle
-#                            no_through_quad_contact[0,8] = \
-#                                no_through_quad_contact[0,8] + 1
-#                
-#                if d < 3 and d >= 2:
-#                    
-#                    # Add 1 to the counter for the total # of particles
-#                    starting_pos[0,7] = starting_pos[0,7] + 1
-#                    
-#                    # Check if the particle hit the calorimeter and a quad
-#                    
-#                    if (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
-#                        through_quad[0,7] = through_quad[0,7] + 1
-#                        
-#                        if particle[i,0] == "Calorimeter Contact":
-#                            through_quad_contact[0,7] = \
-#                                through_quad_contact[0,7] + 1
-#                        
-#                        if particle[i,0] == "Calorimeter Edge Contact":
-#                            through_quad_edge_contact[0,7] = \
-#                                through_quad_edge_contact[0,7] + 1
-#                    
-#                    # Check if the particle hit the calorimter and missed quads
-#                    
-#                    if (float(in_sqel[i,0]) == 0 and float(in_dqel[i,0]) == 0):
-#                        no_through_quad[0,7] = no_through_quad[0,7] + 1
-#                        
-#                        if (particle[i,0] == "Calorimeter Contact" or 
-#                            particle[i,0] == "Calorimeter Edge Contact"):
-#                                
-#                            # Count the particle
-#                            no_through_quad_contact[0,7] = \
-#                                no_through_quad_contact[0,7] + 1
-#                
-#                if d < 2 and d >= 1:
-#                    
-#                    starting_pos[0,6] = starting_pos[0,6] + 1
-#                    
-#                    # Check if the particle hit the calorimeter and a quad
-#                    
-#                    if (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
-#                        through_quad[0,6] = through_quad[0,6] + 1
-#                        
-#                        if particle[i,0] == "Calorimeter Contact":
-#                            through_quad_contact[0,6] = \
-#                                through_quad_contact[0,6] + 1
-#                        
-#                        if particle[i,0] == "Calorimeter Edge Contact":
-#                            through_quad_edge_contact[0,6] = \
-#                                through_quad_edge_contact[0,6] + 1
-#                    
-#                    # Check if the particle hit the calorimter and missed quads
-#                    
-#                    if (float(in_sqel[i,0]) == 0 and float(in_dqel[i,0]) == 0):
-#                        no_through_quad[0,6] = no_through_quad[0,6] + 1
-#                        
-#                        if (particle[i,0] == "Calorimeter Contact" or 
-#                            particle[i,0] == "Calorimeter Edge Contact"):
-#                                
-#                            # Count the particle
-#                            no_through_quad_contact[0,6] = \
-#                                no_through_quad_contact[0,6] + 1
-#                        
-#                if d < 1 and d >= 0:
-#                    
-#                    starting_pos[0,5] = starting_pos[0,5] + 1
-#                    
-#                    # Check if the particle hit the calorimeter and a quad
-#                    
-#                    if (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
-#                        through_quad[0,5] = through_quad[0,5] + 1
-#                        
-#                        if particle[i,0] == "Calorimeter Contact":
-#                            through_quad_contact[0,5] = \
-#                                through_quad_contact[0,5] + 1
-#                        
-#                        if particle[i,0] == "Calorimeter Edge Contact":
-#                            through_quad_edge_contact[0,5] = \
-#                                through_quad_edge_contact[0,5] + 1
-#                    
-#                    # Check if the particle hit the calorimter and missed all quads
-#                    
-#                    if (float(in_sqel[i,0]) == 0 and float(in_dqel[i,0]) == 0):
-#                        no_through_quad[0,5] = no_through_quad[0,5] + 1
-#                        
-#                        if (particle[i,0] == "Calorimeter Contact" or 
-#                            particle[i,0] == "Calorimeter Edge Contact"):
-#                                
-#                            # Count the particle
-#                            no_through_quad_contact[0,5] = \
-#                                no_through_quad_contact[0,5] + 1
-#                
-#                if d < 0 and d >= -1:
-#                    
-#                    starting_pos[0,4] = starting_pos[0,4] + 1
-#                    
-#                    # Check if the particle hit the calorimeter and a quad
-#                    
-#                    if (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
-#                        through_quad[0,4] = through_quad[0,4] + 1
-#                        
-#                        if particle[i,0] == "Calorimeter Contact":
-#                            through_quad_contact[0,4] = \
-#                                through_quad_contact[0,4] + 1
-#                        
-#                        if particle[i,0] == "Calorimeter Edge Contact":
-#                            through_quad_edge_contact[0,4] = \
-#                                through_quad_edge_contact[0,4] + 1
-#                    
-#                    # Check if the particle hit the calorimter and missed quads
-#                    
-#                    if (float(in_sqel[i,0]) == 0 and float(in_dqel[i,0]) == 0):
-#                        no_through_quad[0,4] = no_through_quad[0,4] + 1
-#                        
-#                        if (particle[i,0] == "Calorimeter Contact" or 
-#                            particle[i,0] == "Calorimeter Edge Contact"):
-#                                
-#                            # Count the particle
-#                            no_through_quad_contact[0,4] = \
-#                                no_through_quad_contact[0,4] + 1
-#                
-#                if d < -1 and d >= -2:
-#                    
-#                    starting_pos[0,3] = starting_pos[0,3] + 1
-#                    
-#                    # Check if the particle hit the calorimeter and a quad
-#                    
-#                    if (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
-#                        through_quad[0,3] = through_quad[0,3] + 1
-#                        
-#                        if particle[i,0] == "Calorimeter Contact":
-#                            through_quad_contact[0,3] = \
-#                                through_quad_contact[0,3] + 1
-#                        
-#                        if particle[i,0] == "Calorimeter Edge Contact":
-#                            through_quad_edge_contact[0,3] = \
-#                                through_quad_edge_contact[0,3] + 1
-#                    
-#                    # Check if the particle hit the calorimter and missed quads
-#                    
-#                    if (float(in_sqel[i,0]) == 0 and float(in_dqel[i,0]) == 0):
-#                        no_through_quad[0,3] = no_through_quad[0,3] + 1
-#                        
-#                        if (particle[i,0] == "Calorimeter Contact" or 
-#                            particle[i,0] == "Calorimeter Edge Contact"):
-#                                
-#                            # Count the particle
-#                            no_through_quad_contact[0,3] = \
-#                                no_through_quad_contact[0,3] + 1
-#                
-#                if d < -2 and d >= -3:
-#                    
-#                    starting_pos[0,2] = starting_pos[0,2] + 1
-#                    
-#                    # Check if the particle hit the calorimeter and a quad
-#                    
-#                    if (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
-#                        through_quad[0,2] = through_quad[0,2] + 1
-#                        
-#                        if particle[i,0] == "Calorimeter Contact":
-#                            through_quad_contact[0,2] = \
-#                                through_quad_contact[0,2] + 1
-#                        
-#                        if particle[i,0] == "Calorimeter Edge Contact":
-#                            through_quad_edge_contact[0,2] = \
-#                                through_quad_edge_contact[0,2] + 1
-#                    
-#                    # Check if the particle hit the calorimter and missed quads
-#                    
-#                    if (float(in_sqel[i,0]) == 0 and float(in_dqel[i,0]) == 0):
-#                        no_through_quad[0,2] = no_through_quad[0,2] + 1
-#                        
-#                        if (particle[i,0] == "Calorimeter Contact" or 
-#                            particle[i,0] == "Calorimeter Edge Contact"):
-#                                
-#                            # Count the particle
-#                            no_through_quad_contact[0,2] = \
-#                                no_through_quad_contact[0,2] + 1
-#                
-#                if d < -3:
-#                    
-#                    starting_pos[0,1] = starting_pos[0,1] + 1
-#                    
-#                    # Check if the particle hit the calorimeter and a quad
-#                    
-#                    if (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
-#                        through_quad[0,1] = through_quad[0,1] + 1
-#                        
-#                        if particle[i,0] == "Calorimeter Contact":
-#                            through_quad_contact[0,1] = \
-#                                through_quad_contact[0,1] + 1
-#                        
-#                        if particle[i,0] == "Calorimeter Edge Contact":
-#                            through_quad_edge_contact[0,1] = \
-#                                through_quad_edge_contact[0,1] + 1
-#                    
-#                    # Check if the particle hit the calorimter and missed quads
-#                    
-#                    if (float(in_sqel[i,0]) == 0 and float(in_dqel[i,0]) == 0):
-#                        no_through_quad[0,1] = no_through_quad[0,1] + 1
-#                        
-#                        if (particle[i,0] == "Calorimeter Contact" or 
-#                            particle[i,0] == "Calorimeter Edge Contact"):
-#                                
-#                            # Count the particle
-#                            no_through_quad_contact[0,1] = \
-#                                no_through_quad_contact[0,1] + 1
                 
             i = i + 1
             
@@ -836,64 +701,54 @@ def main():
     print('Positron/gamma pairs on cal contact: %d'%(len(part_phot)))
     print('Minimum x-prime: %0.6f'%(min(prime_cal_con[:,0])))
     print('Maximum x-prime: %0.6f'%(max(prime_cal_con[:,0])))
+    print('%% of %d positrons that passed through the following:'%total_t)
+    print('El: %0.3f'%((sqel_contact_t + dqel_contact_t)*100/total_t))
+    print('Sp: %0.3f'%(sp_contact_t*100/total_t))
+    print('So: %0.3f'%(so_contact_t*100/total_t))
+    print('Sos: %0.3f'%(sos_contact_t*100/total_t))
+    print('Rail: %0.3f'%(rail_contact_t*100/total_t))
+    print('Ave. starting momentum: %0.3f'%(starting_energy_t/total_no_rail_t))
+    print('Ave. ending momentum: %0.3f'%(ending_energy_t/total_no_rail_t))
+    print('# of calorimeter contacts: %d'%cal_con_t)
+    print('# of edge contacts: %d'%cal_edge_con_t)
 #==============================================================================
 #     Plotting
 #==============================================================================
-            
-    i = 0
-    
-    while i < np.shape(starting_pos)[1]:
         
-        # Get the fraction that passed through a quad and hit a calorimeter to
-        # the total # in that starting x-position range
-        data_qel_contact[i] = (through_quad_contact[0,i] + 
-                    through_quad_edge_contact[0,i]) / through_quad[0,i]
-                    
-        # Set variables used in determining uncertainties
-                    
-        a = (through_quad_contact[0,i] + 
-            through_quad_edge_contact[0,i])
-            
-        # Poisson uncertainty of 'a'
-        delta_a = np.sqrt(a)
-        b = np.copy(through_quad[0,i])
+#    data_qel_contact_prime,yerr_qel_contact_prime, \
+#    data_no_qel_contact_prime,yerr_no_qel_contact_prime = \
+#        getDataVsAcceptance(through_quad_contact_prime,
+#                            through_quad_edge_contact_prime,
+#                            through_quad_prime,
+#                            no_through_quad_contact_prime,
+#                            no_through_quad_prime,
+#                            num_slots,
+#                            starting_pos_prime)
+#    
+#    print(data_qel_contact_prime)
+#    print(yerr_qel_contact_prime)
+#    print(data_no_qel_contact_prime)
+#    print(yerr_no_qel_contact_prime)
         
-        # Poisson uncertainty of 'b'
-        delta_b = np.sqrt(b)
+    data_qel_contact,yerr_qel_contact, \
+    data_no_qel_contact,yerr_no_qel_contact = \
+        getDataVsAcceptance(through_quad_contact,
+                            through_quad_edge_contact,
+                            through_quad,
+                            no_through_quad_contact,
+                            no_through_quad,
+                            num_slots,
+                            starting_pos)
         
-        # Get uncertainties                                    
-        yerr_qel_contact[i] = np.sqrt(
-                ((1/b)*delta_a)**2 + 
-                ((a/b**2)*delta_b)**2 + 2*(1/b)*(-a/b**2)*delta_a**2
-            )
-        
-        # Get the fraction that did not pass through a quad and hit a
-        # calorimeter to the total # in that starting x-position range
-        data_no_qel_contact[i] = (no_through_quad_contact[0,i]) / \
-                                    no_through_quad[0,i]
-                                    
-        a = (no_through_quad_contact[0,i])
-        delta_a = np.sqrt(a)
-        b = np.copy(no_through_quad[0,i])
-        delta_b = np.sqrt(b)
-        
-        # Uncertainties                                    
-        yerr_no_qel_contact[i] = np.sqrt(
-                ((1/b)*delta_a)**2 + 
-                ((a/b**2)*delta_b)**2 + 2*(1/b)*(-a/b**2)*delta_a**2
-            )
-            
-        print('%d-Through, front contact: %d'%(i,through_quad_contact[0,i]))
-        print('%d-Through, edge contact: %d'%(
-            i,through_quad_edge_contact[0,i]))
-        print('%d-No through, contact: %d'%(i,no_through_quad_contact[0,i]))
-        print('%d-Total in starting range: %d'%(i,starting_pos[0,i]))
-        i = i + 1
-    
-    print(data_qel_contact)
-    print(yerr_qel_contact)
-    print(data_no_qel_contact)
-    print(yerr_no_qel_contact)
+    data_matter_contact,yerr_matter_contact, \
+    data_no_matter_contact,yerr_no_matter_contact = \
+        getDataVsAcceptance(through_matter_contact,
+                            through_matter_edge_contact,
+                            through_matter,
+                            no_through_matter_contact,
+                            no_through_matter,
+                            num_slots,
+                            starting_pos)
     
     # Convert string to float
     x_cal = np.array(x_cal, dtype = float)
@@ -904,49 +759,126 @@ def main():
     # Plot counter
     n = 0
     
+    ## Position vs. Acceptance
+    
+    # Create a scatter plot of the fraction of particles that passed through
+    # a quad and hit a calorimeter to the total # in that starting x-position
+    # range, and create a scatter plot of the fraction that did not pass
+    # through a quad to the total # in that starting x-position range.
+    # The fit parameters were found using least-squares fitting.
+    
+    # Set x-axis for scatter plots
+    
+    t_step = (max_pos - min_pos) / (num_slots)
+    xx = np.arange(min_pos+t_step/2,max_pos,t_step)/100
+    
+    init_guess_lin = np.array([0,0])
+    init_guess_quad = np.array([0,0,0])
+    fit_type = "poly"
+    lfit_t = ffch(xx,data_matter_contact,yerr_matter_contact,
+                        init_guess_lin,fit_type)
+    lfit_not = ffch(xx,data_no_matter_contact,yerr_no_matter_contact,
+                           init_guess_lin,fit_type)
+    qfit_t = ffch(xx,data_matter_contact,yerr_matter_contact,
+                        init_guess_quad,fit_type)
+    qfit_not = ffch(xx,data_no_matter_contact,yerr_no_matter_contact,
+                           init_guess_quad,fit_type)
+                           
+    print('lfit_t: %s'%lfit_t.message)  
+    print('qfit_t: %s'%qfit_t.message)  
+    print('lfit_not: %s'%lfit_not.message)  
+    print('qfit_not: %s'%qfit_not.message)
+    
+    # Independent axis values for the fit functions
+    xxfit = np.linspace(min_pos,max_pos,500)/100
+    
+    # Position vs. Through-matter acceptance
+    
+    fig = plt.figure(n)
+    n = n + 1
+    
+    ax = plt.subplot(1,1,1)
+    ax.errorbar(xx,data_matter_contact,yerr=yerr_matter_contact,fmt='.',
+                color='b')
+    ax.plot(xxfit,lfit_t.x[0] + lfit_t.x[1]*xxfit)
+    ax.plot(xxfit,qfit_t.x[0] + qfit_t.x[1]*xxfit + qfit_t.x[2]*xxfit**2)
+    fig.text(0.24, -0.25,
+             "Lin fit: y = %0.4f + %0.4f$x$\n"
+             "$\chi^2_R$ = %0.3f\n"
+             "Quad fit: y = %0.4f + %0.4f$x$ + %0.4f$x^2$\n"
+             "$\chi^2_R$ = %0.3f"%(
+                lfit_t.x[0],
+                lfit_t.x[1],
+                lfit_t.fun/(len(xx)-len(init_guess_lin)-1),
+                qfit_t.x[0],
+                qfit_t.x[1],
+                qfit_t.x[2],
+                qfit_t.fun/(len(xx)-len(init_guess_quad)-1)
+             ),
+                bbox={'facecolor':'white', 'alpha':1, 'pad':3})
+#    ax.legend(bbox_to_anchor=(1,1))
+    ax.set_title("Position vs. Through-matter acceptance")
+    ax.set_xlabel("x-Position (m)")
+    ax.set_ylabel("Particles Detected / Total")
+    
+    if save_plots == 1:
+            plt.savefig('%s/through_acceptance.png'%save_dir,
+                        bbox_inches='tight',dpi=image_dpi)
+    
+    # Position vs. No through-matter acceptance
+    
+    fig = plt.figure(n)
+    n = n + 1
+    
+    ax = plt.subplot(1,1,1)
+    ax.errorbar(xx,data_no_matter_contact,yerr=yerr_no_matter_contact,fmt='.',
+                color='g')
+    ax.plot(xxfit,lfit_not.x[0] + lfit_not.x[1]*xxfit)
+    ax.plot(xxfit,qfit_not.x[0] + qfit_not.x[1]*xxfit + qfit_not.x[2]*xxfit**2)
+    fig.text(0.24, -0.25,
+             "Lin fit: y = %0.4f + %0.4f$x$\n"
+             "$\chi^2_R$ = %0.3f\n"
+             "Quad fit: y = %0.4f + %0.4f$x$ + %0.4f$x^2$\n"
+             "$\chi^2_R$ = %0.3f"%(
+                lfit_not.x[0],
+                lfit_not.x[1],
+                lfit_not.fun/(len(xx)-len(init_guess_lin)-1),
+                qfit_not.x[0],
+                qfit_not.x[1],
+                qfit_not.x[2],
+                qfit_not.fun/(len(xx)-len(init_guess_quad)-1)
+             ),
+          bbox={'facecolor':'white', 'alpha':1, 'pad':3})
+#    ax.legend(bbox_to_anchor=(1,1))
+    ax.set_title("Position vs. No through-matter acceptance")
+    ax.set_xlabel("x-Position (m)")
+    ax.set_ylabel("Particles Detected / Total")
+    
+    if save_plots == 1:
+            plt.savefig('%s/no_through_acceptance.png'%save_dir,
+                        bbox_inches='tight',dpi=image_dpi)
+                        
+#==============================================================================
+# Old plots
+#==============================================================================
+    
     if show_old_plots == 1:
     
-        # Quadratic fit parameters [a,b,c] in a + b*x + c*x**2
-        
-    #    qfit_through = np.array([0.2559,-0.00543762,0.000746657])
-    #    qfit_no_through = np.array([0.508965,-0.00339719,-0.00186841])
-        
-        # Linear fit parameters [a,b] in a + b*x
-        
-        lfit_through = np.array([0.762043,-0.5931])    
-        lfit_no_through = np.array([0.793666,-1.277])
-        
-        ## Position vs. Acceptance
-        
-        # Create a scatter plot of the fraction of particles that passed through
-        # a quad and hit a calorimeter to the total # in that starting x-position
-        # range, and create a scatter plot of the fraction that did not pass
-        # through a quad to the total # in that starting x-position range.
-        # The fit parameters were found using least-squares fitting.
-        
-        # Set x-axis for scatter plots
-        
-        t_step = (max_pos - min_pos) / (num_slots)
-        xx = np.arange(min_pos+t_step/2,max_pos,t_step)/100
-        
-        # Independent axis values for the fit functions
-        xxfit = np.linspace(min_pos,max_pos,500)/100
-        
         # Position vs. Through-quad acceptance
         
-        plt.figure(n)
+        fig = plt.figure(n)
         n = n + 1
         
         ax = plt.subplot(1,1,1)
         ax.errorbar(xx,data_qel_contact,yerr=yerr_qel_contact,fmt='.',
                     color='b')
-        ax.plot(xxfit,lfit_through[0] + lfit_through[1]*xxfit)
-        ax.text(.015, 0.81, 'Fit: %0.4f - %0.4fx'%(lfit_through[0],
-                                                   np.abs(lfit_through[1])),
+        ax.plot(xxfit,lfit_t[0] + lfit_t[1]*xxfit)
+        fig.text(0.45, 0.85, 'Fit: y = %0.4f - %0.4fx'%(lfit_t[0],
+                                                   np.abs(lfit_t[1])),
                     bbox={'facecolor':'white', 'alpha':1, 'pad':3})
     #    ax.legend(bbox_to_anchor=(1,1))
         ax.set_title("Position vs. Through-quad acceptance")
-        ax.set_xlabel("x-Position (cm)")
+        ax.set_xlabel("x-Position (m)")
         ax.set_ylabel("Particles Detected / Total")
         
         if save_plots == 1:
@@ -955,20 +887,20 @@ def main():
         
         # Position vs. No through-quad acceptance
         
-        plt.figure(n)
+        fig = plt.figure(n)
         n = n + 1
         
         ax = plt.subplot(1,1,1)
         ax.errorbar(xx,data_no_qel_contact,yerr=yerr_no_qel_contact,fmt='.',
                     color='g')
-        ax.plot(xxfit,lfit_no_through[0] + lfit_no_through[1]*xxfit)
-        ax.text(.015, 0.846,
-                'Fit: %0.4f - %0.4fx'%(lfit_no_through[0],
-                                       np.abs(lfit_no_through[1])),
+        ax.plot(xxfit,lfit_not[0] + lfit_not[1]*xxfit)
+        fig.text(0.45, 0.85,
+                'Fit: y = %0.4f - %0.4fx'%(lfit_not[0],
+                                       np.abs(lfit_not[1])),
               bbox={'facecolor':'white', 'alpha':1, 'pad':3})
     #    ax.legend(bbox_to_anchor=(1,1))
         ax.set_title("Position vs. No through-quad acceptance")
-        ax.set_xlabel("x-Position (cm)")
+        ax.set_xlabel("x-Position (m)")
         ax.set_ylabel("Particles Detected / Total")
         
         if save_plots == 1:
@@ -1187,6 +1119,160 @@ def main():
 
     plt.show()
     print(datetime.now() - startTime)
+    
+def getDataVsAcceptance(through_quad_contact,through_quad_edge_contact,
+                                through_quad,no_through_quad_contact,
+                                no_through_quad,num_slots,starting):
+                                    
+    ## Set up data and uncertainties for "Position vs. Acceptance" plots
+                                    
+    
+    data_qel_contact = np.zeros((num_slots))
+    data_no_qel_contact = np.zeros((num_slots))
+    yerr_qel_contact = np.zeros((num_slots))
+    yerr_no_qel_contact = np.zeros((num_slots))
+        
+    i = 0
+    
+    while i < num_slots:
+        
+        # Get the fraction that passed through a quad and hit a calorimeter
+        # to the total # in that starting x-position range
+        data_qel_contact[i] = (through_quad_contact[0,i] + 
+                    through_quad_edge_contact[0,i]) / through_quad[0,i]
+                    
+        # Set variables used in determining uncertainties
+                    
+        a = (through_quad_contact[0,i] + 
+            through_quad_edge_contact[0,i])
+            
+        # Poisson uncertainty of 'a'
+        delta_a = np.sqrt(a)
+        b = np.copy(through_quad[0,i])
+        
+        # Poisson uncertainty of 'b'
+        delta_b = np.sqrt(b)
+        
+        # Get uncertainties                                    
+        yerr_qel_contact[i] = np.sqrt(
+                ((1/b)*delta_a)**2 + 
+                ((a/b**2)*delta_b)**2 + 2*(1/b)*(-a/b**2)*delta_a**2
+            )
+        
+        # Get the fraction that did not pass through a quad and hit a
+        # calorimeter to the total # in that starting x-position range
+        data_no_qel_contact[i] = (no_through_quad_contact[0,i]) / \
+                                    no_through_quad[0,i]
+                                    
+        a = (no_through_quad_contact[0,i])
+        delta_a = np.sqrt(a)
+        b = np.copy(no_through_quad[0,i])
+        delta_b = np.sqrt(b)
+        
+        # Uncertainties                                    
+        yerr_no_qel_contact[i] = np.sqrt(
+                ((1/b)*delta_a)**2 + 
+                ((a/b**2)*delta_b)**2 + 2*(1/b)*(-a/b**2)*delta_a**2
+            )
+            
+#        print('%d-Through, front contact: %d'%(i,
+#                                               through_quad_contact[0,i]))
+#        print('%d-Through, edge contact: %d'%(
+#            i,through_quad_edge_contact[0,i]))
+#        print('%d-No through, contact: %d'%(i,
+#                                            no_through_quad_contact[0,i]))
+#        print('%d-Total in starting range: %d'%(i,starting[0,i]))
+        
+        i = i + 1
+        
+    return data_qel_contact,yerr_qel_contact, \
+        data_no_qel_contact,yerr_no_qel_contact
+        
+def distancePartPhot(photon_dist,photon_edge,row):
+    
+    k = 0
+    
+    # Maximum distance to count as within one cell where actual cell width
+    # is 2.5 cm
+    md = 0.02       # (m)
+    
+    # Total energy of positrons and gammas if contact is within max distance
+    total_energy = momentum2Energy(float(row[10]))
+                    
+    temp = [kk for kk, x in enumerate(photon_dist[:,4])
+            if x == int(row[42])]
+    temp2 = [kk for kk in temp if photon_dist[kk,5] == int(row[43])]
+    
+    if temp2 != []:
+        
+        # [part end x,part end y,photon end x,photon end y,photon energy]
+        ppt = np.zeros((len(temp2),5))
+        
+        for t in temp2:
+            ppt[k,0] = float(row[7])
+            ppt[k,1] = float(row[8])
+            ppt[k,2] = float(photon_dist[t,2])
+            ppt[k,3] = float(photon_dist[t,3])
+            ppt[k,4] = float(photon_dist[t,1])
+            
+            vec = np.array([ppt[k,0]-ppt[k,2],ppt[k,1]-ppt[k,3]])
+            d = np.sqrt(np.dot(vec,vec))
+            
+            if d < md:
+                total_energy = total_energy + ppt[k,4]
+            
+            k = k + 1
+            
+    k = 0
+    
+    temp = None
+    temp2 = None
+                    
+    temp = [kk for kk, x in enumerate(photon_edge[:,4])
+            if x == int(row[42])]
+    temp2 = [kk for kk in temp if photon_edge[kk,5] == int(row[43])]
+    
+#    if temp != []:
+#        print(temp)
+    
+    if temp2 != []:
+        for t in temp2:
+            total_energy = total_energy + float(photon_edge[t,1])
+            k = k + 1
+            
+    if total_energy > 1.8:
+        return True
+    else:
+        return False
+        
+def edgePartPhot(photon_edge,row):
+    
+    k = 0
+    # Total energy of positrons and gammas if contact is within max distance
+    total_energy = momentum2Energy(float(row[10]))
+                    
+    temp = [k for k, x in enumerate(photon_edge[:,4])
+            if x == int(row[42])]
+    temp2 = [k for k in temp if photon_edge[k,5] == int(row[43])]
+    
+    if temp2 != []:        
+        for t in temp2:            
+            total_energy = total_energy + float(photon_edge[t,1])
+            k = k + 1
+    if total_energy > 1.8:
+        return True
+    else:
+        return False
+
+## Get total energy from momentum and mass
+
+def momentum2Energy(p):
+    
+    m = 0.510999                      # (GeV/c**2) Particle mass
+
+    energy = np.sqrt(np.dot(p,p) + m**2)
+ 
+    return energy
     
 if __name__ == '__main__':
 

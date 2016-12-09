@@ -13,15 +13,15 @@ See README.md for information.
 import numpy as np
 import matplotlib.pyplot as plt
 import callable_functions as cf
-import geometry
 import particle_tracking as pt
 import photon_tracking as pht
 import muon_data as md
 import plot_geometries as pg
+import process_single_files as psf
+import geometry
 import os
 import glob
 import csv
-import process_single_files as psf
 
 #==============================================================================
 #==============================================================================
@@ -42,7 +42,7 @@ def main():
     # to allow limited variability (this may take longer to run each muon if 
     # large number of muons are desired)
     
-    x_pos_range = np.array([0,0])/100
+    x_pos_range = np.array([2.5,4.5])/100
 
     # Name of csv containing muon data    
     file_name = "EndOfTracking_phase_space.csv"
@@ -56,8 +56,8 @@ def main():
     if m_theta_set == 1:
         m_theta = 2.3*np.pi / 8
     
-    N = 5171                            # Number of muons in beam
-#    N = 10
+#    N = 5171                            # Number of muons in beam
+    N = 386
     ts = 13
     photon_ts = 13
 
@@ -70,7 +70,7 @@ def main():
     containing this scripts) "../Output/Single_Files/temp/13".
     '''
 #    extra = "angle/"  # Note the forward slash that must be added
-    extra = "group_10/"
+    extra = "group_12s/"
     
     ''' Permanent constants '''
 #    rmax_max = 0
@@ -156,17 +156,21 @@ def main():
     # Estimated maximum # of particles and photons that could be created from
     # each muon decay (smaller -> less memory usage but too small and an
     # error could be thrown)
-    N_particles = 100
-    N_photons = 100
+    N_particles = 50
+    N_photons = 50
     
-    if save_output == 1:    
+    if save_output == 1:
+        
+        directory = "%s/../Output/Single_Files/%s%d"%(os.getcwd(),extra,ts)
+        
+        if not os.path.exists(directory):
+            os.makedirs(directory)
     
         ## Delete all the current single files
         
         if detele_old_single_files == 1:
         
-            single_files = glob.glob("%s/../Output/Single_Files/%s%d/*.csv"%(
-                            os.getcwd(),extra,ts))
+            single_files = glob.glob("%s/*.csv"%(directory))
             if len(single_files) > 0:
                 for f in single_files:
                     os.remove(f)

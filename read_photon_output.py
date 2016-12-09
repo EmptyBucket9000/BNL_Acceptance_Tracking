@@ -101,6 +101,7 @@ def main():
         pp_so_counter = 0
         pp_sos_counter = 0
         cal_counter = 0
+        cal_edge_counter = 0
         rail_contact_counter = 0
         
         for row in stuff:
@@ -146,6 +147,9 @@ def main():
             if photon[i,0] == "Calorimeter Contact" or \
                 photon[i,0] == "Calorimeter Edge Contact":
                 cal_counter = cal_counter + 1
+            
+            if photon[i,0] == "Calorimeter Edge Contact":
+                cal_edge_counter = cal_edge_counter + 1
             
             if (photon[i,0] == "Trolly Rail Contact" or 
                 photon[i,0] == "Trolley Rail Contact"):
@@ -194,6 +198,7 @@ def main():
     print('Total # of trolley rail contacts: %d'%rail_contact_counter)
     print('Average calorimeter contact angle: %0.3f'%angles_mean)
     print('# of calorimeter contacts: %d'%cal_counter)
+    print('# of calorimeter edge contacts: %d'%cal_edge_counter)
             
 #==============================================================================
 #     Plotting

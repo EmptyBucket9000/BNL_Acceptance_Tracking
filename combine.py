@@ -25,7 +25,7 @@ import glob
 ts = 13
 extra = ""          # E.g. "_group_2", be sure to begin with "_" (for output)
 output_dir = "../Output/"
-N_max = 60000      # Maximum # of tracked particles for pre-allocation
+N_max = 80000      # Maximum # of tracked particles for pre-allocation
 
 # Output for each particle
 particle_matrix_header = np.array(["Particle #","Steps","Kill Event",
