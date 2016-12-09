@@ -6,7 +6,9 @@ Created on Tue Oct 11 14:42:14 2016
 """
 
 """
-See README.md for information.
+Reads the particle and photon csv files and outputs the data to plots.
+
+See README.md for more information.
 
 """
 
@@ -31,7 +33,13 @@ def main():
     show_old_plots = 0
     
     ts = 13
-    extra = "_group_1" # E.g. "_group_2" Note the beginning underscore
+    
+    # E.g. "_group_2" Note the beginning underscore, only used if a combined
+    # csv file is not used.
+    extra = "_group_1" 
+    
+    # Uncomment either the line with 'extra' or the line with the combined
+    # file in each pair below.
     
 #    particle_file = glob.glob("%s/../Output/particle_matrix%s_%d.csv"%(
 #                                os.getcwd(),extra,ts))
@@ -63,6 +71,8 @@ def main():
 # Photons
 #==============================================================================
     
+    # See 'read_photon_output.py' for information on the photon csv file.
+    
     photon_file = photon_file[0]
     
     with open(photon_file, "rt") as inf:
@@ -74,10 +84,13 @@ def main():
         
         # of photons
         N_photons = len(stuff)
+        
         # [kill event,energy,ending x,ending y,muon #,muon #,muon set #]
         photon = np.zeros((N_photons,8),dtype=object)
         
         photon_cal_con = np.zeros((N_photons))
+        
+        # Create the photon array
         
         for row in stuff:
             photon[i,0] = row[2]
@@ -96,8 +109,17 @@ def main():
                 
             i = i + 1
     
+    ## Create specific version of the 'photon' array depending on what is being
+    ## searched for. This is done to drastically reduce search times later in
+    ## the code.
+    
+    # Create an array of only those photons that hit the calorimeter front
     photon_dist = np.copy(photon[photon[:,2] != 0,:])
+    
+    # Photon array of photons that hit the side of the calorimeter
     photon_edge = np.copy(photon[photon[:,0] == "Calorimeter Edge Contact"])
+    
+    # Remove unused parts of the 'photon' array.
     photon = photon[0:i:1]
 #==============================================================================
 # Particles
@@ -1269,7 +1291,6 @@ def edgePartPhot(photon_edge,row):
 def momentum2Energy(p):
     
     m = 0.510999                      # (GeV/c**2) Particle mass
-
     energy = np.sqrt(np.dot(p,p) + m**2)
  
     return energy

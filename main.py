@@ -6,7 +6,9 @@ Created on Fri Sep 30 08:29:51 2016
 """
 
 """
-See README.md for information.
+This is the file called when muon decays.
+
+See README.md for more information.
 
 """
 
@@ -36,7 +38,7 @@ def main():
     make_plots = 0                      # Set to 1 to display plots
     save_plots = 0                      # Set to 1 to save plots as images
     save_output = 1                     # Set to 1 to save data output to csv
-    detele_old_single_files = 1         # Delete single files first
+    detele_old_single_files = 1         # Delete old single files first
     
     # Ranges, set all elements to zero for full range or set specific limits
     # to allow limited variability (this may take longer to run each muon if 
@@ -74,12 +76,16 @@ def main():
     manually created.**
     
     '''
-#    extra = "angle/"  # Note the forward slash that must be added
+    
+    # Note the forward slash that must be added.
+    # Set to extra = "" if not
+    # used, don't comment out.
+#    extra = "angle/"
     extra = "group_1l/"
     
     ''' Permanent constants '''
-#    rmax_max = 0
-    steps = 5*10**6                         # Nnumber of steps for integration
+
+    steps = 5*10**6                         # Number of steps for integration
     dt = 10**-ts                            # Timestep for integration
     p_magic = 3.09435*10**9                 # (eV/c) Muon magic momentum        
     m_theta_array = np.array([0,2*np.pi])   # Starting theta in global coords. 
@@ -95,7 +101,7 @@ def main():
     # Output for each particle
                          
     # ***** If you update either of these header files, you must also update
-    # them in 'just_process.py' *****
+    # them in 'just_process.py' and 'combine.py' *****
                          
     particle_matrix_header = np.array(["Particle #","Steps","Kill Event",
                                  "Charge",

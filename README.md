@@ -26,11 +26,8 @@ For future updates, see the 'Future Updates' section at the bottom of this readm
 # Known Bugs/Issues
 ######################################
 
-### Unique Output Files (Priority: low)
-Adding a clarifying string to the output files by making 'extra' non-empty allows the code to be run multiple times without overwriting previous output. Improve this process by having the required folders automatically created.
-
 ### Pair-Produced Particle Contact (Priority: medium)
-Pair-produced positrons are tracked but they are not counted if they contact the calorimeter.
+Pair-produced positrons are tracked but they are not counted if they contact the calorimeter (VERY few do, if any).
 
 ######################################
 # Assumptions
@@ -104,21 +101,21 @@ If you have multiple runs complete and you want to combine them into a single pa
 
 The files used are the following:
 
--	main.py - The primary file that is run and where the editable variables live.
-
 -	callable_functions.py - A file of functions used by the other files.
 
 -	combine.py - If using mulitple runs of the same set of muons, combine.py will take all the files created by process_single_files.py and combine them into one final output to be read as normal. See the script for how to prepare your files to be used.
 
--	find_fit_chisquare.py - Note: Not fully commented as it's still being updated/changed regularly. Finds polynomial fits and chi-square values for the data. Used by particle_tracking.py.
+-	find_fit_chisquare.py - Finds polynomial fits and chi-square values for the data. Used by particle_tracking.py.
 
 -	geometry.py - Builds the geometry of the ring to be used in determining if a particle/x-ray is inside it, and used for plotting.
 
--	muon_data.py - Returns the muon position and momentum vectors in the local coordinate system.
-
 -	just_process.py - Used only for checking the single output files of completed muons while the code is running.
 
--	particle_tracking.py - Note: Not fully commented as it's still being updated/changed regularly. Tracks the movement of the positrons and electrons.
+-	main.py - The primary file that is run and where the editable variables live.
+
+-	muon_data.py - Returns the muon position and momentum vectors in the local coordinate system.
+
+-	particle_tracking.py - Tracks the movement of the positrons and electrons.
 
 -	photon_tracking.py - Note: Not fully commented as it's still being updated/changed regularly. Tracks the movement of the x-rays.
 
@@ -126,9 +123,9 @@ The files used are the following:
 
 -	process_single_files.py - Converts all the single output files (one for each muon) to a single files for particles (particle_matrix_ts.csv) and a single file for x-rays (photon_matrix_ts.csv) where 'ts' in both files is the timestamp set in the variables section. 
 
--	read_particle_output.py - Reads the particle file created by 'process_single_files.py.
+-	read_particle_output.py - Note: Not fully commented as it's still being updated/changed regularly. Reads the particle file created by 'process_single_files.py.
 
--	read_photon_output.py - Reads the photon file created by 'process_single_files.py.
+-	read_photon_output.py - Note: Not fully commented as it's still being updated/changed regularly. Reads the photon file created by 'process_single_files.py.
 
 -	README.md - This file.
 
