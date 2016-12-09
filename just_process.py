@@ -9,7 +9,12 @@ Created on Mon Nov  7 06:21:29 2016
 'just_process.py' is used only when the 'main.py' code is still running (so you
 can see the current progress) or the file processing failed for some reason.
 
-See README.md for information.
+To use, simply set 'ts' and 'extra' then run.
+
+*** Important ***
+If you updated the header files in 'main.py', you must also update them here.
+
+See README.md for more information.
 '''
 
 import numpy as np
@@ -80,5 +85,7 @@ photon_matrix_header = np.array(["Photon #","Steps","Kill Event",
 N_part_mat = len(particle_matrix_header)                               
 N_phot_mat = len(photon_matrix_header)
 
-psf.process(particle_matrix_header,photon_matrix_header,N_part_mat,N_phot_mat,ts,
-        extra)
+# Calls the function that would have been called normally after all muon decays
+# had been tracked.
+psf.process(particle_matrix_header,photon_matrix_header,N_part_mat,N_phot_mat,
+            ts,extra)

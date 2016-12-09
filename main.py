@@ -64,13 +64,18 @@ def main():
     '''
     ***IMPORTANT***
     "extra" is used in naming unique output files. A folder within
-    "Output/Single_Files" must exist with this name and a subfolder with the
-    name of the value of 'ts' must also exist. For example, if extra == temp
-    and ts = 13, you would need a folder (with respect to the directory 
-    containing this scripts) "../Output/Single_Files/temp/13".
+    "Output/Single_Files" will be created with this name and a subfolder with
+    thename of the value of 'ts' will also be created. For example, if
+    extra == "temp" and ts = 13, the following folder will be created (with
+    respect to the directory containing this scripts) where you will find the
+    single files: "../Output/Single_Files/temp/13".
+    
+    **Therefore, write permissions are required or the folders need to be
+    manually created.**
+    
     '''
 #    extra = "angle/"  # Note the forward slash that must be added
-    extra = "group_12s/"
+    extra = "group_1l/"
     
     ''' Permanent constants '''
 #    rmax_max = 0
@@ -88,6 +93,10 @@ def main():
     ''' Other variables '''
                          
     # Output for each particle
+                         
+    # ***** If you update either of these header files, you must also update
+    # them in 'just_process.py' *****
+                         
     particle_matrix_header = np.array(["Particle #","Steps","Kill Event",
                                  "Charge",
                                  "Starting Global x-Position (mm)",

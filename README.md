@@ -108,25 +108,27 @@ The files used are the following:
 
 -	callable_functions.py - A file of functions used by the other files.
 
--	geometry.py - Builds the geometry of the ring to be used in determining if a 		particle/x-ray is inside it, and used for plotting.
+-	combine.py - If using mulitple runs of the same set of muons, combine.py will take all the files created by process_single_files.py and combine them into one final output to be read as normal. See the script for how to prepare your files to be used.
 
--	muon_data.py - Returns the muon position and momentum vectors in the local 		coordinate system.
+-	find_fit_chisquare.py - Note: Not fully commented as it's still being updated/changed regularly. Finds polynomial fits and chi-square values for the data. Used by particle_tracking.py.
 
--	just_process.py - Used only for checking the single output files of completed 		muons while the code is running.
+-	geometry.py - Builds the geometry of the ring to be used in determining if a particle/x-ray is inside it, and used for plotting.
 
--	particle_tracking.py - Tracks the movement of the positrons and electrons.
+-	muon_data.py - Returns the muon position and momentum vectors in the local coordinate system.
 
--	photon_tracking.py - Tracks the movement of the x-rays.
+-	just_process.py - Used only for checking the single output files of completed muons while the code is running.
+
+-	particle_tracking.py - Note: Not fully commented as it's still being updated/changed regularly. Tracks the movement of the positrons and electrons.
+
+-	photon_tracking.py - Note: Not fully commented as it's still being updated/changed regularly. Tracks the movement of the x-rays.
 
 -	plot_geometries.py - Plots the geometries if make_plots == 1.
 
--	process_single_files.py - Converts all the single output files (one for each 		muon) to a single files for particles (particle_matrix_ts.csv) and a single 	file for x-rays (photon_matrix_ts.csv) where 'ts' in both files is the 	timestamp set in the variables section. 
+-	process_single_files.py - Converts all the single output files (one for each muon) to a single files for particles (particle_matrix_ts.csv) and a single file for x-rays (photon_matrix_ts.csv) where 'ts' in both files is the timestamp set in the variables section. 
 
--	read_particle_output.py - Reads the particle file created by 		'process_single_files.py.
+-	read_particle_output.py - Reads the particle file created by 'process_single_files.py.
 
--	read_photon_output.py - Reads the photon file created by 		'process_single_files.py.
-
--	combine.py - If using mulitple runs of the same set of muons, combine.py will 		take all the files created by process_single_files.py and combine them into 	one final output to be read as normal.
+-	read_photon_output.py - Reads the photon file created by 'process_single_files.py.
 
 -	README.md - This file.
 

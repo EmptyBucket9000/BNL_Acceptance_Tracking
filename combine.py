@@ -12,8 +12,8 @@ order to reduce statistical uncertainties.
 Combines all the files created by the process_single_files.py script to be
 read as usual.
 
-All files to be combined must be copied to a single location, by default, it's:
-' ../Output/Combined/ts/' where 'ts' is set below.
+**All files to be combined must be copied to a single location, by default,
+it's: ' ../Output/Combined/ts/' where 'ts' is set below.**
 
 """
 
@@ -23,9 +23,9 @@ import os
 import glob
 
 ts = 13
-extra = ""          # E.g. "_group_2", be sure to begin with "_" (for output)
+out_extra = ""          # E.g. "_group_2", be sure to begin with "_" (for output)
 output_dir = "../Output/"
-N_max = 80000      # Maximum # of tracked particles for pre-allocation
+N_max = 100000      # Maximum # of tracked particles for pre-allocation
 
 # Output for each particle
 particle_matrix_header = np.array(["Particle #","Steps","Kill Event",
@@ -101,7 +101,7 @@ particle_files = sorted(glob.glob("%s/../Output/Combined/%d/particle_*.csv"%(
                             os.getcwd(),ts)), key=os.path.getmtime)
 
 # Set output file name and location
-path = output_dir + "combined_particle_matrix%s_%d.csv"%(extra,ts)
+path = output_dir + "combined_particle_matrix%s_%d.csv"%(out_extra,ts)
 
 # Row counter, starts at 1 as the output file has a header
 i = 1
@@ -145,7 +145,7 @@ with open(path, "w", newline='') as csv_file:
 
 photon_files = sorted(glob.glob("%s/../Output/Combined/%d/photon_*.csv"%(
                         os.getcwd(),ts)), key=os.path.getmtime)
-path = output_dir + "combined_photon_matrix%s_%d.csv"%(extra,ts)
+path = output_dir + "combined_photon_matrix%s_%d.csv"%(out_extra,ts)
 i = 1
 setNum = 0
 photon_matrix_full = np.zeros((N_max,N_phot_mat),dtype=object)

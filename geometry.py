@@ -42,13 +42,13 @@ import numpy as np
 def geo():
 
     R = 7.112                   # (m) Radius of the ring
-    R_i = 6.805
+    R_i = 6.805                 # (m) Inner edge of the calorimeter
     
     ''' Calorimeters '''
     
     cal_width = 0.225           # (m) Calorimeter width
     cal_depth = 0.4572          # (m) Depth of calorimeter
-    cal_depth_det = 0.15            # (m) Depth of detector part of calorimeter
+    cal_depth_det = 0.15        # (m) Depth of detector part of calorimeter
     cal_height = 0.14           # (m) Height of the calorimeter
     cal_theta_glob = 0.070      # (rad) Angle of cal w.r.t. radial
     
@@ -77,6 +77,8 @@ def geo():
     so_rad = np.array([R - (so_rad_start + so_depth), R - so_rad_start])
     so_theta_start_base = np.array([2,8,13,15,21,26.75,32,38,43])+rot
     so_theta_start = np.array([2,8,13,15,21,26.75,32,38,43])+rot
+    
+    # Set each section of the ring identical to the first section above.
         
     i = 1
     while i < 5:
@@ -99,6 +101,8 @@ def geo():
     sp_rad = np.array([R - (sp_rad_start + sp_depth), R - sp_rad_start]) # (m)
     sp_theta_start_base = np.array([2.48,8.48,13.48,15.48,21.48,27.23])+rot
     sp_theta_start = np.array([2.48,8.48,13.48,15.48,21.48,27.23])+rot
+    
+    # Set each section of the ring identical to the first section above.
     
     i = 1
     while i < 12:
@@ -124,6 +128,8 @@ def geo():
     sqel_theta_base = 90 - np.array([33.39,46.39])-rot
     sqel_theta = 90 - np.array([33.39,46.39])-rot
     
+    # Set each quarter of the ring identical to the first quarter above.
+    
     i = 1
     while i < 4:
         sqel_theta = np.row_stack((
@@ -139,6 +145,8 @@ def geo():
     dqel_theta_base = 90 - np.array([48.89,74.89])-4
     dqel_theta = 90 - np.array([48.89,74.89])-4
     
+    # Set each section of the ring identical to the first section above.
+    
     i = 1
     while i < 4:
         dqel_theta = np.row_stack((
@@ -148,7 +156,7 @@ def geo():
         
     dqel_theta = dqel_theta*np.pi/180
     
-    ''' Trolly Rail '''
+    ''' Trolley Rail '''
     
     rail_height = 40*10**-3                  # (m) Where the rail starts in y
     rail_rad = R - np.array([56,46])*10**-3  # (m) Distance from R 
