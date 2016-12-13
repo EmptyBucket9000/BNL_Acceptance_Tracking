@@ -28,7 +28,7 @@ def main():
     save_plots = 0                      # Set to 1 to save plots, 0 otherwise
     save_dir = "../Output/Images"       # Set save directory
     image_dpi = 300                     # Set saved image dpi
-    num_slots = 20                      # Number of points for acceptance plots
+    num_slots = 25                      # Number of points for acceptance plots
     show_angle_histograms = 0           # Show a set of histograms
     show_old_plots = 0                  # Show other plots
     
