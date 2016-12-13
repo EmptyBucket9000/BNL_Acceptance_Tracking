@@ -44,7 +44,8 @@ def main():
     # to allow limited variability (this may take longer to run each muon if 
     # large number of muons are desired)
     
-    x_pos_range = np.array([2.5,4.5])/100
+    x_pos_range = np.array([0,0])/100
+    x_prime_range = np.array([0.003,0.005])
 
     # Name of csv containing muon data    
     file_name = "EndOfTracking_phase_space.csv"
@@ -59,7 +60,11 @@ def main():
         m_theta = 2.3*np.pi / 8
     
 #    N = 5171                            # Number of muons in beam
-    N = 386
+#    N = 223                             # For x = [-4.5,-2.5]
+#    N = 386                             # For x = [2.5,4.5]
+#    N = 53                              # For x' = [-0.005,-0.003]
+    N = 77                              # For x' = [0.003,0.005]
+#    N = 1
     ts = 13
     photon_ts = 13
 
@@ -81,7 +86,7 @@ def main():
     # Set to extra = "" if not
     # used, don't comment out.
 #    extra = "angle/"
-    extra = "group_1l/"
+    extra = "group_12rp/"
     
     ''' Permanent constants '''
 
@@ -200,7 +205,7 @@ def main():
         if muon_number == 0:
             # Get a list of 'N' muons' position/momentum in random order
             m_x_list,m_p_list = \
-                md.muon(N,file_name,p_magic,x_pos_range)                    
+                md.muon(N,file_name,p_magic,x_pos_range,x_prime_range)                    
         
         # Get the current muon's position/momentum in local and theta in global
         # where theta is random between 0 and 2pi
@@ -485,9 +490,6 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
         if save_plots == 1:
             plt.savefig('../Output/Images/plot.png',bbox_inches='tight',
                         dpi=500)
-    
-        # Show plot
-        plt.show()
         
     # If save_output is set to 1, save the data for each positron from a single
     # muon decay and the subsequent photons, pair-production particles to files
