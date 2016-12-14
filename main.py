@@ -24,6 +24,7 @@ import geometry
 import os
 import glob
 import csv
+import sys
 
 #==============================================================================
 #==============================================================================
@@ -45,7 +46,7 @@ def main():
     # large number of muons are desired)
     
     x_pos_range = np.array([0,0])/100
-    x_prime_range = np.array([0.003,0.005])
+    x_prime_range = np.array([-0.005,-0.002])
 
     # Name of csv containing muon data    
     file_name = "EndOfTracking_phase_space.csv"
@@ -63,8 +64,9 @@ def main():
 #    N = 223                             # For x = [-4.5,-2.5]
 #    N = 386                             # For x = [2.5,4.5]
 #    N = 53                              # For x' = [-0.005,-0.003]
-    N = 77                              # For x' = [0.003,0.005]
-#    N = 1
+    N = 356                              # For x' = [-0.005,-0.002]
+#    N = 77                              # For x' = [0.003,0.005]
+#    N = 404                             # For x' = [0.002,0.005]
     ts = 13
     photon_ts = 13
 
@@ -86,7 +88,8 @@ def main():
     # Set to extra = "" if not
     # used, don't comment out.
 #    extra = "angle/"
-    extra = "group_12rp/"
+    extra = "group_30lp/"
+#    extra = sys.argv[1]
     
     ''' Permanent constants '''
 

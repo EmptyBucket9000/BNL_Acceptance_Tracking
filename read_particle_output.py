@@ -31,12 +31,11 @@ def main():
     num_slots = 25                      # Number of points for acceptance plots
     show_angle_histograms = 0           # Show a set of histograms
     show_old_plots = 0                  # Show other plots
-    
-    ts = 13
+    ts = 13                             # Timestep, 10**-ts
     
     # E.g. "_group_2" Note the beginning underscore, only used if a combined
     # csv file is not used.
-    extra = "_group_1" 
+#    extra = "_group_1" 
     
     # Uncomment either the line with 'extra' or the line with the combined
     # file in each pair below.
@@ -65,7 +64,6 @@ def main():
     sp_rad = geo_pack[10]
     sqel_rad = geo_pack[15]
     dqel_rad = geo_pack[17]
-    R = geo_pack[19]*100
     
 #==============================================================================
 # Photons
@@ -269,9 +267,9 @@ def main():
         starting_pos = np.zeros((1,num_slots),dtype=int)
         
         # sqel or dqel contact
-        through_quad = np.zeros((1,num_slots),dtype=int)
+#        through_quad = np.zeros((1,num_slots),dtype=int)
         through_matter = np.zeros((1,num_slots),dtype=int)
-        no_through_quad = np.zeros((1,num_slots),dtype=int)
+#        no_through_quad = np.zeros((1,num_slots),dtype=int)
         no_through_matter = np.zeros((1,num_slots),dtype=int)
         
         # sqel or dqel contact then cal contact
@@ -602,20 +600,20 @@ def main():
                         
                         # Check if the particle hit the calorimeter and an elec
                         
-                        if (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
-                            through_quad[0,k] = through_quad[0,k] + 1
-                            
-                            if particle[i,0] == "Calorimeter Contact":
-                
-                                if distancePartPhot(photon_dist,photon_edge,row):
-                                    through_quad_contact[0,k] = \
-                                        through_quad_contact[0,k] + 1
-                            
-                            if particle[i,0] == "Calorimeter Edge Contact":
-                
-                                if edgePartPhot(photon_edge,row):
-                                    through_quad_edge_contact[0,k] = \
-                                        through_quad_edge_contact[0,k] + 1
+#                        if (float(in_sqel[i,0]) > 0 or float(in_dqel[i,0]) > 0):
+#                            through_quad[0,k] = through_quad[0,k] + 1
+#                            
+#                            if particle[i,0] == "Calorimeter Contact":
+#                
+#                                if distancePartPhot(photon_dist,photon_edge,row):
+#                                    through_quad_contact[0,k] = \
+#                                        through_quad_contact[0,k] + 1
+#                            
+#                            if particle[i,0] == "Calorimeter Edge Contact":
+#                
+#                                if edgePartPhot(photon_edge,row):
+#                                    through_quad_edge_contact[0,k] = \
+#                                        through_quad_edge_contact[0,k] + 1
                         
                         # Check if the particle hit the calorimeter and matter
                         
@@ -642,15 +640,15 @@ def main():
                         
                         # Check if the particle hit the calorimter and missed quads
                         
-                        if (float(in_sqel[i,0]) == 0 and float(in_dqel[i,0]) == 0):
-                            no_through_quad[0,k] = no_through_quad[0,k] + 1
-                            
-                            if (particle[i,0] == "Calorimeter Contact" or 
-                                particle[i,0] == "Calorimeter Edge Contact"):
-                                    
-                                # Count the particle
-                                no_through_quad_contact[0,k] = \
-                                    no_through_quad_contact[0,k] + 1
+#                        if (float(in_sqel[i,0]) == 0 and float(in_dqel[i,0]) == 0):
+#                            no_through_quad[0,k] = no_through_quad[0,k] + 1
+#                            
+#                            if (particle[i,0] == "Calorimeter Contact" or 
+#                                particle[i,0] == "Calorimeter Edge Contact"):
+#                                    
+#                                # Count the particle
+#                                no_through_quad_contact[0,k] = \
+#                                    no_through_quad_contact[0,k] + 1
                         
                         # Check if the particle hit the calorimter and missed
                         # all matter
@@ -891,15 +889,15 @@ def main():
     
     if show_old_plots == 1:
         
-        data_qel_contact,yerr_qel_contact, \
-        data_no_qel_contact,yerr_no_qel_contact = \
-            getDataVsAcceptance(through_quad_contact,
-                                through_quad_edge_contact,
-                                through_quad,
-                                no_through_quad_contact,
-                                no_through_quad,
-                                num_slots,
-                                starting_pos)
+#        data_qel_contact,yerr_qel_contact, \
+#        data_no_qel_contact,yerr_no_qel_contact = \
+#            getDataVsAcceptance(through_quad_contact,
+#                                through_quad_edge_contact,
+#                                through_quad,
+#                                no_through_quad_contact,
+#                                no_through_quad,
+#                                num_slots,
+#                                starting_pos)
             
         data_matter_contact,yerr_matter_contact, \
         data_no_matter_contact,yerr_no_matter_contact = \
@@ -920,26 +918,51 @@ def main():
     
         # Independent axis values for the fit functions
         xxfit = np.linspace(min_pos,max_pos,500)/100
+    
+        init_guess_lin = np.array([0,0])
+        init_guess_quad = np.array([0,0,0])
+        init_guess_tri = np.array([0.67,-1.28,-8,800])
+        
+        fit_type = "poly"
+        lfit_t = ffch(xx,data_matter_contact,yerr_matter_contact,
+                            init_guess_lin,fit_type)
+        lfit_not = ffch(xx,data_no_matter_contact,
+                        yerr_no_matter_contact,init_guess_lin,fit_type)
+        qfit_t = ffch(xx,data_matter_contact,
+                      yerr_matter_contact,init_guess_quad,fit_type)
+        qfit_not = ffch(xx,data_no_matter_contact,
+                        yerr_no_matter_contact,init_guess_quad,fit_type)
+        tfit_t = ffch(xx,data_matter_contact,
+                      yerr_matter_contact,init_guess_tri,fit_type)
+#        tfit_not = ffch(xx,data_no_matter_contact,
+#                        yerr_no_matter_contact,init_guess_tri,fit_type)
         
         fig = plt.figure(n)
         n = n + 1
         
         x2lin = lfit_t.fun/(len(xx)-len(init_guess_lin)-1)
         dx2lin = np.sqrt(2*(len(xx)-len(init_guess_lin)-1)) / \
-                (len(xx)-len(init_guess_lin)-1)
+                    (len(xx)-len(init_guess_lin)-1)
         x2quad = qfit_t.fun/(len(xx)-len(init_guess_quad)-1)
         dx2quad = np.sqrt(2*(len(xx)-len(init_guess_quad)-1)) / \
                     (len(xx)-len(init_guess_quad)-1)
+        x2tri = tfit_t.fun/(len(xx)-len(init_guess_tri)-1)
+        dx2tri = np.sqrt(2*(len(xx)-len(init_guess_tri)-1)) / \
+                    (len(xx)-len(init_guess_tri)-1)
         
         ax = plt.subplot(1,1,1)
         ax.errorbar(xx,data_matter_contact,yerr=yerr_matter_contact,fmt='.',
                     color='b')
         ax.plot(xxfit,lfit_t.x[0] + lfit_t.x[1]*xxfit)
         ax.plot(xxfit,qfit_t.x[0] + qfit_t.x[1]*xxfit + qfit_t.x[2]*xxfit**2)
-        fig.text(0.24, -0.25,
+        ax.plot(xxfit,tfit_t.x[0] + tfit_t.x[1]*xxfit + tfit_t.x[2]*xxfit**2 +
+                tfit_t.x[3]*xxfit**3)
+        fig.text(0.17, -0.35,
                  "Lin fit: y = %0.4f + %0.4f$x$\n"
                  "$\chi^2_R$ = %0.2f$\pm$%0.2f\n"
                  "Quad fit: y = %0.4f + %0.4f$x$ + %0.4f$x^2$\n"
+                 "$\chi^2_R$ = %0.2f$\pm$%0.2f\n"
+                 "Tri fit: y = %0.4f + %0.4f$x$ + %0.4f$x^2$ + %0.4f$x^3$\n"
                  "$\chi^2_R$ = %0.2f$\pm$%0.2f"%(
                     lfit_t.x[0],
                     lfit_t.x[1],
@@ -947,16 +970,20 @@ def main():
                     qfit_t.x[0],
                     qfit_t.x[1],
                     qfit_t.x[2],
-                    x2quad,dx2quad
+                    x2quad,dx2quad,
+                    tfit_t.x[0],
+                    tfit_t.x[1],
+                    tfit_t.x[2],
+                    tfit_t.x[3],
+                    x2tri,dx2tri
                  ),
                     bbox={'facecolor':'white', 'alpha':1, 'pad':3})
-    #    ax.legend(bbox_to_anchor=(1,1))
         ax.set_title("Position vs. Through-matter acceptance")
         ax.set_xlabel("x-Position (m)")
         ax.set_ylabel("Particles Detected / Total")
         
         if save_plots == 1:
-                plt.savefig('%s/through_acceptance_x_prime.png'%save_dir,
+                plt.savefig('%s/through_acceptance_x.png'%save_dir,
                             bbox_inches='tight',dpi=image_dpi)
         
         # Position vs. No through-matter acceptance
@@ -996,51 +1023,51 @@ def main():
         ax.set_ylabel("Particles Detected / Total")
         
         if save_plots == 1:
-                plt.savefig('%s/no_through_acceptance_x_prime.png'%save_dir,
+                plt.savefig('%s/no_through_acceptance.png'%save_dir,
                             bbox_inches='tight',dpi=image_dpi)
     
         # Position vs. Through-quad acceptance
         
-        fig = plt.figure(n)
-        n = n + 1
-        
-        ax = plt.subplot(1,1,1)
-        ax.errorbar(xx,data_qel_contact,yerr=yerr_qel_contact,fmt='.',
-                    color='b')
-        ax.plot(xxfit,lfit_t[0] + lfit_t[1]*xxfit)
-        fig.text(0.45, 0.85, 'Fit: y = %0.4f - %0.4fx'%(lfit_t[0],
-                                                   np.abs(lfit_t[1])),
-                    bbox={'facecolor':'white', 'alpha':1, 'pad':3})
-    #    ax.legend(bbox_to_anchor=(1,1))
-        ax.set_title("Position vs. Through-quad acceptance")
-        ax.set_xlabel("x-Position (m)")
-        ax.set_ylabel("Particles Detected / Total")
-        
-        if save_plots == 1:
-                plt.savefig('%s/through_acceptance.png'%save_dir,
-                            bbox_inches='tight',dpi=image_dpi)
-        
-        # Position vs. No through-quad acceptance
-        
-        fig = plt.figure(n)
-        n = n + 1
-        
-        ax = plt.subplot(1,1,1)
-        ax.errorbar(xx,data_no_qel_contact,yerr=yerr_no_qel_contact,fmt='.',
-                    color='g')
-        ax.plot(xxfit,lfit_not[0] + lfit_not[1]*xxfit)
-        fig.text(0.45, 0.85,
-                'Fit: y = %0.4f - %0.4fx'%(lfit_not[0],
-                                       np.abs(lfit_not[1])),
-              bbox={'facecolor':'white', 'alpha':1, 'pad':3})
-    #    ax.legend(bbox_to_anchor=(1,1))
-        ax.set_title("Position vs. No through-quad acceptance")
-        ax.set_xlabel("x-Position (m)")
-        ax.set_ylabel("Particles Detected / Total")
-        
-        if save_plots == 1:
-                plt.savefig('%s/no_through_acceptance.png'%save_dir,
-                            bbox_inches='tight',dpi=image_dpi)
+#        fig = plt.figure(n)
+#        n = n + 1
+#        
+#        ax = plt.subplot(1,1,1)
+#        ax.errorbar(xx,data_qel_contact,yerr=yerr_qel_contact,fmt='.',
+#                    color='b')
+#        ax.plot(xxfit,lfit_t[0] + lfit_t[1]*xxfit)
+#        fig.text(0.45, 0.85, 'Fit: y = %0.4f - %0.4fx'%(lfit_t[0],
+#                                                   np.abs(lfit_t[1])),
+#                    bbox={'facecolor':'white', 'alpha':1, 'pad':3})
+#    #    ax.legend(bbox_to_anchor=(1,1))
+#        ax.set_title("Position vs. Through-quad acceptance")
+#        ax.set_xlabel("x-Position (m)")
+#        ax.set_ylabel("Particles Detected / Total")
+#        
+#        if save_plots == 1:
+#                plt.savefig('%s/through_acceptance.png'%save_dir,
+#                            bbox_inches='tight',dpi=image_dpi)
+#        
+#        # Position vs. No through-quad acceptance
+#        
+#        fig = plt.figure(n)
+#        n = n + 1
+#        
+#        ax = plt.subplot(1,1,1)
+#        ax.errorbar(xx,data_no_qel_contact,yerr=yerr_no_qel_contact,fmt='.',
+#                    color='g')
+#        ax.plot(xxfit,lfit_not[0] + lfit_not[1]*xxfit)
+#        fig.text(0.45, 0.85,
+#                'Fit: y = %0.4f - %0.4fx'%(lfit_not[0],
+#                                       np.abs(lfit_not[1])),
+#              bbox={'facecolor':'white', 'alpha':1, 'pad':3})
+#    #    ax.legend(bbox_to_anchor=(1,1))
+#        ax.set_title("Position vs. No through-quad acceptance")
+#        ax.set_xlabel("x-Position (m)")
+#        ax.set_ylabel("Particles Detected / Total")
+#        
+#        if save_plots == 1:
+#                plt.savefig('%s/no_through_acceptance.png'%save_dir,
+#                            bbox_inches='tight',dpi=image_dpi)
         
         ## Calorimeter Contact Position (Particles)
         
@@ -1315,13 +1342,13 @@ def getDataVsAcceptance(through_matter_contact,through_matter_edge_contact,
                     1/np.sqrt(no_through_matter_contact[0,el])
                 print(no_through_matter_contact[0,el])
             
-        print('%d-Through, front contact: %d'%(i,
-                                               through_matter_contact[0,i]))
-        print('%d-Through, edge contact: %d'%(
-            i,through_matter_edge_contact[0,i]))
-        print('%d-No through, contact: %d'%(i,
-                                            no_through_matter_contact[0,i]))
-        print('%d-Total in starting range: %d'%(i,starting[0,i]))
+#        print('%d-Through, front contact: %d'%(i,
+#                                               through_matter_contact[0,i]))
+#        print('%d-Through, edge contact: %d'%(
+#            i,through_matter_edge_contact[0,i]))
+#        print('%d-No through, contact: %d'%(i,
+#                                            no_through_matter_contact[0,i]))
+#        print('%d-Total in starting range: %d'%(i,starting[0,i]))
         
         i = i + 1
         
