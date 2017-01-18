@@ -135,8 +135,8 @@ def main():
         Steps                               1
         Kill Event                          2
         Charge                              3
-        Starting Global x-Position (mm)	 4
-        Starting Global y-Position (mm)	 5
+        Starting Global x-Position (mm)	    4
+        Starting Global y-Position (mm)	    5
         Starting Global z-Position (mm)     6
         Ending Calorimeter x (mm)           7
         Ending Calorimeter y (mm)           8
@@ -144,25 +144,25 @@ def main():
         Ending Momentum (GeV/c)             10
         Delta Momentum (GeV/c)              11
         Steps Inside Short Quad             12
-        Distance Inside Short Quad (cm)	 13
+        Distance Inside Short Quad (cm)	    13
         Total # of Photons Released         14
-        # of Detectable Photons Released	 15
+        # of Detectable Photons Released    15
         Steps Inside Long Quad              16
-        Distance Inside Long Quad (cm)	 17
+        Distance Inside Long Quad (cm)      17
         Total # of Photons Released         18
-        # of Detectable Photons Released	 19
+        # of Detectable Photons Released    19
         Steps Inside Standoff Plate         20
         Distance Inside Standoff Plate (cm) 21
         Total # of Photons Released         22
-        # of Detectable Photons Released	 23
+        # of Detectable Photons Released    23
         Steps Inside HV Standoff            24
-        Distance Inside HV Standoff (cm)	 25
+        Distance Inside HV Standoff (cm)    25
         Total # of Photons Released         26
-        # of Detectable Photons Released	 27
+        # of Detectable Photons Released    27
         Steps Inside HV Standoff Screws     28
-        Distance Inside HV Standoff Screws	 29
+        Distance Inside HV Standoff Screws  29
         Total # of Photons Released         30
-        # of Detectable Photons Released	 31
+        # of Detectable Photons Released    31
         dt                                  32
         Pair Produced (0 or 1)              33
         Kill Timestamp                      34
