@@ -16,12 +16,14 @@ import numpy as np
 import csv
 import random
             
-def muon(N,file_name,p_magic,x_pos_range,x_prime_range):
+def muon(N,file_name,p_magic,x_pos_range,x_prime_range,
+         y_pos_range,y_prime_range):
     
     # Reads the muon data from the .csv then picks the desired number of muons
     # at random from the returned list.
     
-    m,length = readFile(file_name,x_pos_range,x_prime_range)
+    m,length = readFile(file_name,x_pos_range,x_prime_range,
+                        y_pos_range,y_prime_range)
     lines = random.sample(range(length), N)
     m_x = np.zeros((N,2))               # Muon position
     m_p = np.zeros((N,3))               # Muon momentum
@@ -39,14 +41,14 @@ def muon(N,file_name,p_magic,x_pos_range,x_prime_range):
         
     return m_x,m_p
 
-def readFile(file_name,x_pos_range,x_prime_range):
+def readFile(file_name,x_pos_range,x_prime_range,y_pos_range,y_prime_range):
     
     # csv: [x,xprime,y,yprime,p_z]
     i = 0
 
     with open(file_name, "rt") as inf:
         reader = csv.reader(inf, delimiter=',')
-        next(reader, None)  # skip the headers
+        next(reader, None)  # Skip the headers
     
         stuff = list(reader)
         
@@ -64,7 +66,11 @@ def readFile(file_name,x_pos_range,x_prime_range):
             if float(row[0]) >= x_pos_range[0] and \
                 float(row[0]) <= x_pos_range[1] and \
                 float(row[1]) >= x_prime_range[0] and \
-                float(row[1]) <= x_prime_range[1]:
+                float(row[1]) <= x_prime_range[1] and \
+                float(row[2]) >= y_pos_range[0] and \
+                float(row[2]) <= y_pos_range[1] and \
+                float(row[3]) >= y_prime_range[0] and \
+                float(row[3]) <= y_prime_range[1]:
 
                 m[i,0] = row[0]           
                 m[i,1] = row[1]

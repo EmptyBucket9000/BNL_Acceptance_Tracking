@@ -20,6 +20,7 @@ import photon_tracking as pht
 import muon_data as md
 import plot_geometries as pg
 import process_single_files as psf
+import run_type as rt
 import geometry
 import os
 import glob
@@ -36,17 +37,14 @@ def main():
 
     ''' Begin editable variables '''
     
-    make_plots = 0                      # Set to 1 to display plots
+    make_plots = 1                      # Set to 1 to display plots
     save_plots = 0                      # Set to 1 to save plots as images
-    save_output = 1                     # Set to 1 to save data output to csv
-    detele_old_single_files = 1         # Delete old single files first
+    save_output = 0                     # Set to 1 to save data output to csv
+    detele_old_single_files = 0         # Delete old single files first
     
-    # Ranges, set all elements to zero for full range or set specific limits
-    # to allow limited variability (this may take longer to run each muon if 
-    # large number of muons are desired)
-    
-    x_pos_range = np.array([0,0])/100
-    x_prime_range = np.array([-0.005,-0.002])
+    # Get x_pos_range, x_prime_range, and N based on the sys.argv sent.
+
+    x_pos_range,x_prime_range,y_pos_range,y_prime_range,N = rt.do(sys.argv[1])
 
     # Name of csv containing muon data    
     file_name = "EndOfTracking_phase_space.csv"
@@ -59,14 +57,7 @@ def main():
     
     if m_theta_set == 1:
         m_theta = 2.3*np.pi / 8
-    
-#    N = 5171                            # Number of muons in beam
-#    N = 223                             # For x = [-4.5,-2.5]
-#    N = 386                             # For x = [2.5,4.5]
-#    N = 53                              # For x' = [-0.005,-0.003]
-    N = 356                              # For x' = [-0.005,-0.002]
-#    N = 77                              # For x' = [0.003,0.005]
-#    N = 404                             # For x' = [0.002,0.005]
+        
     ts = 13
     photon_ts = 13
 
@@ -175,6 +166,12 @@ def main():
     
     if np.all(x_pos_range == 0):
         x_pos_range = np.array([-10,10])/100
+    if np.all(x_prime_range == 0):
+        x_prime_range = np.array([-0.005,0.005])
+    if np.all(y_pos_range == 0):
+        y_pos_range = np.array([-10,10])/100
+    if np.all(y_prime_range == 0):
+        y_prime_range = np.array([-0.005,0.005])
     
     # Estimated maximum # of particles and photons that could be created from
     # each muon decay (smaller -> less memory usage but too small and an
@@ -204,14 +201,18 @@ def main():
     # Loop through all the muons
     
     while muon_number < N:
+        
+        # If the muon number is 0, i.e. the first muon to be tracked, the muon
+        # list must first be generated.
 
         if muon_number == 0:
             # Get a list of 'N' muons' position/momentum in random order
             m_x_list,m_p_list = \
-                md.muon(N,file_name,p_magic,x_pos_range,x_prime_range)                    
+                md.muon(N,file_name,p_magic,x_pos_range,x_prime_range,
+                        y_pos_range,y_prime_range)
         
         # Get the current muon's position/momentum in local and theta in global
-        # where theta is random between 0 and 2pi
+        # where theta is random between 0 and 2pi.
         
         m_x = np.copy(m_x_list[muon_number])
         m_p = np.copy(m_p_list[muon_number])
@@ -223,7 +224,7 @@ def main():
                 np.random.random() + m_theta_array[0]
 
         # Initialize the particle and photon arrays that will contain all the
-        # data that will be saved to a file for later processing
+        # data that will be saved to a file for later processing.
         
         particle_matrix = np.zeros((N_particles,N_part_mat),dtype=object)
         photon_matrix = np.zeros((N_photons,N_phot_mat),dtype=object)
@@ -232,7 +233,7 @@ def main():
         photon_matrix[0] = photon_matrix_header
         
         # Run the code that will create the positrons and track all the
-        # particles and photons created from pair-production and Bremsstralung
+        # particles and photons created from pair-production and Bremsstralung.
                 
         particle_matrix,photon_matrix = \
             run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,

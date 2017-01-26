@@ -127,6 +127,8 @@ The files used are the following:
 
 -	read_photon_output.py - Note: Not fully commented as it's still being updated/changed regularly. Reads the photon file created by 'process_single_files.py.
 
+-	run_type.py - Returns the muon data to be used based on desired x,x' and y,y' phase-space limits sent to it.
+
 -	README.md - This file.
 
 ######################################
