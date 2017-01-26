@@ -37,10 +37,10 @@ def main():
 
     ''' Begin editable variables '''
     
-    make_plots = 1                      # Set to 1 to display plots
+    make_plots = 0                      # Set to 1 to display plots
     save_plots = 0                      # Set to 1 to save plots as images
-    save_output = 0                     # Set to 1 to save data output to csv
-    detele_old_single_files = 0         # Delete old single files first
+    save_output = 1                     # Set to 1 to save data output to csv
+    detele_old_single_files = 1         # Delete old single files first
     
     # Get x_pos_range, x_prime_range, and N based on the sys.argv sent.
 
