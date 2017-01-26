@@ -79,8 +79,8 @@ def main():
     # Set to extra = "" if not
     # used, don't comment out.
 #    extra = "angle/"
-    extra = "group_30lp/"
-#    extra = sys.argv[1]
+#    extra = "group_30lp/"
+    extra = sys.argv[2]
     
     ''' Permanent constants '''
 
