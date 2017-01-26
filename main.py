@@ -248,7 +248,7 @@ def main():
               
     # Finally, convert all the single particle_matrix and photon_matrix files
     # into single files.
-              
+    
     if save_output == 1:
         psf.process(particle_matrix_header,photon_matrix_header,N_part_mat,
                 N_phot_mat,ts,extra)
