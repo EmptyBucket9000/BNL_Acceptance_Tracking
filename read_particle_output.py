@@ -212,8 +212,8 @@ def main():
         
         # Used in creating the sections for plotting acceptance vs prime
 
-        max_prime = np.array([0.004365,0.004365])
-        min_prime = np.array([-0.004434,-0.004434])        # [x-prime]
+        max_prime = np.array([0.004365,0.0024445])
+        min_prime = np.array([-0.004434,-0.002405])        # [x-prime]
         prime_step = (max_prime - min_prime) / num_slots
         
         
@@ -292,10 +292,10 @@ def main():
         pos_color = np.zeros((len(part_phot)),dtype=object)
         
         starting_pos_prime = np.zeros((2,num_slots),dtype=int)
-        data_matter_contact_prime = np.zeros((num_slots))
-        data_no_matter_contact_prime = np.zeros((num_slots))
-        yerr_matter_contact_prime = np.zeros((num_slots))
-        yerr_no_matter_contact_prime = np.zeros((num_slots))
+#        data_matter_contact_prime = np.zeros((num_slots))
+#        data_no_matter_contact_prime = np.zeros((num_slots))
+#        yerr_matter_contact_prime = np.zeros((num_slots))
+#        yerr_no_matter_contact_prime = np.zeros((num_slots))
         
         # sqel or dqel contact
         through_matter_prime = np.zeros((2,num_slots),dtype=int)
@@ -843,28 +843,47 @@ def main():
 #                            no_through_quad_contact,
 #                            no_through_quad,
 #                            num_slots,
-#                            starting_pos)
+#                            starting_pos)    
         
-    data_matter_contact,yerr_matter_contact, \
-    data_no_matter_contact,yerr_no_matter_contact = \
-        getDataVsAcceptance(through_matter_contact,
-                            through_matter_edge_contact,
-                            through_matter,
-                            no_through_matter_contact,
-                            no_through_matter,
+    data_matter_contact_x,yerr_matter_contact_x, \
+    data_no_matter_contact_x,yerr_no_matter_contact_x = \
+        getDataVsAcceptance(through_matter_contact[0],
+                            through_matter_edge_contact[0],
+                            through_matter[0],
+                            no_through_matter_contact[0],
+                            no_through_matter[0],
                             num_slots,
-                            starting_pos)
+                            starting_pos[0])
         
-    data_matter_contact_prime,yerr_matter_contact_prime, \
-    data_no_matter_contact_prime,yerr_no_matter_contact_prime = \
-        getDataVsAcceptance(through_matter_contact_prime,
-                            through_matter_edge_contact_prime,
-                            through_matter_prime,
-                            no_through_matter_contact_prime,
-                            no_through_matter_prime,
+    data_matter_contact_prime_x,yerr_matter_contact_prime_x, \
+    data_no_matter_contact_prime_x,yerr_no_matter_contact_prime_x = \
+        getDataVsAcceptance(through_matter_contact_prime[0],
+                            through_matter_edge_contact_prime[0],
+                            through_matter_prime[0],
+                            no_through_matter_contact_prime[0],
+                            no_through_matter_prime[0],
                             num_slots,
-                            starting_pos_prime)        
-    
+                            starting_pos_prime[0])
+        
+    data_matter_contact_y,yerr_matter_contact_y, \
+    data_no_matter_contact_y,yerr_no_matter_contact_y = \
+        getDataVsAcceptance(through_matter_contact[1],
+                            through_matter_edge_contact[1],
+                            through_matter[1],
+                            no_through_matter_contact[1],
+                            no_through_matter[1],
+                            num_slots,
+                            starting_pos[1])
+        
+    data_matter_contact_prime_y,yerr_matter_contact_prime_y, \
+    data_no_matter_contact_prime_y,yerr_no_matter_contact_prime_y = \
+        getDataVsAcceptance(through_matter_contact_prime[1],
+                            through_matter_edge_contact_prime[1],
+                            through_matter_prime[1],
+                            no_through_matter_contact_prime[1],
+                            no_through_matter_prime[1],
+                            num_slots,
+                            starting_pos_prime[1])
     # Convert string to float
     x_cal = np.array(x_cal, dtype = float)
     
@@ -884,58 +903,79 @@ def main():
     
     # Set x-axis for scatter plots
     
-    '''x-Prime vs. Through-matter acceptance'''
+    '''Prime vs. Through-matter acceptance'''
     
     prime_step = (max_prime - min_prime) / (num_slots)
     xx_prime = np.arange(min_prime[0] + prime_step[0]/2,
                          max_prime[0],prime_step[0])
     
+    yy_prime = np.arange(min_prime[1] + prime_step[1]/2,
+                         max_prime[1],prime_step[1])
+    
+    # Independent axis values for the fit functions
+    xxfit_p = np.linspace(min_prime[0],max_prime[0],500)
+    yyfit_p = np.linspace(min_prime[1],max_prime[1],500)
+    
     init_guess_lin = np.array([0,0])
     init_guess_quad = np.array([0,0,0])
     fit_type = "poly"
-    lfit_t = ffch(xx_prime,data_matter_contact_prime,yerr_matter_contact_prime,
-                        init_guess_lin,fit_type)
-    lfit_not = ffch(xx_prime,data_no_matter_contact_prime,
-                    yerr_no_matter_contact_prime,init_guess_lin,fit_type)
-    qfit_t = ffch(xx_prime,data_matter_contact_prime,
-                  yerr_matter_contact_prime,init_guess_quad,fit_type)
-    qfit_not = ffch(xx_prime,data_no_matter_contact_prime,
-                    yerr_no_matter_contact_prime,init_guess_quad,fit_type)
+    
+    # Determine the fit functions and get chi-square information
+    
+    lfit_t_x = ffch(xx_prime,data_matter_contact_prime_x,
+                  yerr_matter_contact_prime_x,init_guess_lin,fit_type)
+    lfit_not_x = ffch(xx_prime,data_no_matter_contact_prime_x,
+                    yerr_no_matter_contact_prime_x,init_guess_lin,fit_type)
+    qfit_t_x = ffch(xx_prime,data_matter_contact_prime_x,
+                  yerr_matter_contact_prime_x,init_guess_quad,fit_type)
+    qfit_not_x = ffch(xx_prime,data_no_matter_contact_prime_x,
+                    yerr_no_matter_contact_prime_x,init_guess_quad,fit_type)
+    
+    lfit_t_y = ffch(yy_prime,data_matter_contact_prime_y,
+                  yerr_matter_contact_prime_y,init_guess_lin,fit_type)
+    lfit_not_y = ffch(yy_prime,data_no_matter_contact_prime_y,
+                    yerr_no_matter_contact_prime_y,init_guess_lin,fit_type)
+    qfit_t_y = ffch(yy_prime,data_matter_contact_prime_y,
+                  yerr_matter_contact_prime_y,init_guess_quad,fit_type)
+    qfit_not_y = ffch(yy_prime,data_no_matter_contact_prime_y,
+                    yerr_no_matter_contact_prime_y,init_guess_quad,fit_type)
+    
+    ##################################
+    ## x-prime vs. through acceptance
+    ##################################
                   
 #    print('lfit_t: %s'%lfit_t.message)  
 #    print('qfit_t: %s'%qfit_t.message)  
 #    print('lfit_not: %s'%lfit_not.message)  
 #    print('qfit_not: %s'%qfit_not.message)
     
-    # Independent axis values for the fit functions
-    xxfit_p = np.linspace(min_prime[0],max_prime[0],500)
-    
     fig = plt.figure(n)
     n = n + 1
     
-    x2lin = lfit_t.fun/(len(xx_prime)-len(init_guess_lin)-1)
+    x2lin = lfit_t_x.fun/(len(xx_prime)-len(init_guess_lin)-1)
     dx2lin = np.sqrt(2*(len(xx_prime)-len(init_guess_lin)-1)) / \
             (len(xx_prime)-len(init_guess_lin)-1)
-    x2quad = qfit_t.fun/(len(xx_prime)-len(init_guess_quad)-1)
+    x2quad = qfit_t_x.fun/(len(xx_prime)-len(init_guess_quad)-1)
     dx2quad = np.sqrt(2*(len(xx_prime)-len(init_guess_quad)-1)) / \
                 (len(xx_prime)-len(init_guess_quad)-1)
     
     ax = plt.subplot(1,1,1)
-    ax.errorbar(xx_prime,data_matter_contact_prime,
-                yerr=yerr_matter_contact_prime,fmt='.',color='b')
-    ax.plot(xxfit_p,lfit_t.x[0] + lfit_t.x[1]*xxfit_p)
-    ax.plot(xxfit_p,qfit_t.x[0] + qfit_t.x[1]*xxfit_p + qfit_t.x[2]*xxfit_p**2)
+    ax.errorbar(xx_prime,data_matter_contact_prime_x,
+                yerr=yerr_matter_contact_prime_x,fmt='.',color='b')
+    ax.plot(xxfit_p,lfit_t_x.x[0] + lfit_t_x.x[1]*xxfit_p)
+    ax.plot(xxfit_p,qfit_t_x.x[0] + qfit_t_x.x[1]*xxfit_p + 
+            qfit_t_x.x[2]*xxfit_p**2)
     fig.text(0.24, -0.25,
              "Lin fit: y = %0.4f + %0.4f$x$\n"
              "$\chi^2_R$ = %0.2f$\pm$%0.2f\n"
              "Quad fit: y = %0.4f + %0.4f$x$ + %0.4f$x^2$\n"
              "$\chi^2_R$ = %0.2f$\pm$%0.2f"%(
-                lfit_t.x[0],
-                lfit_t.x[1],
+                lfit_t_x.x[0],
+                lfit_t_x.x[1],
                 x2lin,dx2lin,
-                qfit_t.x[0],
-                qfit_t.x[1],
-                qfit_t.x[2],
+                qfit_t_x.x[0],
+                qfit_t_x.x[1],
+                qfit_t_x.x[2],
                 x2quad,dx2quad
              ),
                 bbox={'facecolor':'white', 'alpha':1, 'pad':3})
@@ -948,58 +988,36 @@ def main():
             plt.savefig('%s/through_acceptance.png'%save_dir,
                         bbox_inches='tight',dpi=image_dpi)
     
-    '''y-Prime vs. Through-matter acceptance'''
-    
-    prime_step = (max_prime - min_prime) / (num_slots)
-    xx_prime = np.arange(min_prime[1] + prime_step[1]/2,
-                         max_prime[1],prime_step[1])
-    
-    init_guess_lin = np.array([0,0])
-    init_guess_quad = np.array([0,0,0])
-    fit_type = "poly"
-    lfit_t = ffch(xx_prime,data_matter_contact_prime,yerr_matter_contact_prime,
-                        init_guess_lin,fit_type)
-    lfit_not = ffch(xx_prime,data_no_matter_contact_prime,
-                    yerr_no_matter_contact_prime,init_guess_lin,fit_type)
-    qfit_t = ffch(xx_prime,data_matter_contact_prime,
-                  yerr_matter_contact_prime,init_guess_quad,fit_type)
-    qfit_not = ffch(xx_prime,data_no_matter_contact_prime,
-                    yerr_no_matter_contact_prime,init_guess_quad,fit_type)
-                  
-#    print('lfit_t: %s'%lfit_t.message)  
-#    print('qfit_t: %s'%qfit_t.message)  
-#    print('lfit_not: %s'%lfit_not.message)  
-#    print('qfit_not: %s'%qfit_not.message)
-    
-    # Independent axis values for the fit functions
-    xxfit_p = np.linspace(min_prime[0],max_prime[0],500)
+    ########################################
+    ## y-prime vs. through matter acceptance
+    ########################################
     
     fig = plt.figure(n)
     n = n + 1
     
-    x2lin = lfit_t.fun/(len(xx_prime)-len(init_guess_lin)-1)
-    dx2lin = np.sqrt(2*(len(xx_prime)-len(init_guess_lin)-1)) / \
-            (len(xx_prime)-len(init_guess_lin)-1)
-    x2quad = qfit_t.fun/(len(xx_prime)-len(init_guess_quad)-1)
-    dx2quad = np.sqrt(2*(len(xx_prime)-len(init_guess_quad)-1)) / \
-                (len(xx_prime)-len(init_guess_quad)-1)
+    x2lin = lfit_t_y.fun/(len(yy_prime)-len(init_guess_lin)-1)
+    dx2lin = np.sqrt(2*(len(yy_prime)-len(init_guess_lin)-1)) / \
+            (len(yy_prime)-len(init_guess_lin)-1)
+    x2quad = qfit_t_y.fun/(len(yy_prime)-len(init_guess_quad)-1)
+    dx2quad = np.sqrt(2*(len(yy_prime)-len(init_guess_quad)-1)) / \
+                (len(yy_prime)-len(init_guess_quad)-1)
     
     ax = plt.subplot(1,1,1)
-    ax.errorbar(xx_prime,data_matter_contact_prime,
-                yerr=yerr_matter_contact_prime,fmt='.',color='b')
-    ax.plot(xxfit_p,lfit_t.x[0] + lfit_t.x[1]*xxfit_p)
-    ax.plot(xxfit_p,qfit_t.x[0] + qfit_t.x[1]*xxfit_p + qfit_t.x[2]*xxfit_p**2)
+    ax.errorbar(yy_prime,data_matter_contact_prime_y,
+                yerr=yerr_matter_contact_prime_y,fmt='.',color='b')
+    ax.plot(yyfit_p,lfit_t_y.x[0] + lfit_t_y.x[1]*yyfit_p)
+    ax.plot(yyfit_p,qfit_t_y.x[0] + qfit_t_y.x[1]*yyfit_p + qfit_t_y.x[2]*yyfit_p**2)
     fig.text(0.24, -0.25,
              "Lin fit: y = %0.4f + %0.4f$x$\n"
              "$\chi^2_R$ = %0.2f$\pm$%0.2f\n"
              "Quad fit: y = %0.4f + %0.4f$x$ + %0.4f$x^2$\n"
              "$\chi^2_R$ = %0.2f$\pm$%0.2f"%(
-                lfit_t.x[0],
-                lfit_t.x[1],
+                lfit_t_y.x[0],
+                lfit_t_y.x[1],
                 x2lin,dx2lin,
-                qfit_t.x[0],
-                qfit_t.x[1],
-                qfit_t.x[2],
+                qfit_t_y.x[0],
+                qfit_t_y.x[1],
+                qfit_t_y.x[2],
                 x2quad,dx2quad
              ),
                 bbox={'facecolor':'white', 'alpha':1, 'pad':3})
@@ -1011,42 +1029,91 @@ def main():
     if save_plots == 1:
             plt.savefig('%s/through_acceptance.png'%save_dir,
                         bbox_inches='tight',dpi=image_dpi)
+            
+    ''''''''''''''''''''''''''''''''''''''''''''
+    '''Prime vs. No through-matter acceptance'''
+    ''''''''''''''''''''''''''''''''''''''''''''
     
-    '''x-Prime vs. No through-matter acceptance'''
+    ###########################################
+    ## x-prime vs. no-through matter acceptance
+    ###########################################
     
     fig = plt.figure(n)
     n = n + 1
     
-    x2lin = lfit_not.fun/(len(xx_prime)-len(init_guess_lin)-1)
+    x2lin = lfit_not_x.fun/(len(xx_prime)-len(init_guess_lin)-1)
     dx2lin = np.sqrt(2*(len(xx_prime)-len(init_guess_lin)-1)) / \
             (len(xx_prime)-len(init_guess_lin)-1)
-    x2quad = qfit_not.fun/(len(xx_prime)-len(init_guess_quad)-1)
+    x2quad = qfit_not_x.fun/(len(xx_prime)-len(init_guess_quad)-1)
     dx2quad = np.sqrt(2*(len(xx_prime)-len(init_guess_quad)-1)) / \
                 (len(xx_prime)-len(init_guess_quad)-1)
     
     ax = plt.subplot(1,1,1)
-    ax.errorbar(xx_prime,data_no_matter_contact_prime,
-                yerr=yerr_no_matter_contact_prime,fmt='.',color='g')
-    ax.plot(xxfit_p,lfit_not.x[0] + lfit_not.x[1]*xxfit_p)
-    ax.plot(xxfit_p,qfit_not.x[0] + qfit_not.x[1]*xxfit_p + \
-            qfit_not.x[2]*xxfit_p**2)
+    ax.errorbar(xx_prime,data_no_matter_contact_prime_x,
+                yerr=yerr_no_matter_contact_prime_x,fmt='.',color='g')
+    ax.plot(xxfit_p,lfit_not_x.x[0] + lfit_not_x.x[1]*xxfit_p)
+    ax.plot(xxfit_p,qfit_not_x.x[0] + qfit_not_x.x[1]*xxfit_p + \
+            qfit_not_x.x[2]*xxfit_p**2)
     fig.text(0.24, -0.25,
              "Lin fit: y = %0.4f + %0.4f$x$\n"
              "$\chi^2_R$ = %0.2f$\pm$%0.2f\n"
              "Quad fit: y = %0.4f + %0.4f$x$ + %0.4f$x^2$\n"
              "$\chi^2_R$ = %0.2f$\pm$%0.2f"%(
-                lfit_not.x[0],
-                lfit_not.x[1],
+                lfit_not_x.x[0],
+                lfit_not_x.x[1],
                 x2lin,dx2lin,
-                qfit_not.x[0],
-                qfit_not.x[1],
-                qfit_not.x[2],
+                qfit_not_x.x[0],
+                qfit_not_x.x[1],
+                qfit_not_x.x[2],
                 x2quad,dx2quad
              ),
           bbox={'facecolor':'white', 'alpha':1, 'pad':3})
 #    ax.legend(bbox_to_anchor=(1,1))
     ax.set_title("x-Prime vs. No through-matter acceptance")
     ax.set_xlabel("x-Prime (trans. mom. / long. mom.)")
+    ax.set_ylabel("Particles Detected / Total")
+    
+    if save_plots == 1:
+            plt.savefig('%s/no_through_acceptance.png'%save_dir,
+                        bbox_inches='tight',dpi=image_dpi)
+    
+    ###########################################
+    ## y-prime vs. no-through matter acceptance
+    ###########################################
+    
+    fig = plt.figure(n)
+    n = n + 1
+    
+    x2lin = lfit_not_y.fun/(len(yy_prime)-len(init_guess_lin)-1)
+    dx2lin = np.sqrt(2*(len(yy_prime)-len(init_guess_lin)-1)) / \
+            (len(yy_prime)-len(init_guess_lin)-1)
+    x2quad = qfit_not_y.fun/(len(yy_prime)-len(init_guess_quad)-1)
+    dx2quad = np.sqrt(2*(len(yy_prime)-len(init_guess_quad)-1)) / \
+                (len(yy_prime)-len(init_guess_quad)-1)
+    
+    ax = plt.subplot(1,1,1)
+    ax.errorbar(yy_prime,data_no_matter_contact_prime_y,
+                yerr=yerr_no_matter_contact_prime_y,fmt='.',color='g')
+    ax.plot(yyfit_p,lfit_not_y.x[0] + lfit_not_y.x[1]*yyfit_p)
+    ax.plot(yyfit_p,qfit_not_y.x[0] + qfit_not_y.x[1]*yyfit_p + \
+            qfit_not_y.x[2]*yyfit_p**2)
+    fig.text(0.24, -0.25,
+             "Lin fit: y = %0.4f + %0.4f$x$\n"
+             "$\chi^2_R$ = %0.2f$\pm$%0.2f\n"
+             "Quad fit: y = %0.4f + %0.4f$x$ + %0.4f$x^2$\n"
+             "$\chi^2_R$ = %0.2f$\pm$%0.2f"%(
+                lfit_not_y.x[0],
+                lfit_not_y.x[1],
+                x2lin,dx2lin,
+                qfit_not_y.x[0],
+                qfit_not_y.x[1],
+                qfit_not_y.x[2],
+                x2quad,dx2quad
+             ),
+          bbox={'facecolor':'white', 'alpha':1, 'pad':3})
+#    ax.legend(bbox_to_anchor=(1,1))
+    ax.set_title("y-Prime vs. No through-matter acceptance")
+    ax.set_xlabel("y-Prime (trans. mom. / long. mom.)")
     ax.set_ylabel("Particles Detected / Total")
     
     if save_plots == 1:
@@ -1059,48 +1126,64 @@ def main():
     
     t_step = (max_pos - min_pos) / (num_slots)
     xx = np.arange(min_pos[0] + t_step[0]/2,max_pos[0],t_step[0])/100
+    yy = np.arange(min_pos[1] + t_step[1]/2,max_pos[1],t_step[1])/100
 
     # Independent axis values for the fit functions
     xxfit = np.linspace(min_pos[0],max_pos[0],500)/100
+    yyfit = np.linspace(min_pos[1],max_pos[1],500)/100
 
     init_guess_lin = np.array([0,0])
     init_guess_quad = np.array([0,0,0])
     init_guess_tri = np.array([0.67,-1.28,-8,800])
     
     fit_type = "poly"
-    lfit_t = ffch(xx,data_matter_contact,yerr_matter_contact,
+    
+    lfit_t_x = ffch(xx,data_matter_contact_x,yerr_matter_contact_x,
                         init_guess_lin,fit_type)
-    lfit_not = ffch(xx,data_no_matter_contact,
-                    yerr_no_matter_contact,init_guess_lin,fit_type)
-    qfit_t = ffch(xx,data_matter_contact,
-                  yerr_matter_contact,init_guess_quad,fit_type)
-    qfit_not = ffch(xx,data_no_matter_contact,
-                    yerr_no_matter_contact,init_guess_quad,fit_type)
-    tfit_t = ffch(xx,data_matter_contact,
-                  yerr_matter_contact,init_guess_tri,fit_type)
-#        tfit_not = ffch(xx,data_no_matter_contact,
-#                        yerr_no_matter_contact,init_guess_tri,fit_type)
+    lfit_not_x = ffch(xx,data_no_matter_contact_x,
+                    yerr_no_matter_contact_x,init_guess_lin,fit_type)
+    qfit_t_x = ffch(xx,data_matter_contact_x,
+                  yerr_matter_contact_x,init_guess_quad,fit_type)
+    qfit_not_x = ffch(xx,data_no_matter_contact_x,
+                    yerr_no_matter_contact_x,init_guess_quad,fit_type)
+    tfit_t_x = ffch(xx,data_matter_contact_x,
+                  yerr_matter_contact_x,init_guess_tri,fit_type)
+
+    lfit_t_y = ffch(yy,data_matter_contact_y,yerr_matter_contact_y,
+                        init_guess_lin,fit_type)
+    lfit_not_y = ffch(yy,data_no_matter_contact_y,
+                    yerr_no_matter_contact_y,init_guess_lin,fit_type)
+    qfit_t_y = ffch(yy,data_matter_contact_y,
+                  yerr_matter_contact_y,init_guess_quad,fit_type)
+    qfit_not_y = ffch(yy,data_no_matter_contact_y,
+                    yerr_no_matter_contact_y,init_guess_quad,fit_type)
+    tfit_t_y = ffch(yy,data_matter_contact_y,
+                  yerr_matter_contact_y,init_guess_tri,fit_type)
+            
+    ###########################################
+    ## x-Position vs. Through-matter acceptance
+    ###########################################
     
     fig = plt.figure(n)
     n = n + 1
     
-    x2lin = lfit_t.fun/(len(xx)-len(init_guess_lin)-1)
+    x2lin = lfit_t_x.fun/(len(xx)-len(init_guess_lin)-1)
     dx2lin = np.sqrt(2*(len(xx)-len(init_guess_lin)-1)) / \
                 (len(xx)-len(init_guess_lin)-1)
-    x2quad = qfit_t.fun/(len(xx)-len(init_guess_quad)-1)
+    x2quad = qfit_t_x.fun/(len(xx)-len(init_guess_quad)-1)
     dx2quad = np.sqrt(2*(len(xx)-len(init_guess_quad)-1)) / \
                 (len(xx)-len(init_guess_quad)-1)
-    x2tri = tfit_t.fun/(len(xx)-len(init_guess_tri)-1)
+    x2tri = tfit_t_x.fun/(len(xx)-len(init_guess_tri)-1)
     dx2tri = np.sqrt(2*(len(xx)-len(init_guess_tri)-1)) / \
                 (len(xx)-len(init_guess_tri)-1)
     
     ax = plt.subplot(1,1,1)
-    ax.errorbar(xx,data_matter_contact,yerr=yerr_matter_contact,fmt='.',
+    ax.errorbar(xx,data_matter_contact_x,yerr=yerr_matter_contact_x,fmt='.',
                 color='b')
-    ax.plot(xxfit,lfit_t.x[0] + lfit_t.x[1]*xxfit)
-    ax.plot(xxfit,qfit_t.x[0] + qfit_t.x[1]*xxfit + qfit_t.x[2]*xxfit**2)
-    ax.plot(xxfit,tfit_t.x[0] + tfit_t.x[1]*xxfit + tfit_t.x[2]*xxfit**2 +
-            tfit_t.x[3]*xxfit**3)
+    ax.plot(xxfit,lfit_t_x.x[0] + lfit_t_x.x[1]*xxfit)
+    ax.plot(xxfit,qfit_t_x.x[0] + qfit_t_x.x[1]*xxfit + qfit_t_x.x[2]*xxfit**2)
+    ax.plot(xxfit,tfit_t_x.x[0] + tfit_t_x.x[1]*xxfit + tfit_t_x.x[2]*xxfit**2 +
+            tfit_t_x.x[3]*xxfit**3)
     fig.text(0.17, -0.35,
              "Lin fit: y = %0.4f + %0.4f$x$\n"
              "$\chi^2_R$ = %0.2f$\pm$%0.2f\n"
@@ -1108,21 +1191,21 @@ def main():
              "$\chi^2_R$ = %0.2f$\pm$%0.2f\n"
              "Tri fit: y = %0.4f + %0.4f$x$ + %0.4f$x^2$ + %0.4f$x^3$\n"
              "$\chi^2_R$ = %0.2f$\pm$%0.2f"%(
-                lfit_t.x[0],
-                lfit_t.x[1],
+                lfit_t_x.x[0],
+                lfit_t_x.x[1],
                 x2lin,dx2lin,
-                qfit_t.x[0],
-                qfit_t.x[1],
-                qfit_t.x[2],
+                qfit_t_x.x[0],
+                qfit_t_x.x[1],
+                qfit_t_x.x[2],
                 x2quad,dx2quad,
-                tfit_t.x[0],
-                tfit_t.x[1],
-                tfit_t.x[2],
-                tfit_t.x[3],
+                tfit_t_x.x[0],
+                tfit_t_x.x[1],
+                tfit_t_x.x[2],
+                tfit_t_x.x[3],
                 x2tri,dx2tri
              ),
                 bbox={'facecolor':'white', 'alpha':1, 'pad':3})
-    ax.set_title("Position vs. Through-matter acceptance")
+    ax.set_title("x-Position vs. Through-matter acceptance")
     ax.set_xlabel("x-Position (m)")
     ax.set_ylabel("Particles Detected / Total")
     
@@ -1130,40 +1213,139 @@ def main():
             plt.savefig('%s/through_acceptance_x.png'%save_dir,
                         bbox_inches='tight',dpi=image_dpi)
     
-    '''Position vs. No through-matter acceptance'''
+    ###########################################
+    ## y-Position vs. Through-matter acceptance
+    ###########################################
     
     fig = plt.figure(n)
     n = n + 1
     
-    x2lin = lfit_not.fun/(len(xx)-len(init_guess_lin)-1)
+    y2lin = lfit_t_y.fun/(len(yy)-len(init_guess_lin)-1)
+    dy2lin = np.sqrt(2*(len(yy)-len(init_guess_lin)-1)) / \
+                (len(yy)-len(init_guess_lin)-1)
+    y2quad = qfit_t_y.fun/(len(yy)-len(init_guess_quad)-1)
+    dy2quad = np.sqrt(2*(len(yy)-len(init_guess_quad)-1)) / \
+                (len(yy)-len(init_guess_quad)-1)
+    y2tri = tfit_t_y.fun/(len(yy)-len(init_guess_tri)-1)
+    dy2tri = np.sqrt(2*(len(yy)-len(init_guess_tri)-1)) / \
+                (len(yy)-len(init_guess_tri)-1)
+    
+    ax = plt.subplot(1,1,1)
+    ax.errorbar(yy,data_matter_contact_y,yerr=yerr_matter_contact_y,fmt='.',
+                color='b')
+    ax.plot(yyfit,lfit_t_y.x[0] + lfit_t_y.x[1]*yyfit)
+    ax.plot(yyfit,qfit_t_y.x[0] + qfit_t_y.x[1]*yyfit + qfit_t_y.x[2]*yyfit**2)
+    ax.plot(yyfit,tfit_t_y.x[0] + tfit_t_y.x[1]*yyfit + tfit_t_y.x[2]*yyfit**2 +
+            tfit_t_y.x[3]*yyfit**3)
+    fig.text(0.17, -0.35,
+             "Lin fit: y = %0.4f + %0.4f$x$\n"
+             "$\chi^2_R$ = %0.2f$\pm$%0.2f\n"
+             "Quad fit: y = %0.4f + %0.4f$x$ + %0.4f$x^2$\n"
+             "$\chi^2_R$ = %0.2f$\pm$%0.2f\n"
+             "Tri fit: y = %0.4f + %0.4f$x$ + %0.4f$x^2$ + %0.4f$x^3$\n"
+             "$\chi^2_R$ = %0.2f$\pm$%0.2f"%(
+                lfit_t_y.x[0],
+                lfit_t_y.x[1],
+                y2lin,dy2lin,
+                qfit_t_y.x[0],
+                qfit_t_y.x[1],
+                qfit_t_y.x[2],
+                y2quad,dy2quad,
+                tfit_t_y.x[0],
+                tfit_t_y.x[1],
+                tfit_t_y.x[2],
+                tfit_t_y.x[3],
+                y2tri,dy2tri
+             ),
+                bbox={'facecolor':'white', 'alpha':1, 'pad':3})
+    ax.set_title("y-Position vs. Through-matter acceptance")
+    ax.set_xlabel("y-Position (m)")
+    ax.set_ylabel("Particles Detected / Total")
+    
+    if save_plots == 1:
+            plt.savefig('%s/through_acceptance_y.png'%save_dir,
+                        bbox_inches='tight',dpi=image_dpi)
+    
+    '''Position vs. No through-matter acceptance'''
+    
+    ##############################################
+    ## x-Position vs. no through-matter acceptance
+    ##############################################
+    
+    fig = plt.figure(n)
+    n = n + 1
+    
+    x2lin = lfit_not_x.fun/(len(xx)-len(init_guess_lin)-1)
     dx2lin = np.sqrt(2*(len(xx)-len(init_guess_lin)-1)) / \
             (len(xx)-len(init_guess_lin)-1)
-    x2quad = qfit_not.fun/(len(xx)-len(init_guess_quad)-1)
+    x2quad = qfit_not_x.fun/(len(xx)-len(init_guess_quad)-1)
     dx2quad = np.sqrt(2*(len(xx)-len(init_guess_quad)-1)) / \
                 (len(xx)-len(init_guess_quad)-1)
     
     ax = plt.subplot(1,1,1)
-    ax.errorbar(xx,data_no_matter_contact,yerr=yerr_no_matter_contact,fmt='.',
+    ax.errorbar(xx,data_no_matter_contact_x,yerr=yerr_no_matter_contact_x,fmt='.',
                 color='g')
-    ax.plot(xxfit,lfit_not.x[0] + lfit_not.x[1]*xxfit)
-    ax.plot(xxfit,qfit_not.x[0] + qfit_not.x[1]*xxfit + qfit_not.x[2]*xxfit**2)
+    ax.plot(xxfit,lfit_not_x.x[0] + lfit_not_x.x[1]*xxfit)
+    ax.plot(xxfit,qfit_not_x.x[0] + qfit_not_x.x[1]*xxfit + qfit_not_x.x[2]*xxfit**2)
     fig.text(0.24, -0.25,
              "Lin fit: y = %0.4f + %0.4f$x$\n"
              "$\chi^2_R$ = %0.2f$\pm$%0.2f\n"
              "Quad fit: y = %0.4f + %0.4f$x$ + %0.4f$x^2$\n"
              "$\chi^2_R$ = %0.2f$\pm$%0.2f"%(
-                lfit_not.x[0],
-                lfit_not.x[1],
+                lfit_not_x.x[0],
+                lfit_not_x.x[1],
                 x2lin,dx2lin,
-                qfit_not.x[0],
-                qfit_not.x[1],
-                qfit_not.x[2],
+                qfit_not_x.x[0],
+                qfit_not_x.x[1],
+                qfit_not_x.x[2],
                 x2quad,dx2quad
              ),
           bbox={'facecolor':'white', 'alpha':1, 'pad':3})
 #    ax.legend(bbox_to_anchor=(1,1))
-    ax.set_title("Position vs. No through-matter acceptance")
+    ax.set_title("x-Position vs. No through-matter acceptance")
     ax.set_xlabel("x-Position (m)")
+    ax.set_ylabel("Particles Detected / Total")
+    
+    if save_plots == 1:
+            plt.savefig('%s/no_through_acceptance.png'%save_dir,
+                        bbox_inches='tight',dpi=image_dpi)
+    
+    ##############################################
+    ## y-Position vs. no through-matter acceptance
+    ##############################################
+    
+    fig = plt.figure(n)
+    n = n + 1
+    
+    x2lin = lfit_not_y.fun/(len(yy)-len(init_guess_lin)-1)
+    dx2lin = np.sqrt(2*(len(yy)-len(init_guess_lin)-1)) / \
+            (len(yy)-len(init_guess_lin)-1)
+    x2quad = qfit_not_y.fun/(len(yy)-len(init_guess_quad)-1)
+    dx2quad = np.sqrt(2*(len(yy)-len(init_guess_quad)-1)) / \
+                (len(yy)-len(init_guess_quad)-1)
+    
+    ax = plt.subplot(1,1,1)
+    ax.errorbar(yy,data_no_matter_contact_y,yerr=yerr_no_matter_contact_y,
+                fmt='.',color='g')
+    ax.plot(yyfit,lfit_not_y.x[0] + lfit_not_y.x[1]*yyfit)
+    ax.plot(yyfit,qfit_not_y.x[0] + qfit_not_y.x[1]*yyfit + qfit_not_y.x[2]*yyfit**2)
+    fig.text(0.24, -0.25,
+             "Lin fit: y = %0.4f + %0.4f$x$\n"
+             "$\chi^2_R$ = %0.2f$\pm$%0.2f\n"
+             "Quad fit: y = %0.4f + %0.4f$x$ + %0.4f$x^2$\n"
+             "$\chi^2_R$ = %0.2f$\pm$%0.2f"%(
+                lfit_not_y.x[0],
+                lfit_not_y.x[1],
+                x2lin,dx2lin,
+                qfit_not_y.x[0],
+                qfit_not_y.x[1],
+                qfit_not_y.x[2],
+                x2quad,dx2quad
+             ),
+          bbox={'facecolor':'white', 'alpha':1, 'pad':3})
+#    ax.legend(bbox_to_anchor=(1,1))
+    ax.set_title("y-Position vs. No through-matter acceptance")
+    ax.set_xlabel("y-Position (m)")
     ax.set_ylabel("Particles Detected / Total")
     
     if save_plots == 1:
@@ -1449,12 +1631,12 @@ def getDataVsAcceptance(through_matter_contact,through_matter_edge_contact,
                     
         # Set variables used in determining uncertainties
         
-        a = (through_matter_contact[0,i] + 
-            through_matter_edge_contact[0,i])
+        a = (through_matter_contact[i] + 
+            through_matter_edge_contact[i])
             
         # Poisson uncertainty of 'a'
         delta_a = np.sqrt(a)
-        b = np.copy(through_matter[0,i])
+        b = np.copy(through_matter[i])
         
         # Poisson uncertainty of 'b'
         delta_b = np.sqrt(b)
@@ -1472,9 +1654,9 @@ def getDataVsAcceptance(through_matter_contact,through_matter_edge_contact,
         # Get the fraction that did not pass through matter and hit a
         # calorimeter to the total # in that starting x-position range
                                     
-        a = np.copy(no_through_matter_contact[0,i])
+        a = np.copy(no_through_matter_contact[i])
         delta_a = np.sqrt(a)
-        b = np.copy(no_through_matter[0,i])
+        b = np.copy(no_through_matter[i])
         delta_b = np.sqrt(b)
         data_no_matter_contact[i] = a / b
         
@@ -1489,8 +1671,8 @@ def getDataVsAcceptance(through_matter_contact,through_matter_edge_contact,
         if k.size:
             for el in k:
                 yerr_no_matter_contact[el] = \
-                    1/np.sqrt(no_through_matter_contact[0,el])
-                print(no_through_matter_contact[0,el])
+                    1/np.sqrt(no_through_matter_contact[el])
+                print(no_through_matter_contact[el])
             
 #        print('%d-Through, front contact: %d'%(i,
 #                                               through_matter_contact[0,i]))
