@@ -21,8 +21,8 @@ import numpy as np
 import process_single_files as psf
 
 ts = 13
-#extra = "angle_" # Note the underscore that must be added
-extra = "group_18_"
+#extra = "angle_" # Note the slash that must be added
+extra = "group_18/"
                          
 # Output for each particle
 particle_matrix_header = np.array(["Particle #","Steps","Kill Event",
