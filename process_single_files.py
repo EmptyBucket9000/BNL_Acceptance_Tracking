@@ -21,7 +21,7 @@ import glob
 
 def process(particle_matrix_header,photon_matrix_header,N_part_mat,N_phot_mat,
             ts,extra):
-    output_dir = "../Output/"
+    output_dir = "../Output/Combined/%s/"%ts
     
     # Makes sure any 'extra' is handled appropriately.
     if extra == "":
@@ -39,7 +39,7 @@ def process(particle_matrix_header,photon_matrix_header,N_part_mat,N_phot_mat,
         sorted(glob.glob("%s/../Output/Single_Files/%s%d/particle_*.csv"%(
                 os.getcwd(),extra,ts)), key=os.path.getmtime)
     path = output_dir + "particle_matrix%s_%d.csv"%(extra_out,ts)
-                                                                   
+    
     total_muons = len(particle_files)
     
     # N_particles is used to pre-allocate, the *5 is for safety to ensure the

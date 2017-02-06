@@ -25,7 +25,7 @@ def main():
     
     startTime = datetime.now()
     
-    save_plots = 0                      # Set to 1 to save plots, 0 otherwise
+    save_plots = 1                      # Set to 1 to save plots, 0 otherwise
     save_dir = "../Output/Images"       # Set save directory
     image_dpi = 300                     # Set saved image dpi
     num_slots = 25                      # Number of points for acceptance plots
@@ -35,7 +35,7 @@ def main():
     
     # E.g. "_group_2" Note the beginning underscore, only used if a combined
     # csv file is not used.
-#    extra = "_group_1" 
+#    extra = "_group_1"
     
     # Uncomment either the line with 'extra' or the line with the combined
     # file in each pair below.
@@ -985,7 +985,7 @@ def main():
     ax.set_ylabel("Particles Detected / Total")
     
     if save_plots == 1:
-            plt.savefig('%s/through_acceptance.png'%save_dir,
+            plt.savefig('%s/through_acceptance_x_prime.png'%save_dir,
                         bbox_inches='tight',dpi=image_dpi)
     
     ########################################
@@ -1027,7 +1027,7 @@ def main():
     ax.set_ylabel("Particles Detected / Total")
     
     if save_plots == 1:
-            plt.savefig('%s/through_acceptance.png'%save_dir,
+            plt.savefig('%s/through_acceptance_y_prime.png'%save_dir,
                         bbox_inches='tight',dpi=image_dpi)
             
     ''''''''''''''''''''''''''''''''''''''''''''
@@ -1074,7 +1074,7 @@ def main():
     ax.set_ylabel("Particles Detected / Total")
     
     if save_plots == 1:
-            plt.savefig('%s/no_through_acceptance.png'%save_dir,
+            plt.savefig('%s/no_through_acceptance_x_prime.png'%save_dir,
                         bbox_inches='tight',dpi=image_dpi)
     
     ###########################################
@@ -1117,7 +1117,7 @@ def main():
     ax.set_ylabel("Particles Detected / Total")
     
     if save_plots == 1:
-            plt.savefig('%s/no_through_acceptance.png'%save_dir,
+            plt.savefig('%s/no_through_acceptance_y_prime.png'%save_dir,
                         bbox_inches='tight',dpi=image_dpi)
 
     '''Position vs. Through-matter acceptance'''
@@ -1210,7 +1210,7 @@ def main():
     ax.set_ylabel("Particles Detected / Total")
     
     if save_plots == 1:
-            plt.savefig('%s/through_acceptance_x.png'%save_dir,
+            plt.savefig('%s/through_acceptance_x_pos.png'%save_dir,
                         bbox_inches='tight',dpi=image_dpi)
     
     ###########################################
@@ -1263,7 +1263,7 @@ def main():
     ax.set_ylabel("Particles Detected / Total")
     
     if save_plots == 1:
-            plt.savefig('%s/through_acceptance_y.png'%save_dir,
+            plt.savefig('%s/through_acceptance_y_pos.png'%save_dir,
                         bbox_inches='tight',dpi=image_dpi)
     
     '''Position vs. No through-matter acceptance'''
@@ -1307,7 +1307,7 @@ def main():
     ax.set_ylabel("Particles Detected / Total")
     
     if save_plots == 1:
-            plt.savefig('%s/no_through_acceptance.png'%save_dir,
+            plt.savefig('%s/no_through_acceptance_x_pos.png'%save_dir,
                         bbox_inches='tight',dpi=image_dpi)
     
     ##############################################
@@ -1349,7 +1349,7 @@ def main():
     ax.set_ylabel("Particles Detected / Total")
     
     if save_plots == 1:
-            plt.savefig('%s/no_through_acceptance.png'%save_dir,
+            plt.savefig('%s/no_through_acceptance_y_pos.png'%save_dir,
                         bbox_inches='tight',dpi=image_dpi)
                         
 #==============================================================================
