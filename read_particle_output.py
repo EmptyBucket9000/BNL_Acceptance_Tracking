@@ -28,7 +28,7 @@ def main():
     save_plots = 1                      # Set to 1 to save plots, 0 otherwise
     save_dir = "../Output/Images"       # Set save directory
     image_dpi = 300                     # Set saved image dpi
-    num_slots = 25                      # Number of points for acceptance plots
+    num_slots = 20                      # Number of points for acceptance plots
     show_angle_histograms = 0           # Show a set of histograms
     show_old_plots = 0                  # Show other plots
     ts = 13                             # Timestep, 10**-ts
@@ -922,42 +922,36 @@ def main():
     
     # Determine the fit functions and get chi-square information
     
-    lfit_t_x = ffch(xx_prime,data_matter_contact_prime_x,
+    lfit_t_x,d_lfit_t_x = ffch(xx_prime,data_matter_contact_prime_x,
                   yerr_matter_contact_prime_x,init_guess_lin,fit_type)
-    lfit_not_x = ffch(xx_prime,data_no_matter_contact_prime_x,
+    lfit_not_x,d_lfit_not_x = ffch(xx_prime,data_no_matter_contact_prime_x,
                     yerr_no_matter_contact_prime_x,init_guess_lin,fit_type)
-    qfit_t_x = ffch(xx_prime,data_matter_contact_prime_x,
+    qfit_t_x,d_qfit_t_x = ffch(xx_prime,data_matter_contact_prime_x,
                   yerr_matter_contact_prime_x,init_guess_quad,fit_type)
-    qfit_not_x = ffch(xx_prime,data_no_matter_contact_prime_x,
+    qfit_not_x,d_qfit_not_x = ffch(xx_prime,data_no_matter_contact_prime_x,
                     yerr_no_matter_contact_prime_x,init_guess_quad,fit_type)
     
-    lfit_t_y = ffch(yy_prime,data_matter_contact_prime_y,
+    lfit_t_y,d_lfit_t_y = ffch(yy_prime,data_matter_contact_prime_y,
                   yerr_matter_contact_prime_y,init_guess_lin,fit_type)
-    lfit_not_y = ffch(yy_prime,data_no_matter_contact_prime_y,
+    lfit_not_y,d_lfit_not_y = ffch(yy_prime,data_no_matter_contact_prime_y,
                     yerr_no_matter_contact_prime_y,init_guess_lin,fit_type)
-    qfit_t_y = ffch(yy_prime,data_matter_contact_prime_y,
+    qfit_t_y,d_qfit_t_y = ffch(yy_prime,data_matter_contact_prime_y,
                   yerr_matter_contact_prime_y,init_guess_quad,fit_type)
-    qfit_not_y = ffch(yy_prime,data_no_matter_contact_prime_y,
+    qfit_not_y,d_qfit_not_y = ffch(yy_prime,data_no_matter_contact_prime_y,
                     yerr_no_matter_contact_prime_y,init_guess_quad,fit_type)
     
     ##################################
     ## x-prime vs. through acceptance
     ##################################
                   
-#    print('lfit_t: %s'%lfit_t.message)  
-#    print('qfit_t: %s'%qfit_t.message)  
-#    print('lfit_not: %s'%lfit_not.message)  
-#    print('qfit_not: %s'%qfit_not.message)
+#    print('lfit_t: %s'%lfit_t.message)
     
     fig = plt.figure(n)
     n = n + 1
     
-    x2lin = lfit_t_x.fun/(len(xx_prime)-len(init_guess_lin)-1)
-    dx2lin = np.sqrt(2*(len(xx_prime)-len(init_guess_lin)-1)) / \
-            (len(xx_prime)-len(init_guess_lin)-1)
-    x2quad = qfit_t_x.fun/(len(xx_prime)-len(init_guess_quad)-1)
-    dx2quad = np.sqrt(2*(len(xx_prime)-len(init_guess_quad)-1)) / \
-                (len(xx_prime)-len(init_guess_quad)-1)
+    # Get reduced chi-square and its uncertainty
+    x2lin,dx2lin = getX2R(lfit_t_x.fun,xx_prime,init_guess_lin)
+    x2quad,dx2quad = getX2R(qfit_t_x.fun,xx_prime,init_guess_quad)
     
     ax = plt.subplot(1,1,1)
     ax.errorbar(xx_prime,data_matter_contact_prime_x,
@@ -965,21 +959,20 @@ def main():
     ax.plot(xxfit_p,lfit_t_x.x[0] + lfit_t_x.x[1]*xxfit_p)
     ax.plot(xxfit_p,qfit_t_x.x[0] + qfit_t_x.x[1]*xxfit_p + 
             qfit_t_x.x[2]*xxfit_p**2)
-    fig.text(0.24, -0.25,
-             "Lin fit: y = %0.4f + %0.4f$x$\n"
+    fig.text(0.06, -0.25,
+             "Lin fit: y = %0.4f$\pm$%s + (%0.4f$\pm$%s)$x$\n"
              "$\chi^2_R$ = %0.2f$\pm$%0.2f\n"
-             "Quad fit: y = %0.4f + %0.4f$x$ + %0.4f$x^2$\n"
+             "Quad fit: y = %0.4f$\pm$%s + (%0.4f$\pm$%s)$x$ + (%0.4f$\pm$%s)$x^2$\n"
              "$\chi^2_R$ = %0.2f$\pm$%0.2f"%(
-                lfit_t_x.x[0],
-                lfit_t_x.x[1],
+                lfit_t_x.x[0],float('%.2g'%d_lfit_t_x[0]),
+                lfit_t_x.x[1],float('%.2g'%d_lfit_t_x[1]),
                 x2lin,dx2lin,
-                qfit_t_x.x[0],
-                qfit_t_x.x[1],
-                qfit_t_x.x[2],
+                qfit_t_x.x[0],float('%.2g'%d_qfit_t_x[0]),
+                qfit_t_x.x[1],float('%.2g'%d_qfit_t_x[1]),
+                qfit_t_x.x[2],float('%.2g'%d_qfit_t_x[2]),
                 x2quad,dx2quad
              ),
                 bbox={'facecolor':'white', 'alpha':1, 'pad':3})
-#    ax.legend(bbox_to_anchor=(1,1))
     ax.set_title("x-Prime vs. Through-matter acceptance")
     ax.set_xlabel("x-Prime (trans. mom. / long. mom.)")
     ax.set_ylabel("Particles Detected / Total")
@@ -995,33 +988,29 @@ def main():
     fig = plt.figure(n)
     n = n + 1
     
-    x2lin = lfit_t_y.fun/(len(yy_prime)-len(init_guess_lin)-1)
-    dx2lin = np.sqrt(2*(len(yy_prime)-len(init_guess_lin)-1)) / \
-            (len(yy_prime)-len(init_guess_lin)-1)
-    x2quad = qfit_t_y.fun/(len(yy_prime)-len(init_guess_quad)-1)
-    dx2quad = np.sqrt(2*(len(yy_prime)-len(init_guess_quad)-1)) / \
-                (len(yy_prime)-len(init_guess_quad)-1)
+    # Get reduced chi-square and its uncertainty
+    x2lin,dx2lin = getX2R(lfit_t_y.fun,yy_prime,init_guess_lin)
+    x2quad,dx2quad = getX2R(qfit_t_y.fun,yy_prime,init_guess_quad)
     
     ax = plt.subplot(1,1,1)
     ax.errorbar(yy_prime,data_matter_contact_prime_y,
                 yerr=yerr_matter_contact_prime_y,fmt='.',color='b')
     ax.plot(yyfit_p,lfit_t_y.x[0] + lfit_t_y.x[1]*yyfit_p)
     ax.plot(yyfit_p,qfit_t_y.x[0] + qfit_t_y.x[1]*yyfit_p + qfit_t_y.x[2]*yyfit_p**2)
-    fig.text(0.24, -0.25,
-             "Lin fit: y = %0.4f + %0.4f$x$\n"
+    fig.text(0.06, -0.25,
+             "Lin fit: y = %0.4f$\pm$%s + (%0.4f$\pm$%s)$x$\n"
              "$\chi^2_R$ = %0.2f$\pm$%0.2f\n"
-             "Quad fit: y = %0.4f + %0.4f$x$ + %0.4f$x^2$\n"
+             "Quad fit: y = %0.4f$\pm$%s + (%0.4f$\pm$%s)$x$ + (%0.4f$\pm$%s)$x^2$\n"
              "$\chi^2_R$ = %0.2f$\pm$%0.2f"%(
-                lfit_t_y.x[0],
-                lfit_t_y.x[1],
+                lfit_t_y.x[0],float('%.2g'%d_lfit_t_y[0]),
+                lfit_t_y.x[1],float('%.2g'%d_lfit_t_y[1]),
                 x2lin,dx2lin,
-                qfit_t_y.x[0],
-                qfit_t_y.x[1],
-                qfit_t_y.x[2],
+                qfit_t_y.x[0],float('%.2g'%d_qfit_t_y[0]),
+                qfit_t_y.x[1],float('%.2g'%d_qfit_t_y[1]),
+                qfit_t_y.x[2],float('%.2g'%d_qfit_t_y[2]),
                 x2quad,dx2quad
              ),
                 bbox={'facecolor':'white', 'alpha':1, 'pad':3})
-#    ax.legend(bbox_to_anchor=(1,1))
     ax.set_title("y-Prime vs. Through-matter acceptance")
     ax.set_xlabel("y-Prime (trans. mom. / long. mom.)")
     ax.set_ylabel("Particles Detected / Total")
@@ -1041,12 +1030,9 @@ def main():
     fig = plt.figure(n)
     n = n + 1
     
-    x2lin = lfit_not_x.fun/(len(xx_prime)-len(init_guess_lin)-1)
-    dx2lin = np.sqrt(2*(len(xx_prime)-len(init_guess_lin)-1)) / \
-            (len(xx_prime)-len(init_guess_lin)-1)
-    x2quad = qfit_not_x.fun/(len(xx_prime)-len(init_guess_quad)-1)
-    dx2quad = np.sqrt(2*(len(xx_prime)-len(init_guess_quad)-1)) / \
-                (len(xx_prime)-len(init_guess_quad)-1)
+    # Get reduced chi-square and its uncertainty
+    x2lin,dx2lin = getX2R(lfit_not_x.fun,xx_prime,init_guess_lin)
+    x2quad,dx2quad = getX2R(qfit_not_x.fun,xx_prime,init_guess_quad)
     
     ax = plt.subplot(1,1,1)
     ax.errorbar(xx_prime,data_no_matter_contact_prime_x,
@@ -1054,21 +1040,20 @@ def main():
     ax.plot(xxfit_p,lfit_not_x.x[0] + lfit_not_x.x[1]*xxfit_p)
     ax.plot(xxfit_p,qfit_not_x.x[0] + qfit_not_x.x[1]*xxfit_p + \
             qfit_not_x.x[2]*xxfit_p**2)
-    fig.text(0.24, -0.25,
-             "Lin fit: y = %0.4f + %0.4f$x$\n"
+    fig.text(0.06, -0.25,
+             "Lin fit: y = %0.4f$\pm$%s + (%0.4f$\pm$%s)$x$\n"
              "$\chi^2_R$ = %0.2f$\pm$%0.2f\n"
-             "Quad fit: y = %0.4f + %0.4f$x$ + %0.4f$x^2$\n"
+             "Quad fit: y = %0.4f$\pm$%s + (%0.4f$\pm$%s)$x$ + (%0.4f$\pm$%s)$x^2$\n"
              "$\chi^2_R$ = %0.2f$\pm$%0.2f"%(
-                lfit_not_x.x[0],
-                lfit_not_x.x[1],
+                lfit_not_x.x[0],float('%.2g'%d_lfit_not_x[0]),
+                lfit_not_x.x[1],float('%.2g'%d_lfit_not_x[1]),
                 x2lin,dx2lin,
-                qfit_not_x.x[0],
-                qfit_not_x.x[1],
-                qfit_not_x.x[2],
+                qfit_not_x.x[0],float('%.2g'%d_qfit_not_x[0]),
+                qfit_not_x.x[1],float('%.2g'%d_qfit_not_x[1]),
+                qfit_not_x.x[2],float('%.2g'%d_qfit_not_x[2]),
                 x2quad,dx2quad
              ),
           bbox={'facecolor':'white', 'alpha':1, 'pad':3})
-#    ax.legend(bbox_to_anchor=(1,1))
     ax.set_title("x-Prime vs. No through-matter acceptance")
     ax.set_xlabel("x-Prime (trans. mom. / long. mom.)")
     ax.set_ylabel("Particles Detected / Total")
@@ -1084,12 +1069,9 @@ def main():
     fig = plt.figure(n)
     n = n + 1
     
-    x2lin = lfit_not_y.fun/(len(yy_prime)-len(init_guess_lin)-1)
-    dx2lin = np.sqrt(2*(len(yy_prime)-len(init_guess_lin)-1)) / \
-            (len(yy_prime)-len(init_guess_lin)-1)
-    x2quad = qfit_not_y.fun/(len(yy_prime)-len(init_guess_quad)-1)
-    dx2quad = np.sqrt(2*(len(yy_prime)-len(init_guess_quad)-1)) / \
-                (len(yy_prime)-len(init_guess_quad)-1)
+    # Get reduced chi-square and its uncertainty
+    x2lin,dx2lin = getX2R(lfit_not_y.fun,yy_prime,init_guess_lin)
+    x2quad,dx2quad = getX2R(qfit_not_y.fun,yy_prime,init_guess_quad)
     
     ax = plt.subplot(1,1,1)
     ax.errorbar(yy_prime,data_no_matter_contact_prime_y,
@@ -1097,21 +1079,20 @@ def main():
     ax.plot(yyfit_p,lfit_not_y.x[0] + lfit_not_y.x[1]*yyfit_p)
     ax.plot(yyfit_p,qfit_not_y.x[0] + qfit_not_y.x[1]*yyfit_p + \
             qfit_not_y.x[2]*yyfit_p**2)
-    fig.text(0.24, -0.25,
-             "Lin fit: y = %0.4f + %0.4f$x$\n"
+    fig.text(0.06, -0.25,
+             "Lin fit: y = %0.4f$\pm$%s + (%0.4f$\pm$%s)$x$\n"
              "$\chi^2_R$ = %0.2f$\pm$%0.2f\n"
-             "Quad fit: y = %0.4f + %0.4f$x$ + %0.4f$x^2$\n"
+             "Quad fit: y = %0.4f$\pm$%s + (%0.4f$\pm$%s)$x$ + (%0.4f$\pm$%s)$x^2$\n"
              "$\chi^2_R$ = %0.2f$\pm$%0.2f"%(
-                lfit_not_y.x[0],
-                lfit_not_y.x[1],
+                lfit_not_y.x[0],float('%.2g'%d_lfit_not_y[0]),
+                lfit_not_y.x[1],float('%.2g'%d_lfit_not_y[1]),
                 x2lin,dx2lin,
-                qfit_not_y.x[0],
-                qfit_not_y.x[1],
-                qfit_not_y.x[2],
+                qfit_not_y.x[0],float('%.2g'%d_qfit_not_y[0]),
+                qfit_not_y.x[1],float('%.2g'%d_qfit_not_y[1]),
+                qfit_not_y.x[2],float('%.2g'%d_qfit_not_y[2]),
                 x2quad,dx2quad
              ),
           bbox={'facecolor':'white', 'alpha':1, 'pad':3})
-#    ax.legend(bbox_to_anchor=(1,1))
     ax.set_title("y-Prime vs. No through-matter acceptance")
     ax.set_xlabel("y-Prime (trans. mom. / long. mom.)")
     ax.set_ylabel("Particles Detected / Total")
@@ -1138,27 +1119,25 @@ def main():
     
     fit_type = "poly"
     
-    lfit_t_x = ffch(xx,data_matter_contact_x,yerr_matter_contact_x,
+    lfit_t_x,d_lfit_t_x = ffch(xx,data_matter_contact_x,yerr_matter_contact_x,
                         init_guess_lin,fit_type)
-    lfit_not_x = ffch(xx,data_no_matter_contact_x,
+    lfit_not_x,d_lfit_not_x = ffch(xx,data_no_matter_contact_x,
                     yerr_no_matter_contact_x,init_guess_lin,fit_type)
-    qfit_t_x = ffch(xx,data_matter_contact_x,
+    qfit_t_x,d_qfit_t_x = ffch(xx,data_matter_contact_x,
                   yerr_matter_contact_x,init_guess_quad,fit_type)
-    qfit_not_x = ffch(xx,data_no_matter_contact_x,
+    qfit_not_x,d_qfit_not_x = ffch(xx,data_no_matter_contact_x,
                     yerr_no_matter_contact_x,init_guess_quad,fit_type)
-    tfit_t_x = ffch(xx,data_matter_contact_x,
+    tfit_t_x,d_tfit_t_x = ffch(xx,data_matter_contact_x,
                   yerr_matter_contact_x,init_guess_tri,fit_type)
 
-    lfit_t_y = ffch(yy,data_matter_contact_y,yerr_matter_contact_y,
+    lfit_t_y,d_lfit_t_y = ffch(yy,data_matter_contact_y,yerr_matter_contact_y,
                         init_guess_lin,fit_type)
-    lfit_not_y = ffch(yy,data_no_matter_contact_y,
+    lfit_not_y,d_lfit_not_y = ffch(yy,data_no_matter_contact_y,
                     yerr_no_matter_contact_y,init_guess_lin,fit_type)
-    qfit_t_y = ffch(yy,data_matter_contact_y,
+    qfit_t_y,d_qfit_t_y = ffch(yy,data_matter_contact_y,
                   yerr_matter_contact_y,init_guess_quad,fit_type)
-    qfit_not_y = ffch(yy,data_no_matter_contact_y,
+    qfit_not_y,d_qfit_not_y = ffch(yy,data_no_matter_contact_y,
                     yerr_no_matter_contact_y,init_guess_quad,fit_type)
-    tfit_t_y = ffch(yy,data_matter_contact_y,
-                  yerr_matter_contact_y,init_guess_tri,fit_type)
             
     ###########################################
     ## x-Position vs. Through-matter acceptance
@@ -1167,15 +1146,10 @@ def main():
     fig = plt.figure(n)
     n = n + 1
     
-    x2lin = lfit_t_x.fun/(len(xx)-len(init_guess_lin)-1)
-    dx2lin = np.sqrt(2*(len(xx)-len(init_guess_lin)-1)) / \
-                (len(xx)-len(init_guess_lin)-1)
-    x2quad = qfit_t_x.fun/(len(xx)-len(init_guess_quad)-1)
-    dx2quad = np.sqrt(2*(len(xx)-len(init_guess_quad)-1)) / \
-                (len(xx)-len(init_guess_quad)-1)
-    x2tri = tfit_t_x.fun/(len(xx)-len(init_guess_tri)-1)
-    dx2tri = np.sqrt(2*(len(xx)-len(init_guess_tri)-1)) / \
-                (len(xx)-len(init_guess_tri)-1)
+    # Get reduced chi-square and its uncertainty
+    x2lin,dx2lin = getX2R(lfit_t_x.fun,xx,init_guess_lin)
+    x2quad,dx2quad = getX2R(qfit_t_x.fun,xx,init_guess_quad)
+    x2tri,dx2tri = getX2R(tfit_t_x.fun,xx,init_guess_tri)
     
     ax = plt.subplot(1,1,1)
     ax.errorbar(xx,data_matter_contact_x,yerr=yerr_matter_contact_x,fmt='.',
@@ -1184,24 +1158,24 @@ def main():
     ax.plot(xxfit,qfit_t_x.x[0] + qfit_t_x.x[1]*xxfit + qfit_t_x.x[2]*xxfit**2)
     ax.plot(xxfit,tfit_t_x.x[0] + tfit_t_x.x[1]*xxfit + tfit_t_x.x[2]*xxfit**2 +
             tfit_t_x.x[3]*xxfit**3)
-    fig.text(0.17, -0.35,
-             "Lin fit: y = %0.4f + %0.4f$x$\n"
+    fig.text(0.0, -0.35,
+             "Lin fit: y = %0.4f$\pm$%s + (%0.4f$\pm$%s)$x$\n"
              "$\chi^2_R$ = %0.2f$\pm$%0.2f\n"
-             "Quad fit: y = %0.4f + %0.4f$x$ + %0.4f$x^2$\n"
+             "Quad fit: y = %0.4f$\pm$%s + (%0.4f$\pm$%s)$x$ + (%0.4f$\pm$%s)$x^2$\n"
              "$\chi^2_R$ = %0.2f$\pm$%0.2f\n"
-             "Tri fit: y = %0.4f + %0.4f$x$ + %0.4f$x^2$ + %0.4f$x^3$\n"
+             "Tri fit: y = %0.4f$\pm$%s + (%0.4f$\pm$%s)$x$ + (%0.4f$\pm$%s)$x^2$ + (%0.4f$\pm$%s)$x^3$\n"
              "$\chi^2_R$ = %0.2f$\pm$%0.2f"%(
-                lfit_t_x.x[0],
-                lfit_t_x.x[1],
+                lfit_t_x.x[0],float('%.2g'%d_lfit_t_x[0]),
+                lfit_t_x.x[1],float('%.2g'%d_lfit_t_x[1]),
                 x2lin,dx2lin,
-                qfit_t_x.x[0],
-                qfit_t_x.x[1],
-                qfit_t_x.x[2],
+                qfit_t_x.x[0],float('%.2g'%d_qfit_t_x[0]),
+                qfit_t_x.x[1],float('%.2g'%d_qfit_t_x[1]),
+                qfit_t_x.x[2],float('%.2g'%d_qfit_t_x[2]),
                 x2quad,dx2quad,
-                tfit_t_x.x[0],
-                tfit_t_x.x[1],
-                tfit_t_x.x[2],
-                tfit_t_x.x[3],
+                tfit_t_x.x[0],float('%.2g'%d_tfit_t_x[0]),
+                tfit_t_x.x[1],float('%.2g'%d_tfit_t_x[1]),
+                tfit_t_x.x[2],float('%.2g'%d_tfit_t_x[2]),
+                tfit_t_x.x[3],float('%.2g'%d_tfit_t_x[3]),
                 x2tri,dx2tri
              ),
                 bbox={'facecolor':'white', 'alpha':1, 'pad':3})
@@ -1220,42 +1194,27 @@ def main():
     fig = plt.figure(n)
     n = n + 1
     
-    y2lin = lfit_t_y.fun/(len(yy)-len(init_guess_lin)-1)
-    dy2lin = np.sqrt(2*(len(yy)-len(init_guess_lin)-1)) / \
-                (len(yy)-len(init_guess_lin)-1)
-    y2quad = qfit_t_y.fun/(len(yy)-len(init_guess_quad)-1)
-    dy2quad = np.sqrt(2*(len(yy)-len(init_guess_quad)-1)) / \
-                (len(yy)-len(init_guess_quad)-1)
-    y2tri = tfit_t_y.fun/(len(yy)-len(init_guess_tri)-1)
-    dy2tri = np.sqrt(2*(len(yy)-len(init_guess_tri)-1)) / \
-                (len(yy)-len(init_guess_tri)-1)
+    # Get reduced chi-square and its uncertainty
+    x2lin,dx2lin = getX2R(lfit_t_y.fun,yy,init_guess_lin)
+    x2quad,dx2quad = getX2R(qfit_t_y.fun,yy,init_guess_quad)
     
     ax = plt.subplot(1,1,1)
     ax.errorbar(yy,data_matter_contact_y,yerr=yerr_matter_contact_y,fmt='.',
                 color='b')
     ax.plot(yyfit,lfit_t_y.x[0] + lfit_t_y.x[1]*yyfit)
     ax.plot(yyfit,qfit_t_y.x[0] + qfit_t_y.x[1]*yyfit + qfit_t_y.x[2]*yyfit**2)
-    ax.plot(yyfit,tfit_t_y.x[0] + tfit_t_y.x[1]*yyfit + tfit_t_y.x[2]*yyfit**2 +
-            tfit_t_y.x[3]*yyfit**3)
-    fig.text(0.17, -0.35,
-             "Lin fit: y = %0.4f + %0.4f$x$\n"
+    fig.text(0.06, -0.35,
+             "Lin fit: y = %0.4f$\pm$%s + (%0.4f$\pm$%s)$x$\n"
              "$\chi^2_R$ = %0.2f$\pm$%0.2f\n"
-             "Quad fit: y = %0.4f + %0.4f$x$ + %0.4f$x^2$\n"
-             "$\chi^2_R$ = %0.2f$\pm$%0.2f\n"
-             "Tri fit: y = %0.4f + %0.4f$x$ + %0.4f$x^2$ + %0.4f$x^3$\n"
+             "Quad fit: y = %0.4f$\pm$%s + (%0.4f$\pm$%s)$x$ + (%0.4f$\pm$%s)$x^2$\n"
              "$\chi^2_R$ = %0.2f$\pm$%0.2f"%(
-                lfit_t_y.x[0],
-                lfit_t_y.x[1],
-                y2lin,dy2lin,
-                qfit_t_y.x[0],
-                qfit_t_y.x[1],
-                qfit_t_y.x[2],
-                y2quad,dy2quad,
-                tfit_t_y.x[0],
-                tfit_t_y.x[1],
-                tfit_t_y.x[2],
-                tfit_t_y.x[3],
-                y2tri,dy2tri
+                lfit_t_y.x[0],float('%.2g'%d_lfit_t_y[0]),
+                lfit_t_y.x[1],float('%.2g'%d_lfit_t_y[1]),
+                x2lin,dx2lin,
+                qfit_t_y.x[0],float('%.2g'%d_qfit_t_y[0]),
+                qfit_t_y.x[1],float('%.2g'%d_qfit_t_y[1]),
+                qfit_t_y.x[2],float('%.2g'%d_qfit_t_y[2]),
+                x2quad,dx2quad
              ),
                 bbox={'facecolor':'white', 'alpha':1, 'pad':3})
     ax.set_title("y-Position vs. Through-matter acceptance")
@@ -1275,33 +1234,29 @@ def main():
     fig = plt.figure(n)
     n = n + 1
     
-    x2lin = lfit_not_x.fun/(len(xx)-len(init_guess_lin)-1)
-    dx2lin = np.sqrt(2*(len(xx)-len(init_guess_lin)-1)) / \
-            (len(xx)-len(init_guess_lin)-1)
-    x2quad = qfit_not_x.fun/(len(xx)-len(init_guess_quad)-1)
-    dx2quad = np.sqrt(2*(len(xx)-len(init_guess_quad)-1)) / \
-                (len(xx)-len(init_guess_quad)-1)
+    # Get reduced chi-square and its uncertainty
+    x2lin,dx2lin = getX2R(lfit_not_x.fun,xx,init_guess_lin)
+    x2quad,dx2quad = getX2R(qfit_not_x.fun,xx,init_guess_quad)
     
     ax = plt.subplot(1,1,1)
     ax.errorbar(xx,data_no_matter_contact_x,yerr=yerr_no_matter_contact_x,fmt='.',
                 color='g')
     ax.plot(xxfit,lfit_not_x.x[0] + lfit_not_x.x[1]*xxfit)
     ax.plot(xxfit,qfit_not_x.x[0] + qfit_not_x.x[1]*xxfit + qfit_not_x.x[2]*xxfit**2)
-    fig.text(0.24, -0.25,
-             "Lin fit: y = %0.4f + %0.4f$x$\n"
+    fig.text(0.06, -0.25,
+             "Lin fit: y = %0.4f$\pm$%s + (%0.4f$\pm$%s)$x$\n"
              "$\chi^2_R$ = %0.2f$\pm$%0.2f\n"
-             "Quad fit: y = %0.4f + %0.4f$x$ + %0.4f$x^2$\n"
+             "Quad fit: y = %0.4f$\pm$%s + (%0.4f$\pm$%s)$x$ + (%0.4f$\pm$%s)$x^2$\n"
              "$\chi^2_R$ = %0.2f$\pm$%0.2f"%(
-                lfit_not_x.x[0],
-                lfit_not_x.x[1],
+                lfit_not_x.x[0],float('%.2g'%d_lfit_not_x[0]),
+                lfit_not_x.x[1],float('%.2g'%d_lfit_not_x[1]),
                 x2lin,dx2lin,
-                qfit_not_x.x[0],
-                qfit_not_x.x[1],
-                qfit_not_x.x[2],
+                qfit_not_x.x[0],float('%.2g'%d_qfit_not_x[0]),
+                qfit_not_x.x[1],float('%.2g'%d_qfit_not_x[1]),
+                qfit_not_x.x[2],float('%.2g'%d_qfit_not_x[2]),
                 x2quad,dx2quad
              ),
           bbox={'facecolor':'white', 'alpha':1, 'pad':3})
-#    ax.legend(bbox_to_anchor=(1,1))
     ax.set_title("x-Position vs. No through-matter acceptance")
     ax.set_xlabel("x-Position (m)")
     ax.set_ylabel("Particles Detected / Total")
@@ -1317,33 +1272,29 @@ def main():
     fig = plt.figure(n)
     n = n + 1
     
-    x2lin = lfit_not_y.fun/(len(yy)-len(init_guess_lin)-1)
-    dx2lin = np.sqrt(2*(len(yy)-len(init_guess_lin)-1)) / \
-            (len(yy)-len(init_guess_lin)-1)
-    x2quad = qfit_not_y.fun/(len(yy)-len(init_guess_quad)-1)
-    dx2quad = np.sqrt(2*(len(yy)-len(init_guess_quad)-1)) / \
-                (len(yy)-len(init_guess_quad)-1)
+    # Get reduced chi-square and its uncertainty
+    x2lin,dx2lin = getX2R(lfit_not_y.fun,yy,init_guess_lin)
+    x2quad,dx2quad = getX2R(qfit_not_y.fun,yy,init_guess_lin)
     
     ax = plt.subplot(1,1,1)
     ax.errorbar(yy,data_no_matter_contact_y,yerr=yerr_no_matter_contact_y,
                 fmt='.',color='g')
     ax.plot(yyfit,lfit_not_y.x[0] + lfit_not_y.x[1]*yyfit)
     ax.plot(yyfit,qfit_not_y.x[0] + qfit_not_y.x[1]*yyfit + qfit_not_y.x[2]*yyfit**2)
-    fig.text(0.24, -0.25,
-             "Lin fit: y = %0.4f + %0.4f$x$\n"
+    fig.text(0.06, -0.25,
+             "Lin fit: y = %0.4f$\pm$%s + (%0.4f$\pm$%s)$x$\n"
              "$\chi^2_R$ = %0.2f$\pm$%0.2f\n"
-             "Quad fit: y = %0.4f + %0.4f$x$ + %0.4f$x^2$\n"
+             "Quad fit: y = %0.4f$\pm$%s + (%0.4f$\pm$%s)$x$ + (%0.4f$\pm$%s)$x^2$\n"
              "$\chi^2_R$ = %0.2f$\pm$%0.2f"%(
-                lfit_not_y.x[0],
-                lfit_not_y.x[1],
+                lfit_not_y.x[0],float('%.2g'%d_lfit_not_y[0]),
+                lfit_not_y.x[1],float('%.2g'%d_lfit_not_y[1]),
                 x2lin,dx2lin,
-                qfit_not_y.x[0],
-                qfit_not_y.x[1],
-                qfit_not_y.x[2],
+                qfit_not_y.x[0],float('%.2g'%d_qfit_not_y[0]),
+                qfit_not_y.x[1],float('%.2g'%d_qfit_not_y[1]),
+                qfit_not_y.x[2],float('%.2g'%d_qfit_not_y[2]),
                 x2quad,dx2quad
              ),
           bbox={'facecolor':'white', 'alpha':1, 'pad':3})
-#    ax.legend(bbox_to_anchor=(1,1))
     ax.set_title("y-Position vs. No through-matter acceptance")
     ax.set_xlabel("y-Position (m)")
     ax.set_ylabel("Particles Detected / Total")
@@ -1614,17 +1565,25 @@ def main():
     plt.show()
     print(datetime.now() - startTime)
     
+def getX2R(fun,x,guess):
+    
+    x2lin = fun/(len(x)-len(guess)-1)
+    dx2lin = np.sqrt(2*(len(x)-len(guess)-1)) / \
+            (len(x)-len(guess)-1)
+    
+    return x2lin,dx2lin
+    
 def getDataVsAcceptance(through_matter_contact,through_matter_edge_contact,
                                 through_matter,no_through_matter_contact,
                                 no_through_matter,num_slots,starting):
-                                    
+    
     ## Set up data and uncertainties for "Position vs. Acceptance" plots                     
     
     data_matter_contact = np.zeros((num_slots))
     data_no_matter_contact = np.zeros((num_slots))
     yerr_matter_contact = np.zeros((num_slots))
     yerr_no_matter_contact = np.zeros((num_slots))
-        
+    
     i = 0
     
     while i < num_slots:
