@@ -37,24 +37,23 @@ def main():
 
     ''' Begin editable variables '''
     
-    make_plots = 1                      # Set to 1 to display plots
+    make_plots = 0                      # Set to 1 to display plots
     save_plots = 0                      # Set to 1 to save plots as images
-    save_output = 0                     # Set to 1 to save data output to csv
-    delete_old_single_files = 0         # Delete old single files first
+    save_output = 1                     # Set to 1 to save data output to csv
+    delete_old_single_files = 1         # Delete old single files first
     
     # Get x_pos_range, x_prime_range, and N based on the sys.argv sent.
 
     x_pos_range,x_prime_range,y_pos_range,y_prime_range,N = rt.do(sys.argv[1])
 
 #    x_pos_range,x_prime_range,y_pos_range,y_prime_range,N = rt.do("1")
-    
 #    N = 1
 
     # Name of csv containing muon data    
     file_name = "EndOfTracking_phase_space.csv"
     
     # Set to 1 or -1 for setting the direction of the muon spin vector angle
-    # away from the z-axis. 
+    # away from the z-axis to towards positive x or negative x. 
     alpha_sign = -1
     
     m_theta_set = 0                     # 1, use m_theta below, 0 random
@@ -83,7 +82,7 @@ def main():
     # Set to extra = "" if not
     # used, don't comment out.
 #    extra = "temp/"
-#    extra = "group_30lp/"
+#    extra = "group_30/"
     extra = sys.argv[2]
     
     ''' Permanent constants '''
