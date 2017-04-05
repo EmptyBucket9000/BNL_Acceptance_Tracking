@@ -521,37 +521,103 @@ def mag(v):
     
 ## Return the particle momentum at decay in the local coordinate system
     
-def getParticleMomentumAtDecay(m_p,m_theta,m_m,decay_dir_set):
+def getParticleMomentumAtDecay(m_p,m_theta,m_m,decay_dir_set,m):
     
-    # Magnitude of the particle momentum
-    rn = np.random.random()
-    p_tot = (1.79453 + 5.92129*10**-7 * np.exp(12.8423*rn**3) + 0.756197*rn - 
-    0.276462*rn**2 + 0.580407*rn**3) * 10**9
-    #    p_tot = 2.3*10**9
+    new = 1
+    c = 2.99792458*10**8
     
-    # Convert to momentum vector based on position
-#    p = np.array([p_tot*np.sin(m_theta),-p_tot*np.cos(m_theta),0])
-    p = p_tot * m_p / mag(m_p)
-    
-    # Add in the randomness of the angle away from the muon momentum vector
-    # 's' in the variable names refer to 'star', the center of mass frame
-    
-    p_s_mag = mag(p)
-    gamma = mag(m_p) / m_m
-    
-    # Make sure the momentum isn't greater than 1/2 of the rest mass of the
-    # muon as in the muon frame, the positron cannot take more than half its
-    # energy without failing to conserve momentum. The approximation is used
-    # that energy = momentum due to the highly relativistic nature of the
-    # particles.
-    
-    while True:
-    
-        ths = np.pi * np.random.random()
-        p_ss = p_s_mag / (gamma * (np.cos(ths) + 1))
+    if new == 1:
         
-        if p_ss < 52.8*10**6: # 52.8 MeV/c: 1/2 the rest mass of the muon
-            break
+        while True:
+        
+            E_p_s_max = 52.83*10**6
+            g_m = np.sqrt((momentum2Energy(m_p,m_m)/m_m)**2 + 1)
+            beta_m = np.array((0, 0, np.sqrt(1 - 1/g_m**2)))
+            
+            theta_min = 0
+            theta_max = np.pi
+            
+            alpha = np.arccos(1/np.sqrt(3))
+            phi_s = 2*np.pi*np.random.random()
+            
+            y = 0.5*(np.random.random() + 1)
+    
+            # Range of possible energies
+            dist_range = np.linspace(theta_min,theta_max,10000) # (m)
+            
+            # Weights for the random mean position based on the distribution    
+            dist_weights = 1 + ((2*y-1)/(3-2*y))*np.cos(dist_range)
+            
+            # Normalize the weights to give a total probability of 1
+            dist_weights = dist_weights/sum(dist_weights)
+            
+            # Randomly choose a mean within allowed range
+            th_s = np.random.choice(dist_range, 1, p=dist_weights)[0]
+            
+            E_p_s = y*E_p_s_max
+            p_p_s_mag = np.sqrt(E_p_s**2 - m**2)
+            g_p_s = np.sqrt((E_p_s/m)**2 + 1)
+            
+            p_x = p_p_s_mag*(np.sin(th_s)*np.cos(phi_s)*np.cos(alpha) + 
+                       np.cos(th_s)*np.sin(alpha))
+            p_y = p_p_s_mag*(np.sin(th_s)*np.sin(phi_s))
+            p_z = p_p_s_mag*(-np.sin(th_s)*np.cos(phi_s)*np.sin(alpha) + 
+                       np.cos(th_s)*np.cos(alpha))
+            
+            p_p_s = np.array((p_x,p_y,p_z))
+            b_p_s = p_p_s/(g_p_s*m)
+#            print(mag(b_p_s))
+            
+            ## Boost to lab frame
+            
+            v_p = ((b_p_s + beta_m*g_m*((g_m/(g_m + 1))*
+                                        np.dot(beta_m,b_p_s) + 1))*c /
+                (g_m*(1 + np.dot(beta_m,b_p_s))))
+            
+#            print(v_p)
+            beta_p = mag(v_p)/c
+            g_p = 1/np.sqrt(1-(beta_p)**2)
+            p_p = g_p*m*v_p/c
+            E_p_mag = np.sqrt(mag(p_p)**2 + m**2)
+            E_p_mag = mag(g_p)*m
+            
+            if E_p_mag > 1.8*10**9:
+#                print("good************************************")
+                return p_p
+            else:
+                print("too low")
+        
+    else:
+    
+        # Magnitude of the particle momentum
+        rn = np.random.random()
+        p_tot = (1.79453 + 5.92129*10**-7 * np.exp(12.8423*rn**3) + 0.756197*rn - 
+        0.276462*rn**2 + 0.580407*rn**3) * 10**9
+        #    p_tot = 2.3*10**9
+        
+        # Convert to momentum vector based on position
+    #    p = np.array([p_tot*np.sin(m_theta),-p_tot*np.cos(m_theta),0])
+        p = p_tot * m_p / mag(m_p)
+        
+        # Add in the randomness of the angle away from the muon momentum vector.
+        # 's' in the variable names refer to 'star', the center of mass frame
+        
+        p_s_mag = mag(p)
+        gamma = mag(m_p) / m_m
+        
+        # Make sure the momentum isn't greater than 1/2 of the rest mass of the
+        # muon as in the muon frame, the positron cannot take more than half its
+        # energy without failing to conserve momentum. The approximation is used
+        # that energy = momentum due to the highly relativistic nature of the
+        # particles.
+        
+        while True:
+        
+            ths = np.pi * np.random.random()
+            p_ss = p_s_mag / (gamma * (np.cos(ths) + 1))
+            
+            if p_ss < 52.8*10**6: # 52.8 MeV/c: 1/2 the rest mass of the muon
+                break
 
     if decay_dir_set == 0:        
     

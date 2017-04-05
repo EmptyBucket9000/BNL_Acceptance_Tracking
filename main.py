@@ -37,14 +37,16 @@ def main():
 
     ''' Begin editable variables '''
     
-    make_plots = 0                      # Set to 1 to display plots
+    make_plots = 1                      # Set to 1 to display plots
     save_plots = 0                      # Set to 1 to save plots as images
-    save_output = 1                     # Set to 1 to save data output to csv
+    save_output = 0                     # Set to 1 to save data output to csv
     detele_old_single_files = 1         # Delete old single files first
     
     # Get x_pos_range, x_prime_range, and N based on the sys.argv sent.
 
-    x_pos_range,x_prime_range,y_pos_range,y_prime_range,N = rt.do(sys.argv[1])
+#    x_pos_range,x_prime_range,y_pos_range,y_prime_range,N = rt.do(sys.argv[1])
+
+    x_pos_range,x_prime_range,y_pos_range,y_prime_range,N = rt.do("1")
 
     # Name of csv containing muon data    
     file_name = "EndOfTracking_phase_space.csv"
@@ -78,9 +80,9 @@ def main():
     # Note the forward slash that must be added.
     # Set to extra = "" if not
     # used, don't comment out.
-#    extra = "angle/"
+    extra = "temp/"
 #    extra = "group_30lp/"
-    extra = sys.argv[2]
+#    extra = sys.argv[2]
     
     ''' Permanent constants '''
 
@@ -294,7 +296,7 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
     
     # Determine the positron momentum in local with the addition of the z-axis
     # being the direction of travel of the optimal muon
-    p_s = cf.getParticleMomentumAtDecay(m_p,m_theta,m_m,decay_dir_set)
+    p_s = cf.getParticleMomentumAtDecay(m_p,m_theta,m_m,decay_dir_set,m)
     
     # Set the positron momentum vector in global
     p = np.zeros((3))

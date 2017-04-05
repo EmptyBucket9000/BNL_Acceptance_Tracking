@@ -25,7 +25,7 @@ def main():
     
     startTime = datetime.now()
     
-    save_plots = 1                      # Set to 1 to save plots, 0 otherwise
+    save_plots = 0                      # Set to 1 to save plots, 0 otherwise
     save_dir = "../Output/Images"       # Set save directory
     image_dpi = 300                     # Set saved image dpi
     num_slots = 20                      # Number of points for acceptance plots
@@ -135,8 +135,8 @@ def main():
         Steps                               1
         Kill Event                          2
         Charge                              3
-        Starting Global x-Position (mm)	    4
-        Starting Global y-Position (mm)	    5
+        Starting Global x-Position (mm)	  4
+        Starting Global y-Position (mm)	  5
         Starting Global z-Position (mm)     6
         Ending Calorimeter x (mm)           7
         Ending Calorimeter y (mm)           8
@@ -144,7 +144,7 @@ def main():
         Ending Momentum (GeV/c)             10
         Delta Momentum (GeV/c)              11
         Steps Inside Short Quad             12
-        Distance Inside Short Quad (cm)	    13
+        Distance Inside Short Quad (cm)	  13
         Total # of Photons Released         14
         # of Detectable Photons Released    15
         Steps Inside Long Quad              16
