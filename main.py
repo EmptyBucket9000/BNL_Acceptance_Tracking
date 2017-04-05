@@ -44,18 +44,18 @@ def main():
     
     # Get x_pos_range, x_prime_range, and N based on the sys.argv sent.
 
-#    x_pos_range,x_prime_range,y_pos_range,y_prime_range,N = rt.do(sys.argv[1])
+    x_pos_range,x_prime_range,y_pos_range,y_prime_range,N = rt.do(sys.argv[1])
 
-    x_pos_range,x_prime_range,y_pos_range,y_prime_range,N = rt.do("1")
+#    x_pos_range,x_prime_range,y_pos_range,y_prime_range,N = rt.do("1")
     
-    N = 1
+#    N = 1
 
     # Name of csv containing muon data    
     file_name = "EndOfTracking_phase_space.csv"
     
-    # Set to 1 if decay direction shoould be static, the direction must be
-    # set in callable_functions.getParticleMomentumAtDecay()
-    decay_dir_set = 0
+    # Set to 1 or -1 for setting the direction of the muon spin vector angle
+    # away from the z-axis. 
+    alpha_sign = -1
     
     m_theta_set = 0                     # 1, use m_theta below, 0 random
     
@@ -82,9 +82,9 @@ def main():
     # Note the forward slash that must be added.
     # Set to extra = "" if not
     # used, don't comment out.
-    extra = "temp/"
+#    extra = "temp/"
 #    extra = "group_30lp/"
-#    extra = sys.argv[2]
+    extra = sys.argv[2]
     
     ''' Permanent constants '''
 
@@ -243,7 +243,7 @@ def main():
             run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
                 particle_matrix,make_plots,save_plots,save_output,
                 N,steps,dt,q,B,muon_number,N_particles,N_photons,ts,photon_ts,
-                extra,m_p_list[muon_number],decay_dir_set)
+                extra,m_p_list[muon_number],alpha_sign)
                 
         # Move to the next muon
         muon_number = muon_number + 1
@@ -266,7 +266,7 @@ def main():
 def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
         particle_matrix,make_plots,save_plots,save_output,
         N,steps,dt,q,B,muon_number,N_particles,N_photons,ts,photon_ts,extra,
-        m_p_local,decay_dir_set):
+        m_p_local,alpha_sign):
 
 #==============================================================================
 #   Initialization and setting variables
@@ -298,7 +298,7 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
     
     # Determine the positron momentum in local with the addition of the z-axis
     # being the direction of travel of the optimal muon
-    p_s = cf.getParticleMomentumAtDecay(m_p,m_theta,m_m,decay_dir_set,m)
+    p_s = cf.getParticleMomentumAtDecay(m_p,m_theta,m_m,alpha_sign,m)
     
     # Set the positron momentum vector in global
     p = np.zeros((3))
