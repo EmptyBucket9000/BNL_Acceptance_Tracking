@@ -35,17 +35,17 @@ def main():
     
     # E.g. "_group_2" Note the beginning underscore, only used if a combined
     # csv file is not used.
-#    extra = "_group_1"
+#    extra = "_temp"
     
     # Uncomment either the line with 'extra' or the line with the combined
     # file in each pair below.
     
-#    particle_file = glob.glob("%s/../Output/particle_matrix%s_%d.csv"%(
+#    particle_file = glob.glob("%s/../Output/Combined/13/particle_matrix%s_%d.csv"%(
 #                                os.getcwd(),extra,ts))
     particle_file = glob.glob("%s/../Output/combined_particle_matrix_%d.csv"%(
                                 os.getcwd(),ts))
     
-#    photon_file = glob.glob("%s/../Output/photon_matrix%s_%d.csv"%(
+#    photon_file = glob.glob("%s/../Output/Combined/13/photon_matrix%s_%d.csv"%(
 #                                os.getcwd(),extra,ts))
     photon_file = glob.glob("%s/../Output/combined_photon_matrix_%d.csv"%(
                                 os.getcwd(),ts))
@@ -96,7 +96,7 @@ def main():
             photon[i,2] = float(row[6])
             photon[i,3] = float(row[7])
             photon[i,4] = int(row[16])
-            photon[i,5] = int(row[17])
+            photon[i,5] = 0 #int(row[17])
             photon[i,6] = float(row[3])
             photon[i,7] = float(row[4])
             

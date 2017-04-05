@@ -584,8 +584,8 @@ def getParticleMomentumAtDecay(m_p,m_theta,m_m,decay_dir_set,m):
             if E_p_mag > 1.8*10**9:
 #                print("good************************************")
                 return p_p
-            else:
-                print("too low")
+#            else:
+#                print("too low")
         
     else:
     

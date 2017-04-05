@@ -40,13 +40,15 @@ def main():
     make_plots = 1                      # Set to 1 to display plots
     save_plots = 0                      # Set to 1 to save plots as images
     save_output = 0                     # Set to 1 to save data output to csv
-    detele_old_single_files = 1         # Delete old single files first
+    delete_old_single_files = 0         # Delete old single files first
     
     # Get x_pos_range, x_prime_range, and N based on the sys.argv sent.
 
 #    x_pos_range,x_prime_range,y_pos_range,y_prime_range,N = rt.do(sys.argv[1])
 
     x_pos_range,x_prime_range,y_pos_range,y_prime_range,N = rt.do("1")
+    
+    N = 1
 
     # Name of csv containing muon data    
     file_name = "EndOfTracking_phase_space.csv"
@@ -190,7 +192,7 @@ def main():
     
         ## Delete all the current single files
         
-        if detele_old_single_files == 1:
+        if delete_old_single_files == 1:
         
             single_files = glob.glob("%s/*.csv"%(directory))
             if len(single_files) > 0:
@@ -313,8 +315,7 @@ def run(geo_pack,m_x,m_p,m_theta,m,c,photon_matrix,
 
     # [x,y,z,px,py,pz,charge,tracked,steps,pair-produced]
     particle_proc = np.zeros((N_particles,10))
-    particle_proc[0] = np.array([x[0,0],x[0,1],x[0,2],
-                                p[0],p[1],p[2],1,0,0,0])
+    particle_proc[0] = np.array([x[0,0],x[0,1],x[0,2],p[0],p[1],p[2],1,0,0,0])
                                 
     # [x,y,z,vx,vy,vz,energy,particle row index,steps,tracked,particle step]
     photon_proc = np.zeros((N_photons,11))
